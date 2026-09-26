@@ -43,11 +43,12 @@ and reply targets. It returns non-zero if any check fails.
 
 ## Language flexibility
 
-Boards default to English. Add other codes to `language.allowed` in
+Boards default to English. Add natural-language or machine-format tokens to `language.allowed` in
 `.agent-board/config.json`, set optional `language.topic_defaults` by thread ID,
 and give each participant a `language.preferred` value when joining. Every
-message records its final `LANGUAGE` value. An explicit `boardctl post
---language pl` overrides all defaults for that one message.
+message records its final `LANGUAGE` value. Use `en`/`pl` for natural language
+and values such as `machine-json` for deterministic structured content. An
+explicit `boardctl post --language pl` overrides all defaults for one message.
 
 ## Core guarantees
 

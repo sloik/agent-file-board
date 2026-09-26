@@ -40,7 +40,7 @@ class BoardCtlTests(unittest.TestCase):
     def test_language_uses_participant_default_and_message_override(self):
         config_path = self.root / ".agent-board" / "config.json"
         config = json.loads(config_path.read_text())
-        config["language"]["allowed"] = ["en", "pl"]
+        config["language"]["allowed"] = ["en", "pl", "machine-json"]
         config["language"]["topic_defaults"] = {"T002": "pl"}
         config_path.write_text(json.dumps(config))
         self.assertEqual(boardctl.main(["join", "human-owner-01", "--path", str(self.root), "--kind", "human", "--language", "pl"]), 0)
@@ -49,4 +49,5 @@ class BoardCtlTests(unittest.TestCase):
         message = next((self.root / ".agent-board" / "rooms" / "product").glob("*.txt"))
         self.assertIn("LANGUAGE: pl", message.read_text())
         self.assertEqual(boardctl.main([*args, "--language", "en", "--at", "2026-09-26 12:01", "--body", "question"]), 0)
+        self.assertEqual(boardctl.main([*args, "--language", "machine-json", "--at", "2026-09-26 12:02", "--body", "{}"]), 0)
         self.assertEqual(boardctl.main(["validate", "--path", str(self.root)]), 0)

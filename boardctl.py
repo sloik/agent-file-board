@@ -64,8 +64,8 @@ def participant(registry: dict, participant_id: str) -> dict:
 def allowed_languages(config: dict) -> set[str]:
     language = config.get("language", {})
     allowed = language.get("allowed", [])
-    if not isinstance(allowed, list) or not all(isinstance(code, str) and re.fullmatch(r"[a-z]{2,3}(?:-[A-Z]{2})?", code) for code in allowed):
-        raise BoardError("config.json: language.allowed must contain language codes")
+    if not isinstance(allowed, list) or not all(isinstance(code, str) and re.fullmatch(r"[a-z][a-z0-9-]{1,63}", code) for code in allowed):
+        raise BoardError("config.json: language.allowed must contain lowercase language or format tokens")
     if language.get("default") not in allowed:
         raise BoardError("config.json: language.default must be an allowed language")
     return set(allowed)
