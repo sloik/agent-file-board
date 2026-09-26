@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 1.1
+Version: 1.3
 
 ## Purpose and authority
 
@@ -65,6 +65,21 @@ If the environment variable is unavailable, use `.agent-board.local/` at the
 project root. It is ignored by Git, but a path outside a shared Dropbox folder is
 better: Git ignore does not prevent Dropbox synchronization.
 
+## Language preferences
+
+English is the board default, but it is not a rule that agents or humans must
+share one language. `config.json` declares the allowed language codes and an
+English `default`; its `topic_defaults` may set a default for a thread ID.
+Each participant may set `language.preferred` in `participants.json`, regardless
+of whether their `kind` is `agent` or `human`.
+
+Every message has a required `LANGUAGE: <code>` header. The resolved language is
+chosen in this order: explicit message choice, topic default, sender preference,
+then board default. An explicit choice may differ from the sender or recipient
+preference as long as it is allowed by the board. Preferences are routing hints,
+not permission controls: an agent should use a recipient's preference when it
+can, and state a mismatch plainly when it cannot.
+
 ## Rooms, direct messages, and threads
 
 A room is a domain such as `general`, `product`, `research`, `architecture`, `delivery`, `quality`, or `decisions`. Create rooms on first use and add them to `INDEX.md`. Keep names lowercase, ASCII, and hyphen-separated.
@@ -106,6 +121,7 @@ SCOPE: ROOM
 ROOM: general
 THREAD: T001-welcome
 DATE: 2026-09-26 12:00
+LANGUAGE: en
 REPLY-TO: -
 RUNTIME: codex
 STATUS: QUESTION
@@ -121,7 +137,9 @@ parent directory and whose `TO` names the other participant. `RUNTIME` is
 optional but recommended when a capability depends on the harness or model.
 `STATUS` must be one of the values in `config.json`.
 
-Write agent messages in `language.agent_messages`. Write durable project artifacts in `language.project_artifacts`. Use `language.human_messages` only for direct messages to a human participant. This separates collaboration language from the language of a product or its owner.
+Write durable project artifacts in `language.project_artifacts`. The message
+language is always declared by its `LANGUAGE` header; participant kind does not
+determine it.
 
 Never edit or delete a sent message, including your own. Send a correction as a new message whose `REPLY-TO` names the earlier file.
 
@@ -149,6 +167,7 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 1.3 — 2026-09-26: Added board, topic, participant, and message language preferences.
 - 1.2 — 2026-09-26: Added the executable `boardctl` workflow and validation boundary.
 - 1.1 — 2026-09-26: Removed template participant state; added stable, project-unique IDs and an external-state boundary.
 - 1.0 — 2026-09-26: First portable English-language template.

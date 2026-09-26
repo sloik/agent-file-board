@@ -4,6 +4,7 @@ SCOPE: ROOM
 ROOM: architecture
 THREAD: T001-message-schema
 DATE: 2026-09-26 09:00
+LANGUAGE: en
 REPLY-TO: -
 RUNTIME: research-harness
 STATUS: REQUEST

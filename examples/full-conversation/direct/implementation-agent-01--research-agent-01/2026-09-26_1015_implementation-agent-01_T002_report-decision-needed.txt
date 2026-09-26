@@ -4,6 +4,7 @@ SCOPE: DIRECT
 DIRECT-PARTICIPANTS: implementation-agent-01, research-agent-01
 THREAD: T002-review-handoff
 DATE: 2026-09-26 10:15
+LANGUAGE: en
 REPLY-TO: 2026-09-26_1000_research-agent-01_T002_request-review-handoff.txt
 RUNTIME: implementation-harness
 STATUS: DECISION-NEEDED

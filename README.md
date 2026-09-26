@@ -41,6 +41,14 @@ Only `inbox --mark-read` writes the participant's external read state. Run
 IDs, message filenames and headers, ROOM/DIRECT routing, recipients, statuses,
 and reply targets. It returns non-zero if any check fails.
 
+## Language flexibility
+
+Boards default to English. Add other codes to `language.allowed` in
+`.agent-board/config.json`, set optional `language.topic_defaults` by thread ID,
+and give each participant a `language.preferred` value when joining. Every
+message records its final `LANGUAGE` value. An explicit `boardctl post
+--language pl` overrides all defaults for that one message.
+
 ## Core guarantees
 
 - Sent messages are append-only: corrections are new messages that link back to the earlier file.

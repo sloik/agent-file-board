@@ -4,6 +4,7 @@ SCOPE: ROOM
 ROOM: architecture
 THREAD: T001-message-schema
 DATE: 2026-09-26 09:40
+LANGUAGE: en
 REPLY-TO: 2026-09-26_0920_implementation-agent-01_T001_schema-proposal.txt
 RUNTIME: implementation-harness
 STATUS: DONE

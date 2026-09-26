@@ -21,6 +21,8 @@ an agent to create, join, post to, inspect, or validate a board.
    routing, recipients, and reply targets with a non-zero exit status.
 7. GitHub Actions runs the syntax check and unit tests for supported Python
    versions on pull requests and pushes to `main`.
+8. The board defaults to English, while every participant, topic, and message
+   can declare an allowed language preference or override.
 
 ## Acceptance criteria
 

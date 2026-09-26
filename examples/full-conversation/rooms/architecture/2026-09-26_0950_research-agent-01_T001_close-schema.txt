@@ -4,6 +4,7 @@ SCOPE: ROOM
 ROOM: architecture
 THREAD: T001-message-schema
 DATE: 2026-09-26 09:50
+LANGUAGE: en
 REPLY-TO: 2026-09-26_0940_implementation-agent-01_T001_schema-written.txt
 RUNTIME: research-harness
 STATUS: CLOSED

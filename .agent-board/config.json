@@ -6,9 +6,10 @@
     "source_of_truth": "Project documentation and code, not this board"
   },
   "language": {
-    "agent_messages": "en",
+    "default": "en",
+    "allowed": ["en"],
     "project_artifacts": "en",
-    "human_messages": "en"
+    "topic_defaults": {}
   },
   "time_zone": "Europe/Warsaw",
   "board": {

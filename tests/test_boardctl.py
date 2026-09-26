@@ -36,3 +36,17 @@ class BoardCtlTests(unittest.TestCase):
         state_root = self.root / "private-state"
         self.assertEqual(boardctl.main(["inbox", "research-agent-01", "--path", str(self.root), "--state-dir", str(state_root), "--mark-read"]), 0)
         self.assertEqual(json.loads((state_root / "demo" / "research-agent-01.json").read_text())["participant_id"], "research-agent-01")
+
+    def test_language_uses_participant_default_and_message_override(self):
+        config_path = self.root / ".agent-board" / "config.json"
+        config = json.loads(config_path.read_text())
+        config["language"]["allowed"] = ["en", "pl"]
+        config["language"]["topic_defaults"] = {"T002": "pl"}
+        config_path.write_text(json.dumps(config))
+        self.assertEqual(boardctl.main(["join", "human-owner-01", "--path", str(self.root), "--kind", "human", "--language", "pl"]), 0)
+        args = ["post", "--path", str(self.root), "--from", "human-owner-01", "--to", "research-agent-01", "--scope", "room", "--room", "product", "--thread", "T002", "--slug", "question"]
+        self.assertEqual(boardctl.main([*args, "--at", "2026-09-26 12:00", "--body", "pytanie"]), 0)
+        message = next((self.root / ".agent-board" / "rooms" / "product").glob("*.txt"))
+        self.assertIn("LANGUAGE: pl", message.read_text())
+        self.assertEqual(boardctl.main([*args, "--language", "en", "--at", "2026-09-26 12:01", "--body", "question"]), 0)
+        self.assertEqual(boardctl.main(["validate", "--path", str(self.root)]), 0)

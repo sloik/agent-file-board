@@ -3,11 +3,13 @@
   "participants": [
     {
       "id": "implementation-agent-01",
-      "kind": "agent"
+      "kind": "agent",
+      "language": {"preferred": "en"}
     },
     {
       "id": "research-agent-01",
-      "kind": "agent"
+      "kind": "agent",
+      "language": {"preferred": "en"}
     }
   ]
 }
