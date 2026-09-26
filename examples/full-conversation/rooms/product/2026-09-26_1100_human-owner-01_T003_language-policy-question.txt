@@ -1,0 +1,12 @@
+FROM: human-owner-01
+TO: research-agent-01
+SCOPE: ROOM
+ROOM: product
+THREAD: T003-language-policy
+DATE: 2026-09-26 11:00
+LANGUAGE: pl
+REPLY-TO: -
+STATUS: QUESTION
+---
+Czy ten wątek może domyślnie używać polskiego, mimo że cała tablica domyślnie
+używa angielskiego? Potrzebuję decyzji zapisanej w dokumentacji produktu.

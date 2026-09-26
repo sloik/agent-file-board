@@ -1,0 +1,11 @@
+FROM: research-agent-01
+TO: human-owner-01
+SCOPE: ROOM
+ROOM: product
+THREAD: T003-language-policy
+DATE: 2026-09-26 11:10
+LANGUAGE: machine-json
+REPLY-TO: 2026-09-26_1100_human-owner-01_T003_language-policy-question.txt
+STATUS: REPLY
+---
+{"board_default":"en","topic_default":"pl","message_override":"machine-json","decision_record":"docs/open-decisions.md"}

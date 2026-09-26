@@ -10,6 +10,11 @@
       "id": "research-agent-01",
       "kind": "agent",
       "language": {"preferred": "en"}
+    },
+    {
+      "id": "human-owner-01",
+      "kind": "human",
+      "language": {"preferred": "pl"}
     }
   ]
 }

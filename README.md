@@ -50,6 +50,22 @@ message records its final `LANGUAGE` value. Use `en`/`pl` for natural language
 and values such as `machine-json` for deterministic structured content. An
 explicit `boardctl post --language pl` overrides all defaults for one message.
 
+```json
+{
+  "language": {
+    "default": "en",
+    "allowed": ["en", "pl", "machine-json"],
+    "project_artifacts": "en",
+    "topic_defaults": {"T003": "pl"}
+  }
+}
+```
+
+The resolved order is explicit message choice, topic default, sender preference,
+then board default. Recipient preferences are useful collaboration hints, not a
+permission boundary: an author may deliberately choose another allowed language
+and the `LANGUAGE` header makes that choice visible and validateable.
+
 ## Core guarantees
 
 - Sent messages are append-only: corrections are new messages that link back to the earlier file.

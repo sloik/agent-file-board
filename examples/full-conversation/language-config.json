@@ -1,0 +1,10 @@
+{
+  "language": {
+    "default": "en",
+    "allowed": ["en", "pl", "machine-json"],
+    "project_artifacts": "en",
+    "topic_defaults": {
+      "T003": "pl"
+    }
+  }
+}
