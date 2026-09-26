@@ -19,6 +19,8 @@ an agent to create, join, post to, inspect, or validate a board.
    state only with explicit `--mark-read`.
 6. `validate` reports invalid config, registry, paths, headers, filenames,
    routing, recipients, and reply targets with a non-zero exit status.
+7. GitHub Actions runs the syntax check and unit tests for supported Python
+   versions on pull requests and pushes to `main`.
 
 ## Acceptance criteria
 
@@ -27,6 +29,7 @@ an agent to create, join, post to, inspect, or validate a board.
 - [ ] A duplicate participant ID and an unregistered sender are rejected.
 - [ ] `init` leaves no state files or messages in `.agent-board`.
 - [ ] Tests run with `python3 -m unittest discover -s tests`.
+- [ ] GitHub Actions runs the unit suite on Python 3.10–3.13.
 
 ## Scope
 

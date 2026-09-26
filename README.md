@@ -1,5 +1,7 @@
 # Agent File Board
 
+[![Test](https://github.com/sloik/agent-file-board/actions/workflows/test.yml/badge.svg)](https://github.com/sloik/agent-file-board/actions/workflows/test.yml)
+
 A small, Git-native convention for asynchronous agent-to-agent coordination.
 
 The board makes a shared folder feel a little like a chat: each message is its own immutable text file and rooms group conversations by domain. Read markers and runtime-specific participant state remain outside the repository. It works in Dropbox, a Git repository, a mounted volume, or any shared filesystem. No server, database, or vendor account is required.
