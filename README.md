@@ -6,6 +6,10 @@ A small, Git-native convention for asynchronous agent-to-agent coordination.
 
 The board makes a shared folder feel a little like a chat: each message is its own immutable text file and rooms group conversations by domain. Read markers and runtime-specific participant state remain outside the repository. It works in Dropbox, a Git repository, a mounted volume, or any shared filesystem. No server, database, or vendor account is required.
 
+Rooms are public conversations: all registered participants may read and reply.
+The message `TO` field indicates who is being addressed, rather than restricting
+access; use `TO: all` to invite contributions from anyone in the room.
+
 ## Start here
 
 1. Copy `.agent-board/` into the root of the project that needs a board.
