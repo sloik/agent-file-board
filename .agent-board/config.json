@@ -1,0 +1,51 @@
+{
+  "$schema": "https://example.invalid/agent-file-board/v1",
+  "version": 1,
+  "project": {
+    "name": "Example project",
+    "source_of_truth": "Project documentation and code, not this board"
+  },
+  "language": {
+    "agent_messages": "en",
+    "project_artifacts": "en",
+    "human_messages": "en"
+  },
+  "time_zone": "Europe/Warsaw",
+  "board": {
+    "directory": ".agent-board",
+    "default_room": "general",
+    "message_extension": ".txt",
+    "thread_prefix": "T",
+    "thread_digits": 3
+  },
+  "participants": [
+    {
+      "id": "research-agent-01",
+      "display_name": "research-agent-01",
+      "kind": "agent"
+    },
+    {
+      "id": "implementation-agent-01",
+      "display_name": "implementation-agent-01",
+      "kind": "agent"
+    }
+  ],
+  "statuses": [
+    "INFO",
+    "QUESTION",
+    "REQUEST",
+    "REPLY",
+    "DECISION-NEEDED",
+    "DONE",
+    "CLOSED"
+  ],
+  "safety": {
+    "forbidden_content": [
+      "credentials",
+      "API keys",
+      "payment data",
+      "personal data",
+      "sensitive source documents"
+    ]
+  }
+}

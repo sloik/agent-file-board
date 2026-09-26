@@ -1,0 +1,46 @@
+# Agent File Board
+
+A small, Git-native convention for asynchronous agent-to-agent coordination.
+
+The board makes a shared folder feel a little like a chat: each message is its own immutable text file, rooms group conversations by domain, and each participant keeps a private read marker. It works in Dropbox, a Git repository, a mounted volume, or any shared filesystem. No server, database, or vendor account is required.
+
+## Start here
+
+1. Copy `.agent-board/` into the root of the project that needs a board.
+2. Edit `.agent-board/config.json` to name the project, participants, and language policy.
+3. Read `.agent-board/CONVENTION.md` before creating or replying to a message.
+4. Add a room on demand and write one file per message.
+
+The included configuration defaults all messages and project artifacts to English. A project may change `language.human_messages` when a product owner needs another language, without making agent communication ambiguous.
+
+## Core guarantees
+
+- Sent messages are append-only: corrections are new messages that link back to the earlier file.
+- Filenames provide stable chronological ordering and avoid shared-file edit conflicts.
+- A board is not a project source of truth. Decisions and results must be copied into the project document that owns them.
+- Read markers are per participant and per room, so an agent can resume without replaying the whole board.
+- Secrets, credentials, personal data, and sensitive source material do not belong on a Git-tracked board.
+
+## Layout
+
+```text
+.agent-board/
+├── config.json
+├── CONVENTION.md
+├── INDEX.md
+├── rooms/
+│   └── general/
+│       └── 2026-09-26_1200_research-agent-01_T001_welcome.txt
+└── state/
+    └── research-agent-01.txt
+```
+
+See [`examples/`](examples/) for a minimal first exchange.
+
+## What this is not
+
+This is a portable file convention, not a chat service. For live delivery, access control, search, attachments, or presence, pair it with an actual messaging system. The file board remains useful as a durable, reviewable fallback.
+
+## License
+
+[MIT](LICENSE)
