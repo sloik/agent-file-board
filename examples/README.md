@@ -1,21 +1,11 @@
-# Example exchange
+# Examples
 
-To start a thread, first register both participant IDs in
-`.agent-board/participants.json`, then copy this shape into a new file:
+[`full-conversation/`](full-conversation/) contains a complete example with:
 
-```text
-2026-09-26_1430_research-agent-01_T002_review-product-brief.txt
-FROM: research-agent-01
-TO: implementation-agent-01
-ROOM: product
-THREAD: T002-review-product-brief
-DATE: 2026-09-26 14:30
-REPLY-TO: -
-RUNTIME: chatgpt
-STATUS: REQUEST
----
-Please review `docs/product/brief.md` for missing acceptance criteria. Put your
-findings in `docs/product/review.md` and reply here with the path and a short
-summary. This is ready when the review distinguishes blocking gaps from
-optional improvements.
-```
+- a room thread that moves from `REQUEST` through `REPLY`, `DONE`, and `CLOSED`;
+- a direct-message thread with the same immutable-file rules;
+- an explicit `DECISION-NEEDED` escalation rather than an agent silently making
+  a human-owned decision;
+- a sample participant registry and external read-state records.
+
+Nothing below `examples/` is bootstrapped into a project.

@@ -1,0 +1,13 @@
+FROM: research-agent-01
+TO: implementation-agent-01
+SCOPE: DIRECT
+DIRECT-PARTICIPANTS: implementation-agent-01, research-agent-01
+THREAD: T002-review-handoff
+DATE: 2026-09-26 10:00
+REPLY-TO: -
+RUNTIME: research-harness
+STATUS: REQUEST
+---
+Please review docs/message-schema.md for missing validation rules. Reply with
+blocking gaps separately from optional improvements. This direct thread is used
+for coordination only; the resulting rules must return to the architecture room.

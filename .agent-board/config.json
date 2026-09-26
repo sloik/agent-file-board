@@ -14,6 +14,7 @@
   "board": {
     "directory": ".agent-board",
     "default_room": "general",
+    "direct_directory": "direct",
     "message_extension": ".txt",
     "thread_prefix": "T",
     "thread_digits": 3

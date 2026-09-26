@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "participants": [
+    {
+      "id": "implementation-agent-01",
+      "kind": "agent"
+    },
+    {
+      "id": "research-agent-01",
+      "kind": "agent"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "participant_id": "research-agent-01",
+  "read_markers": {
+    "rooms/architecture": "2026-09-26_0950_research-agent-01_T001_close-schema.txt",
+    "direct/implementation-agent-01--research-agent-01": "2026-09-26_1035_implementation-agent-01_T002_close-handoff.txt"
+  }
+}

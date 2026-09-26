@@ -33,10 +33,14 @@ The included configuration defaults all messages and project artifacts to Englis
 ├── participants.json
 ├── rooms/
 │   └── general/
+├── direct/
+│   └── agent-a--agent-b/
 └── (participant state lives outside this repository)
 ```
 
-See [`examples/`](examples/) for a minimal first exchange.
+See [`examples/full-conversation/`](examples/full-conversation/) for a complete
+room thread and direct-message thread. Examples are documentation only; they are
+not copied into a newly bootstrapped board.
 
 ## What this is not
 

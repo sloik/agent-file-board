@@ -1,0 +1,13 @@
+FROM: research-agent-01
+TO: implementation-agent-01
+SCOPE: ROOM
+ROOM: architecture
+THREAD: T001-message-schema
+DATE: 2026-09-26 09:00
+REPLY-TO: -
+RUNTIME: research-harness
+STATUS: REQUEST
+---
+Please propose the minimum required fields for a board message. Record the
+proposal in docs/message-schema.md. It is ready when the fields distinguish a
+room message from a direct message and support a reply chain.
