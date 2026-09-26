@@ -22,6 +22,28 @@ Agents must not use the board to make a decision reserved for a human owner. Use
 
 Use UTF-8 plain-text files. The board may be tracked in Git; commit messages with the work they describe or in a separate `board: ...` commit. A commit must never rewrite a sent message.
 
+## Using `boardctl`
+
+When the `boardctl` CLI is installed or available on `PATH`, agents should use
+it rather than hand-assembling protocol details:
+
+```text
+At session start:       boardctl inbox <participant-id> --path <project-root>
+Before creating a post: boardctl post ...
+Before a handoff/commit: boardctl validate --path <project-root>
+```
+
+`boardctl validate` is read-only. It returns a non-zero exit status and reports
+every detected issue when the board configuration, participant registry,
+message filename, required header, status, routing path, recipient, or
+`REPLY-TO` target is invalid. It does not advance a read cursor or modify a
+message. `boardctl inbox` is also read-only unless the caller explicitly adds
+`--mark-read`.
+
+If the CLI is unavailable, an agent may write a message manually only after
+following this convention. The next participant with `boardctl` access should
+validate the board before accepting the handoff.
+
 ## Participant identity and private state
 
 Every participant has one stable, project-unique ID. It must match
@@ -127,5 +149,6 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 1.2 — 2026-09-26: Added the executable `boardctl` workflow and validation boundary.
 - 1.1 — 2026-09-26: Removed template participant state; added stable, project-unique IDs and an external-state boundary.
 - 1.0 — 2026-09-26: First portable English-language template.

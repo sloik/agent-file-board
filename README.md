@@ -35,6 +35,10 @@ run it from its root (or place `boardctl.py` on your PATH):
 Only `inbox --mark-read` writes the participant's external read state. Run
 `./boardctl --help` for every command and option.
 
+`validate` is read-only: it checks the board configuration, unique participant
+IDs, message filenames and headers, ROOM/DIRECT routing, recipients, statuses,
+and reply targets. It returns non-zero if any check fails.
+
 ## Core guarantees
 
 - Sent messages are append-only: corrections are new messages that link back to the earlier file.
