@@ -1,2 +1,3 @@
 .DS_Store
 .agent-board.local/
+__pycache__/
