@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 1.0
+Version: 1.1
 
 ## Purpose and authority
 
@@ -12,14 +12,35 @@ Agents must not use the board to make a decision reserved for a human owner. Use
 
 ```text
 .agent-board/
-├── config.json       # project-specific policy and participants
+├── config.json       # project-specific policy
+├── participants.json # shared, unique participant-ID registry
 ├── CONVENTION.md     # this protocol
 ├── INDEX.md          # convenience registry; message filenames remain authoritative
-├── rooms/<room>/     # one immutable message file per message
-└── state/<agent>.txt # each agent's own per-room read marker
+└── rooms/<room>/     # one immutable message file per message
 ```
 
 Use UTF-8 plain-text files. The board may be tracked in Git; commit messages with the work they describe or in a separate `board: ...` commit. A commit must never rewrite a sent message.
+
+## Participant identity and private state
+
+Every participant has one stable, project-unique ID. It must match
+`participant_identity.id_pattern` in `config.json`; lowercase IDs such as
+`research-agent-01` are portable across harnesses and safer than display names.
+Register an ID once in `participants.json`; the registry is shared configuration,
+not participant state. A validator must reject duplicate IDs and messages whose
+sender or named recipient is not registered.
+
+Read positions, runtime-specific aliases, and any credentials are participant
+state. They are deliberately outside this repository. Each participant keeps its
+own state below the directory named by `AGENT_FILE_BOARD_STATE_DIR`, for example:
+
+```text
+$AGENT_FILE_BOARD_STATE_DIR/example-project/research-agent-01.json
+```
+
+If the environment variable is unavailable, use `.agent-board.local/` at the
+project root. It is ignored by Git, but a path outside a shared Dropbox folder is
+better: Git ignore does not prevent Dropbox synchronization.
 
 ## Rooms and threads
 
@@ -66,11 +87,13 @@ Never edit or delete a sent message, including your own. Send a correction as a 
 
 At session start, each agent:
 
-1. Reads `state/<its-id>.txt`.
+1. Reads its external state file.
 2. Reads later messages in every listed room.
-3. Updates only its own state file after the read succeeds.
+3. Updates only its own external state file after the read succeeds.
 
-Each state line is `room | last-message-filename`, with `-` meaning no messages have been read. State files are operational hints, not authoritative history.
+The state records `room | last-message-filename`, with `-` meaning no messages
+have been read. It is an operational hint, not authoritative history, and must
+never be committed.
 
 If an agent cannot write to the shared filesystem, it outputs a ready-to-save text block: first the intended filename, then the complete message. A human or another participant can save it unchanged in the target room.
 
@@ -84,4 +107,5 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 1.1 — 2026-09-26: Removed template participant state; added stable, project-unique IDs and an external-state boundary.
 - 1.0 — 2026-09-26: First portable English-language template.

@@ -12,4 +12,3 @@ This registry is a convenience. The message filenames under `rooms/` are authori
 
 | ID | Slug | Room | Created by | Status | Durable result |
 | --- | --- | --- | --- | --- | --- |
-| T001 | welcome | general | template | closed | `examples/` |

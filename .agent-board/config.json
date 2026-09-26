@@ -1,7 +1,7 @@
 {
-  "$schema": "https://example.invalid/agent-file-board/v1",
   "version": 1,
   "project": {
+    "id": "example-project",
     "name": "Example project",
     "source_of_truth": "Project documentation and code, not this board"
   },
@@ -18,18 +18,12 @@
     "thread_prefix": "T",
     "thread_digits": 3
   },
-  "participants": [
-    {
-      "id": "research-agent-01",
-      "display_name": "research-agent-01",
-      "kind": "agent"
-    },
-    {
-      "id": "implementation-agent-01",
-      "display_name": "implementation-agent-01",
-      "kind": "agent"
-    }
-  ],
+  "participant_identity": {
+    "registry_file": ".agent-board/participants.json",
+    "id_pattern": "^[a-z][a-z0-9-]{2,63}$",
+    "uniqueness_scope": "project",
+    "state_directory_environment": "AGENT_FILE_BOARD_STATE_DIR"
+  },
   "statuses": [
     "INFO",
     "QUESTION",
