@@ -47,12 +47,12 @@ the UI exists yet, so this spec includes creating one:
 ## Versioning
 
 State found 2026-10-15: `agent-file-board` has no git tags;
-`.agent-board/CONVENTION.md` says `Version: 1.3`; `.agent-board/config.json`
+`.agent-board/CONVENTION.md` says `Version: 1.3` (its own history lists 1.4 as latest, so the header was never bumped); `.agent-board/config.json`
 has `"version": 1`, a schema integer. Decisions (owner, 2026-10-15):
 
 - **One standard version.** The convention version in `CONVENTION.md` is the
   standard's version, written `MAJOR.MINOR.PATCH`; its `Version:` line becomes
-  `1.3.0`. The git tag is `vMAJOR.MINOR.PATCH`; the first tag is `v1.3.0`.
+  `1.4.0`. The git tag is `vMAJOR.MINOR.PATCH`; the first tag is `v1.4.0`.
 - **`config.json` is out of the sync.** Its integer `version` stays the
   config-format schema number and is not required to match the tag.
 - **Enforced.** A release check (script, plus a CI job on tag push) fails when
@@ -170,8 +170,8 @@ has `"version": 1`, a schema integer. Decisions (owner, 2026-10-15):
   [agent-file-board](https://github.com/sloik/agent-file-board) and links to
   it, and the `agent-file-board` README has a "Viewer / UI" section linking to
   `agent-file-board-ui`. Both links resolve.
-- [ ] AC10 (Versioning): `agent-file-board` has tag `v1.3.0` and its
-  `CONVENTION.md` `Version:` is `1.3.0`. The release check fails on a
+- [ ] AC10 (Versioning): `agent-file-board` has tag `v1.4.0` and its
+  `CONVENTION.md` `Version:` is `1.4.0`. The release check fails on a
   deliberately mismatched tag (non-vacuity) and passes on a matching one.
 - [ ] AC11 (Versioning): the UI repo pins `agent-file-board` as a submodule at
   a tag; CI fails when the submodule `X.Y` differs from the UI repo's tag `X.Y`
@@ -208,7 +208,7 @@ has `"version": 1`, a schema integer. Decisions (owner, 2026-10-15):
 
 In scope: creating the public UI repository, the viewer file, its tests, the
 legacy reader, both READMEs (UI repo and the pointer in `agent-file-board`),
-the versioning scheme and its checks in both repositories (first tag `v1.3.0`)
+the versioning scheme and its checks in both repositories (first tag `v1.4.0`)
 and any small `boardctl` helper in `agent-file-board` needed for AC4 (for example a
 filename/header formatter shared by tests).
 

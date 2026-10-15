@@ -101,6 +101,21 @@ not copied into a newly bootstrapped board.
 
 This is a portable file convention, not a chat service. For live delivery, access control, search, attachments, or presence, pair it with an actual messaging system. The file board remains useful as a durable, reviewable fallback.
 
+## Viewer / UI
+
+A browser viewer and composer for boards lives in its own repository:
+[**agent-file-board-ui**](https://github.com/sloik/agent-file-board-ui). It is
+the UI for this standard, not a separate protocol; it follows
+[`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
+
+## Versioning
+
+The standard's version is the `Version:` line in `.agent-board/CONVENTION.md`
+(`MAJOR.MINOR.PATCH`). Releases are git tags `vMAJOR.MINOR.PATCH` that equal it;
+CI runs `python boardctl.py release-check --tag <tag>` on tag pushes. The
+`version` in `config.json` is the config schema number and is independent.
+`agent-file-board-ui` shares the standard's `MAJOR.MINOR`.
+
 ## License
 
 [MIT](LICENSE)
