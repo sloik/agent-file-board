@@ -180,3 +180,18 @@ states describe observed optional metadata, not process verification or authorit
 See the convention for the sole wire schema, expiry and lifecycle rules. Presence
 announcements inform others; [coordinate](#coordinate) still requires appropriate
 action, ownership and follow-through.
+
+
+## Topic title and local guidance
+
+A **topic title** is the thread's stable general purpose, changed by an explicit
+immutable title event. An ordinary message's subject or stale thread label cannot
+rename it. A title gives context; it is not an assignment, acceptance or outcome.
+
+**Room/topic guidance** is optional local Markdown describing what belongs in a
+conversation and any applicable rules. Read both room/pair and topic guidance
+before posting or accepting relevant work. Missing guidance means no added local
+rules; unreadable or truncated guidance means the rules are not yet known.
+Guidance supplements the global convention and these definitions without changing
+authority, executing instructions automatically, or proving [done](#done).
+The convention owns file paths, title events and bounded read behavior.

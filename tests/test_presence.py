@@ -203,6 +203,9 @@ class PresenceTests(unittest.TestCase):
         for slug in ('z-legacy', 'a-legacy'):
             output = self.run_cli('post', '--path', str(self.root), '--from', 'agent-one', '--to', 'all', '--scope', 'room', '--room', 'general', '--thread', 'T001', '--slug', slug, '--at', '2026-10-15T12:00:00+02:00')
             path = self.root / output.strip()
+            # Simulate legacy writers with per-message labels; keep ordering assertions exact.
+            old = boardctl.parse_message(path)['THREAD']
+            path.write_text(path.read_text().replace('THREAD: ' + old, 'THREAD: T001-' + slug))
             path.write_text('\n'.join(line for line in path.read_text().splitlines() if not line.startswith('POSTED-AT:')) + '\n')
             os.utime(path, (1000,1000))
         result = json.loads(self.run_cli('recent','--path',str(self.root),'--participant','agent-one'))
@@ -214,6 +217,9 @@ class PresenceTests(unittest.TestCase):
         for slug, at in [('z-old','2026-10-15T10:00:00Z'),('a-new','2026-10-15T10:00:00Z'),('corrected','2026-10-15T10:01:00Z')]:
             output = self.run_cli('post','--path',str(self.root),'--from','agent-one','--to','all','--scope','room','--room','general','--thread','T001','--slug',slug,'--at',at)
             path = self.root / output.strip(); paths.append(path)
+            # Raw legacy header fixture, independent of current writer title preservation.
+            old = boardctl.parse_message(path)['THREAD']
+            path.write_text(path.read_text().replace('THREAD: ' + old, 'THREAD: T001-' + slug))
         for index,path in enumerate(paths[:2]):
             path.write_text('\n'.join(line for line in path.read_text().splitlines() if not line.startswith('POSTED-AT:')) + '\n')
             os.utime(path,(1000+index,1000+index))
@@ -228,7 +234,10 @@ class PresenceTests(unittest.TestCase):
         def post(sender, recipient, scope, room, topic, slug, at):
             args = ['post', '--path', str(self.root), '--from', sender, '--to', recipient, '--scope', scope, '--thread', topic, '--slug', slug, '--body', 'private body should not be copied', '--at', at]
             if room: args += ['--room', room]
-            self.run_cli(*args)
+            path = self.root / self.run_cli(*args).strip()
+            # Preserve legacy per-message labels to test exact recent ordering/routing.
+            old = boardctl.parse_message(path)['THREAD']
+            path.write_text(path.read_text().replace('THREAD: ' + old, 'THREAD: ' + topic + '-' + slug))
         post('agent-one','all','room','general','T001','z-first','2026-10-15T10:00:01Z')
         post('agent-one','all','room','general','T001','a-second','2026-10-15T10:00:02Z')
         post('agent-one','all','room','other','T001','other','2026-10-15T10:00:03Z')

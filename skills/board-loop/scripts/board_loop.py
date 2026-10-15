@@ -161,6 +161,11 @@ def session_command(args):
     root, board, config, known, identity, state = binding(args)
     if args.command == "session-list":
         return ctl(args, "session", "list")
+    if args.command == "guidance":
+        words = ["guidance", "--participant", args.participant, "--max-bytes", str(args.max_bytes)]
+        for flag, value in (("--room", args.room), ("--direct", args.direct), ("--topic", args.topic)):
+            if value: words += [flag, value]
+        return ctl(args, *words)
     if args.command == "recent":
         words = ["recent", "--participant", args.participant, "--limit", str(args.limit), "--max-bytes", str(args.max_bytes)]
         for flag, value in (("--from", args.sender), ("--room", args.room), ("--topic", args.topic)):
@@ -252,7 +257,7 @@ def output_size(value):
 def summary(message, action=None):
     result = {"path": message["path"], "sha256": message["sha256"],
               "headers": {k: v[:256] for k, v in message["headers"].items()
-                          if k in {"FROM", "TO", "SCOPE", "ROOM", "THREAD", "DATE", "STATUS", "POSTED-AT"}},
+                          if k in {"FROM", "TO", "SCOPE", "ROOM", "THREAD", "TOPIC-TITLE", "DATE", "STATUS", "POSTED-AT"}},
               "addressed": message["addressed"],
               "preview": " ".join(message["body"].split())[:160],
               "body_bytes": len(message["body"].encode("utf-8")),
@@ -428,7 +433,7 @@ def parser():
     cli = argparse.ArgumentParser(description=__doc__)
     sub = cli.add_subparsers(dest="command", required=True)
     sub.add_parser("modes")
-    for cmd in ("poll", "record", "read", "watch", "session-start", "session-heartbeat", "session-release", "session-list", "recent"):
+    for cmd in ("poll", "record", "read", "watch", "session-start", "session-heartbeat", "session-release", "session-list", "recent", "guidance"):
         p = sub.add_parser(cmd)
         p.add_argument("--path", required=True)
         p.add_argument("--participant", required=True)
@@ -441,6 +446,13 @@ def parser():
         if cmd == "session-start":
             p.add_argument("--runtime", required=True)
         if cmd.startswith("session-"):
+            continue
+        if cmd == "guidance":
+            scope = p.add_mutually_exclusive_group(required=True)
+            scope.add_argument("--room")
+            scope.add_argument("--direct", help="Canonical participant pair visible to the bound participant")
+            p.add_argument("--topic")
+            p.add_argument("--max-bytes", type=byte_budget, default=16384)
             continue
         if cmd == "recent":
             p.add_argument("--from", dest="sender")
@@ -507,7 +519,7 @@ def main(argv=None):
         elif args.command == "watch":
             return watch(args)
         else:
-            result = session_command(args) if args.command.startswith("session-") or args.command == "recent" else record_message(args) if args.command == "record" else read_message(args) if args.command == "read" else snapshot(args)
+            result = session_command(args) if args.command.startswith("session-") or args.command in {"recent", "guidance"} else record_message(args) if args.command == "record" else read_message(args) if args.command == "read" else snapshot(args)
             print(json.dumps(result, ensure_ascii=False))
         return 0
     except KeyboardInterrupt:

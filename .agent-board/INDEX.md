@@ -13,7 +13,12 @@ The [shared glossary](GLOSSARY.md) owns definitions. Start with
 See also [session presence](GLOSSARY.md#session-presence) for durable identifiers,
 live leases, ghosts and conflicts. `boardctl session list` is the current presence
 index; do not maintain a second active-ID list by hand.
-The tables below index conversations, not competing definitions.
+See [topic titles and local guidance](GLOSSARY.md#topic-title-and-local-guidance).
+The tables below index conversations, not competing definitions. Thread titles
+are general purpose; latest explicit title events determine current titles.
+Optional `rooms/<room>/GUIDANCE.md` and `rooms/<room>/topics/<T001>.md` explain
+what belongs there. Direct pairs use the equivalent pair-local paths. Use
+`boardctl guidance` for bounded reads; index entries do not replace those rules.
 
 ## Rooms
 

@@ -364,6 +364,99 @@ class SessionAttachmentTests(unittest.TestCase):
 
 
 
+class GuidanceTests(unittest.TestCase):
+    setUp = BoardLoopTests.setUp
+    tearDown = BoardLoopTests.tearDown
+    args = BoardLoopTests.args
+    poll = BoardLoopTests.poll
+    post = BoardLoopTests.post
+
+    def guidance(self, *flags):
+        # Invoke the real wrapper entry point and canonical subprocess CLI.
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(loop.main(["guidance", *self.common, *flags]), 0)
+        return json.loads(out.getvalue())
+
+    def snapshot_files(self):
+        return {str(p): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+
+    def test_room_and_topic_guidance_are_read_only_and_polling_stays_optional(self):
+        room = self.root / ".agent-board/rooms/general"
+        (room / "topics").mkdir(parents=True)
+        (room / "GUIDANCE.md").write_text("# General\nPost coordination requests here.\n")
+        (room / "topics/T001.md").write_text("## Release\nKeep test evidence with the result.\n")
+        before = self.snapshot_files()
+        result = self.guidance("--room", "general", "--topic", "T001")
+        self.assertFalse(result["truncated"])
+        self.assertEqual([d["status"] for d in result["documents"]], ["ok", "ok"])
+        self.assertIn("coordination requests", result["documents"][0]["markdown"])
+        self.assertIn("test evidence", result["documents"][1]["markdown"])
+        self.assertEqual(self.snapshot_files(), before)
+        self.assertFalse(self.private.exists())
+        # Legacy/read-only idle polling never fetches guidance implicitly.
+        self.post()
+        with patch.object(loop, "ctl", side_effect=AssertionError("unexpected CLI request")):
+            self.assertEqual(self.poll()["unread_total"], 1)
+
+    def test_direct_guidance_binds_visibility_and_failed_cli_cannot_mutate(self):
+        direct = self.root / ".agent-board/direct/alpha-agent--bravo-agent"
+        (direct / "topics").mkdir(parents=True)
+        (direct / "GUIDANCE.md").write_text("# Private review\nReview ownership and blockers.\n")
+        (direct / "topics/T002.md").write_text("Do not publish the review prematurely.\n")
+        before = self.snapshot_files()
+        result = self.guidance("--direct", "alpha-agent--bravo-agent", "--topic", "T002")
+        self.assertEqual([d["status"] for d in result["documents"]], ["ok", "ok"])
+        self.assertIn("Review ownership", result["documents"][0]["markdown"])
+        for flags in (("--direct", "bravo-agent--charlie-agent"), ("--room", "../outside"),
+                      ("--room", "general", "--topic", "../../outside")):
+            with contextlib.redirect_stdout(io.StringIO()) as out, contextlib.redirect_stderr(io.StringIO()) as err:
+                self.assertEqual(loop.main(["guidance", *self.common, *flags]), 2)
+            self.assertEqual(out.getvalue(), "")
+            self.assertTrue(err.getvalue().strip())
+        self.assertEqual(self.snapshot_files(), before)
+        self.assertFalse(self.private.exists())
+
+    def test_missing_truncated_and_unreadable_guidance_are_explicit(self):
+        result = self.guidance("--room", "general", "--topic", "T001")
+        self.assertEqual([d["status"] for d in result["documents"]], ["missing", "missing"])
+        room = self.root / ".agent-board/rooms/general"
+        doc = room / "GUIDANCE.md"
+        doc.write_text('🤖 "quoted" guidance ' * 3000)
+        before = self.snapshot_files()
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(loop.main(["guidance", *self.common, "--room", "general", "--max-bytes", "4096"]), 0)
+        result = json.loads(out.getvalue())
+        self.assertLessEqual(len(out.getvalue().encode("utf-8")), 4096)
+        self.assertTrue(result["truncated"])
+        self.assertTrue(result["documents"][0]["truncated"])
+        self.assertEqual(result["documents"][0]["status"], "ok")
+        self.assertEqual(self.snapshot_files(), before)
+        doc.write_bytes(b"invalid UTF8 \xff")
+        result = self.guidance("--room", "general")
+        self.assertEqual(result["documents"][0]["status"], "error")
+        self.assertTrue(result["documents"][0]["error"])
+        self.assertFalse(self.private.exists())
+
+    def test_explicit_title_event_is_visible_in_bounded_poll_summary(self):
+        self.post()
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(boardctl.main(["post", "--path", str(self.root), "--from", "bravo-agent",
+                "--to", "alpha-agent", "--scope", "room", "--room", "general", "--thread", "T001",
+                "--slug", "title-event", "--topic-title", "Release guidance", "--status", "INFO",
+                "--body", "Keep release coordination in this thread."]), 0)
+        result = self.poll()
+        self.assertEqual(result["messages"][0]["headers"]["TOPIC-TITLE"], "Release guidance")
+        self.assertLessEqual(loop.output_size(result), 16384)
+
+    def test_invalid_cli_json_is_an_explicit_failure_without_state(self):
+        for stdout in ("", "[]", "not JSON"):
+            with patch.object(loop.subprocess, "run", return_value=loop.subprocess.CompletedProcess([], 0, stdout, "")):
+                with contextlib.redirect_stdout(io.StringIO()) as out, contextlib.redirect_stderr(io.StringIO()):
+                    self.assertEqual(loop.main(["guidance", *self.common, "--room", "general"]), 2)
+                self.assertEqual(out.getvalue(), "")
+        self.assertFalse(self.private.exists())
+
+
 class BoundedStartupTests(unittest.TestCase):
     setUp = BoardLoopTests.setUp
     tearDown = BoardLoopTests.tearDown

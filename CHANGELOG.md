@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.7.0 — 2026-10-15
+
+- Explicit TOPIC-TITLE events preserve general thread purpose across replies and stale labels; ordinary posts keep the current thread label, with legacy UI rename compatibility.
+- Optional UTF-8 room/pair and stable-ID topic Markdown guidance, bounded `boardctl guidance` JSON reads, direct-pair visibility and validation of unsafe/unreadable guidance.
+
 ## 1.6.1 — 2026-10-15
 
 - Initialize the configured room/directories explicitly; clean Git clones do not retain empty template directories.

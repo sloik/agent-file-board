@@ -1,6 +1,7 @@
 """Optional rich bodies and immutable choice questions/replies; see CONVENTION.md."""
 import json
 import re
+import unicodedata
 from datetime import datetime
 
 CONTENT_TYPES = {"text/plain", "text/markdown", "text/html"}
@@ -50,7 +51,18 @@ def question_header(raw):
     return q
 
 
+def topic_title(value):
+    if (not isinstance(value, str) or not 1 <= len(value) <= 200 or not value.strip()
+            or not any(c.isalnum() for c in value)
+            or any(unicodedata.category(c) in {"Cc", "Cs", "Zl", "Zp"} for c in value)):
+        raise ValueError("TOPIC-TITLE: expected 1–200 Unicode characters, including a letter/digit, without controls or line separators")
+    return value
+
+
 def validate_extensions(headers, source=None):
+    if "TOPIC-TITLE" in headers:
+        topic_title(headers["TOPIC-TITLE"])
+
     if "POSTED-AT" in headers:
         value = headers["POSTED-AT"]
         if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", value):

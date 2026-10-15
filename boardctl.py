@@ -11,10 +11,11 @@ import shutil
 import sys
 import uuid
 import board_presence
+import board_guidance
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
-from message_extensions import CONTENT_TYPES, object_header, validate_extensions
+from message_extensions import CONTENT_TYPES, object_header, validate_extensions, topic_title
 
 TEMPLATE = Path(__file__).with_name(".agent-board")
 ID_RE = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
@@ -154,6 +155,13 @@ def command_post(args: argparse.Namespace) -> int:
         pair = "--".join(sorted((args.sender, args.recipient)))
         directory = board / config["board"]["direct_directory"] / pair
         scope_headers = ["SCOPE: DIRECT", f"DIRECT-PARTICIPANTS: {', '.join(sorted((args.sender, args.recipient)))}"]
+    explicit_title = getattr(args, "topic_title", None)
+    if explicit_title is not None:
+        explicit_title = topic_title(explicit_title.strip())
+    current = resolve_topic(directory, args.thread, config)
+    label = current["label"] if current else getattr(args, "thread_label", args.slug)
+    if explicit_title is not None:
+        label = re.sub(r"[^a-z0-9]+", "-", explicit_title.lower()).strip("-") or "topic"
     directory.mkdir(parents=True, exist_ok=True)
     filename = f"{moment:%Y-%m-%d_%H%M}_{args.sender}_{args.thread}_{args.slug}.txt"
     path = directory / filename
@@ -161,7 +169,7 @@ def command_post(args: argparse.Namespace) -> int:
         raise BoardError(f"message already exists: {path}")
     body = Path(args.body_file).read_text(encoding="utf-8") if args.body_file else args.body
     headers = [f"FROM: {args.sender}", f"TO: {args.recipient}", *scope_headers,
-               f"THREAD: {args.thread}-{getattr(args, 'thread_label', args.slug)}", f"DATE: {moment:%Y-%m-%d %H:%M}",
+               f"THREAD: {args.thread}-{label}", f"DATE: {moment:%Y-%m-%d %H:%M}",
                f"LANGUAGE: {language}",
                f"REPLY-TO: {args.reply_to or '-'}", f"RUNTIME: {args.runtime}" if args.runtime else None,
                f"STATUS: {args.status}"]
@@ -178,6 +186,8 @@ def command_post(args: argparse.Namespace) -> int:
                     except ValueError:
                         pass
     extra = {"POSTED-AT": posted.isoformat(timespec="milliseconds").replace("+00:00", "Z")}
+    if explicit_title is not None:
+        extra["TOPIC-TITLE"] = explicit_title
     if args.content_type:
         extra["CONTENT-TYPE"] = args.content_type
     for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file)):
@@ -254,6 +264,7 @@ def validate(root: Path) -> list[str]:
     except BoardError as exc:
         return [str(exc)]
     errors.extend(board_presence.validation_errors(board, known))
+    errors.extend(board_guidance.validation_errors(board, config))
     statuses = set(config.get("statuses", []))
     try:
         allowed = allowed_languages(config)
@@ -418,6 +429,32 @@ def message_order(headers: dict, path: Path, config: dict) -> tuple:
     return minute, precise, path.name, str(path)
 
 
+def resolve_topic(directory: Path, thread: str, config: dict):
+    """Explicit events win; ordinary message labels never rename an existing topic."""
+    messages = []
+    for path in directory.glob("*.txt"):
+        headers = parse_message(path)
+        if headers["THREAD"].split("-", 1)[0] != thread:
+            continue
+        validate_extensions({k: v for k, v in headers.items() if k in {"TOPIC-TITLE", "POSTED-AT"}})
+        label = headers["THREAD"].split("-", 1)[1]
+        explicit = "TOPIC-TITLE" in headers or bool(re.search(r"_" + re.escape(thread) + r"_topic-title-[a-z0-9-]+\.txt$", path.name))
+        messages.append((message_order(headers, path, config), explicit, {"label": label, "title": headers.get("TOPIC-TITLE", label.replace("-", " ")), "path": path.name}))
+    if not messages:
+        return None
+    messages.sort(key=lambda row: row[0])
+    events = [row for row in messages if row[1]]
+    return (events[-1] if events else messages[0])[2]
+
+
+def command_guidance(args: argparse.Namespace) -> int:
+    root = Path(args.path).resolve()
+    board, config, _, registry = board_paths(root)
+    result = board_guidance.read(board, config, ids(registry), args.room, args.direct, args.participant_id, args.topic, args.max_bytes)
+    print(json.dumps(result, ensure_ascii=False))
+    return 0
+
+
 def command_recent(args: argparse.Namespace) -> int:
     root = Path(args.path).resolve()
     board, config, _, registry = board_paths(root)
@@ -473,6 +510,7 @@ def parser() -> argparse.ArgumentParser:
     init = commands.add_parser("init"); init.add_argument("path"); init.add_argument("--project-id", required=True); init.add_argument("--project-name", required=True); init.add_argument("--force", action="store_true"); init.set_defaults(func=command_init)
     join = commands.add_parser("join"); join.add_argument("participant_id"); join.add_argument("--path", default="."); join.add_argument("--kind", default="agent"); join.add_argument("--language", default="en"); join.set_defaults(func=command_join)
     post = commands.add_parser("post"); post.add_argument("--path", default="."); post.add_argument("--from", dest="sender", required=True); post.add_argument("--to", dest="recipient", required=True); post.add_argument("--scope", choices=("room", "direct"), required=True); post.add_argument("--room"); post.add_argument("--thread", required=True); post.add_argument("--slug", required=True); post.add_argument("--status", default="INFO"); post.add_argument("--language"); post.add_argument("--body", default=""); post.add_argument("--body-file"); post.add_argument("--reply-to"); post.add_argument("--runtime"); post.add_argument("--at"); post.set_defaults(func=command_post)
+    post.add_argument("--topic-title", help="Explicit current topic title; ordinary messages preserve it")
     post.add_argument("--content-type", choices=sorted(CONTENT_TYPES))
     post.add_argument("--question-file", help="JSON question metadata file")
     post.add_argument("--answer-file", help="JSON answer metadata file; requires --reply-to")
@@ -499,6 +537,14 @@ def parser() -> argparse.ArgumentParser:
     recent.add_argument("--from", dest="sender"); recent.add_argument("--room"); recent.add_argument("--topic")
     recent.add_argument("--limit", type=int, default=20); recent.add_argument("--max-bytes", type=int, default=16384)
     recent.set_defaults(func=command_recent)
+    guidance = commands.add_parser("guidance")
+    guidance.add_argument("--path", default=".")
+    route = guidance.add_mutually_exclusive_group(required=True)
+    route.add_argument("--room"); route.add_argument("--direct")
+    guidance.add_argument("--participant", dest="participant_id")
+    guidance.add_argument("--topic")
+    guidance.add_argument("--max-bytes", type=int, default=16384)
+    guidance.set_defaults(func=command_guidance)
     return cli
 
 
@@ -506,7 +552,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
         return args.func(args)
-    except (BoardError, board_presence.PresenceError, OSError, UnicodeError) as exc:
+    except (ValueError, board_presence.PresenceError, OSError, UnicodeError) as exc:
         print(f"boardctl: {exc}", file=sys.stderr)
         return 2
 
