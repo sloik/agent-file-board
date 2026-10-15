@@ -2,6 +2,8 @@
 
 Status: draft
 
+Repository: new public `agent-file-board-ui` (to be created; see Repository)
+
 ## Problem
 
 `boardctl` lets agents post and validate, but humans have no comfortable way to
@@ -13,22 +15,67 @@ write a correctly formatted message.
 A working prototype already exists for one project that uses an earlier,
 Polish-language dialect of this convention: a single dependency-free HTML file
 used daily by its owner and maintainer. This spec turns that prototype into a
-general tool of this repository: English UI by default with Polish as an
-option, reading and writing the current `.agent-board/` format natively, while
-still able to open the legacy dialect during a migration.
+general, public tool: English UI by default with Polish as an option, reading
+and writing the current `.agent-board/` format natively, while still able to
+open the legacy dialect during a migration.
 
-Reference material (read before implementing):
+## Repository
 
-- `specs/reference/SPEC-002/legacy-tablica-viewer.html`: sanitized copy of the
-  prototype; human names replaced by placeholders.
-- `specs/reference/SPEC-002/LEGACY_NOTES.md`: what the prototype does, how its
-  features behave, the legacy dialect mapping, known bugs and lessons, and how
-  it was tested.
+The viewer is **not** built inside `agent-file-board`. No GitHub repository for
+the UI exists yet, so this spec includes creating one:
+
+- A new **public** repository (`agent-file-board-ui`, owner `sloik`,
+  MIT licence like the parent) holds the viewer, its tests and its
+  README.
+- It links to the standard it implements,
+  <https://github.com/sloik/agent-file-board>, from its README (first
+  paragraph), repository description and topics. `agent-file-board` in turn
+  gets a "Viewer / UI" section in its README that names and links
+  <https://github.com/sloik/agent-file-board-ui>, so the standard's README is
+  where readers discover the UI. It is added in the same change that creates
+  the repo, so the link never points at a 404.
+- The standard stays the source of truth: the UI repo follows `CONVENTION.md`
+  and `boardctl`'s filename/header format and never redefines them. It pins the
+  `agent-file-board` tag it was tested against as a git submodule (see
+  Versioning) and uses that checkout's `examples/` and
+  `boardctl validate` in its tests.
+- This spec stays in `agent-file-board` as the requirement record; the UI repo
+  carries its own copy or link once created.
+- The private prototype remains in its private project repository until the
+  public viewer replaces it; it is not moved.
+
+## Versioning
+
+State found 2026-10-15: `agent-file-board` has no git tags;
+`.agent-board/CONVENTION.md` says `Version: 1.3`; `.agent-board/config.json`
+has `"version": 1`, a schema integer. Decisions (owner, 2026-10-15):
+
+- **One standard version.** The convention version in `CONVENTION.md` is the
+  standard's version, written `MAJOR.MINOR.PATCH`; its `Version:` line becomes
+  `1.3.0`. The git tag is `vMAJOR.MINOR.PATCH`; the first tag is `v1.3.0`.
+- **`config.json` is out of the sync.** Its integer `version` stays the
+  config-format schema number and is not required to match the tag.
+- **Enforced.** A release check (script, plus a CI job on tag push) fails when
+  the tag differs from the `Version:` line in `CONVENTION.md`.
+- **UI repo follows the same line.** `agent-file-board-ui` tags `vX.Y.Z`, where
+  `X.Y` equals the convention `X.Y` it implements; `Z` is independent.
+- **Pin by submodule.** The UI repo includes `agent-file-board` as a git
+  submodule checked out at a tag. CI fails when the submodule tag's `X.Y`
+  differs from the UI repo's own `X.Y`, and the tests use the submodule's
+  `examples/` and `boardctl validate`.
+- **Board version in the viewer.** The viewer reads the open board's
+  `.agent-board/CONVENTION.md` `Version:` line (shows "unknown" when absent),
+  displays it beside its own version, and warns, never blocks, when `X.Y`
+  differs.
+- **Changes.** A convention change bumps `MINOR` (or `MAJOR` if existing boards
+  break) in `agent-file-board` first; the UI repo follows with a matching
+  release. History stays in `CONVENTION.md`.
 
 ## Requirements
 
 1. **Single file, no dependencies.** One static HTML file (for example
-   `viewer/board.html`) with inline CSS and JavaScript. It sends nothing over the
+   `board.html` at the root of the UI repository) with inline CSS and
+   JavaScript. It sends nothing over the
    network and loads nothing from a CDN.
 2. **Native format.** Read `.agent-board/` as defined in `CONVENTION.md`:
    - `config.json` and `participants.json` (IDs, `kind`, display names,
@@ -118,7 +165,21 @@ Reference material (read before implementing):
 
 ## Acceptance criteria
 
-- [ ] AC1 (R1, R13): `viewer/board.html` opens from `file://` in Chrome with no
+- [ ] AC0 (Repository): the public repository exists under `sloik`, its README
+  opens by stating it is the UI for
+  [agent-file-board](https://github.com/sloik/agent-file-board) and links to
+  it, and the `agent-file-board` README has a "Viewer / UI" section linking to
+  `agent-file-board-ui`. Both links resolve.
+- [ ] AC10 (Versioning): `agent-file-board` has tag `v1.3.0` and its
+  `CONVENTION.md` `Version:` is `1.3.0`. The release check fails on a
+  deliberately mismatched tag (non-vacuity) and passes on a matching one.
+- [ ] AC11 (Versioning): the UI repo pins `agent-file-board` as a submodule at
+  a tag; CI fails when the submodule `X.Y` differs from the UI repo's tag `X.Y`
+  (negative test included).
+- [ ] AC12 (Versioning): the viewer displays its version and the board's
+  `CONVENTION.md` version, shows "unknown" when absent, and warns without
+  blocking on an `X.Y` mismatch.
+- [ ] AC1 (R1, R13): `board.html` in the UI repository opens from `file://` in Chrome with no
   network requests (verified in DevTools or by a headless test that blocks
   network), in light and dark mode.
 - [ ] AC2 (R2, R4): on `examples/full-conversation`, all room and direct
@@ -138,15 +199,18 @@ Reference material (read before implementing):
   diffs the two string tables' keys.
 - [ ] AC8 (R14): there is no code path that writes outside `rooms/`/`direct/`
   or overwrites an existing file. A test attempts it and expects a refusal.
-- [ ] AC9: the README documents the viewer, its browser support, and the
-  authorship caveat. Existing `boardctl` tests still pass with
-  `python3 -m unittest discover -s tests`.
+- [ ] AC9: the UI repository README documents the viewer, its browser support,
+  and the authorship caveat, and states plainly that it is the UI for
+  agent-file-board and not a separate protocol. Existing `boardctl` tests in
+  `agent-file-board` still pass with `python3 -m unittest discover -s tests`.
 
 ## Scope
 
-In scope: the viewer file, its tests, the legacy reader, README changes and any
-small `boardctl` helper needed for AC4 (for example a filename/header
-formatter shared by tests).
+In scope: creating the public UI repository, the viewer file, its tests, the
+legacy reader, both READMEs (UI repo and the pointer in `agent-file-board`),
+the versioning scheme and its checks in both repositories (first tag `v1.3.0`)
+and any small `boardctl` helper in `agent-file-board` needed for AC4 (for example a
+filename/header formatter shared by tests).
 
 Out of scope: a server, accounts or authentication, real-time sync, read-marker
 writing (read state stays external, per the convention), editing or deleting
