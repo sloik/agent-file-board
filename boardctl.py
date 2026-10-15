@@ -8,9 +8,10 @@ import os
 import re
 import shutil
 import sys
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
+from message_extensions import CONTENT_TYPES, object_header, validate_extensions
 
 TEMPLATE = Path(__file__).with_name(".agent-board")
 ID_RE = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
@@ -109,9 +110,12 @@ def now_for(config: dict, supplied: str | None) -> datetime:
     zone = ZoneInfo(config["time_zone"])
     if supplied:
         try:
-            return datetime.strptime(supplied, "%Y-%m-%d %H:%M").replace(tzinfo=zone)
+            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}(?::\d{2}(?:\.\d{1,6})?)?(?:Z|[+-]\d{2}:\d{2})?", supplied):
+                raise ValueError("expected a date and time")
+            value = datetime.fromisoformat(supplied.replace("Z", "+00:00"))
+            return value.replace(tzinfo=zone) if value.tzinfo is None else value.astimezone(zone)
         except ValueError as exc:
-            raise BoardError("--at must be YYYY-MM-DD HH:MM") from exc
+            raise BoardError("--at must be an ISO date/time, optionally with seconds and fractional seconds") from exc
     return datetime.now(zone)
 
 
@@ -154,6 +158,48 @@ def command_post(args: argparse.Namespace) -> int:
                f"LANGUAGE: {language}",
                f"REPLY-TO: {args.reply_to or '-'}", f"RUNTIME: {args.runtime}" if args.runtime else None,
                f"STATUS: {args.status}"]
+    posted = moment.astimezone(timezone.utc)
+    if not args.at:
+        for previous in list((board / "rooms").glob("*/*.txt")) + list((board / config["board"]["direct_directory"]).glob("*/*.txt")):
+            old = parse_message(previous)
+            if old["FROM"] == args.sender or (previous.name == args.reply_to and previous.parent == directory):
+                value = old.get("POSTED-AT")
+                if value:
+                    try:
+                        earlier = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                        if earlier.tzinfo is not None: posted = max(posted, earlier + timedelta(milliseconds=1))
+                    except ValueError:
+                        pass
+    extra = {"POSTED-AT": posted.isoformat(timespec="milliseconds").replace("+00:00", "Z")}
+    if args.content_type:
+        extra["CONTENT-TYPE"] = args.content_type
+    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file)):
+        if file:
+            try:
+                raw = Path(file).read_text(encoding="utf-8")
+                # Validate the original JSON too, so duplicate keys cannot be normalized away.
+                object_header(raw, name)
+                extra[name] = json.dumps(json.loads(raw), ensure_ascii=False, separators=(",", ":"))
+            except (OSError, ValueError) as exc:
+                raise BoardError(str(exc)) from exc
+    header_map = dict(line.split(": ", 1) for line in headers if line)
+    header_map.update(extra)
+    source = None
+    if "ANSWER" in extra:
+        reply = args.reply_to or "-"
+        if "/" in reply or "\\" in reply or reply in {"-", ".", ".."}:
+            raise BoardError("ANSWER requires a question filename in --reply-to")
+        target = directory / reply
+        if not target.is_file():
+            raise BoardError("ANSWER reply target does not exist")
+        source = parse_message(target)
+        if source["FROM"] not in known or source["STATUS"] not in config["statuses"] or source["LANGUAGE"] not in allowed:
+            raise BoardError("ANSWER reply target has invalid author/status/language")
+    try:
+        validate_extensions(header_map, source)
+    except ValueError as exc:
+        raise BoardError(str(exc)) from exc
+    headers.extend(f"{key}: {value}" for key, value in extra.items())
     path.write_text("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n", encoding="utf-8")
     print(path.relative_to(root))
     return 0
@@ -166,6 +212,8 @@ def parse_message(path: Path) -> dict[str, str]:
             break
         if ": " in line:
             key, value = line.split(": ", 1)
+            if key in headers:
+                raise BoardError(f"{path}: duplicate header {key}")
             headers[key] = value
     else:
         raise BoardError(f"{path}: missing header separator")
@@ -209,6 +257,19 @@ def validate(root: Path) -> list[str]:
                     raise BoardError(f"{path}: DIRECT routing does not match path")
             else:
                 raise BoardError(f"{path}: SCOPE must be ROOM or DIRECT")
+            source = None
+            if "ANSWER" in headers:
+                reply = headers["REPLY-TO"]
+                if "/" in reply or "\\" in reply or reply in {"-", ".", ".."}:
+                    raise BoardError(f"{path}: ANSWER requires a question filename")
+                target = path.parent / reply
+                if not target.is_file():
+                    raise BoardError(f"{path}: ANSWER reply target is missing")
+                source = parse_message(target)
+            try:
+                validate_extensions(headers, source)
+            except ValueError as exc:
+                raise BoardError(f"{path}: {exc}") from exc
             if headers["REPLY-TO"] != "-" and not (path.parent / headers["REPLY-TO"]).is_file():
                 raise BoardError(f"{path}: REPLY-TO target is missing")
         except (BoardError, OSError) as exc:
@@ -284,6 +345,9 @@ def parser() -> argparse.ArgumentParser:
     init = commands.add_parser("init"); init.add_argument("path"); init.add_argument("--project-id", required=True); init.add_argument("--project-name", required=True); init.add_argument("--force", action="store_true"); init.set_defaults(func=command_init)
     join = commands.add_parser("join"); join.add_argument("participant_id"); join.add_argument("--path", default="."); join.add_argument("--kind", default="agent"); join.add_argument("--language", default="en"); join.set_defaults(func=command_join)
     post = commands.add_parser("post"); post.add_argument("--path", default="."); post.add_argument("--from", dest="sender", required=True); post.add_argument("--to", dest="recipient", required=True); post.add_argument("--scope", choices=("room", "direct"), required=True); post.add_argument("--room"); post.add_argument("--thread", required=True); post.add_argument("--slug", required=True); post.add_argument("--status", default="INFO"); post.add_argument("--language"); post.add_argument("--body", default=""); post.add_argument("--body-file"); post.add_argument("--reply-to"); post.add_argument("--runtime"); post.add_argument("--at"); post.set_defaults(func=command_post)
+    post.add_argument("--content-type", choices=sorted(CONTENT_TYPES))
+    post.add_argument("--question-file", help="JSON question metadata file")
+    post.add_argument("--answer-file", help="JSON answer metadata file; requires --reply-to")
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
     valid = commands.add_parser("validate"); valid.add_argument("--path", default="."); valid.set_defaults(func=command_validate)

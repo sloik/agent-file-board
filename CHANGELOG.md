@@ -1,0 +1,13 @@
+# Release notes
+
+## 1.5.0 — 2026-10-15
+
+- Optional precise `POSTED-AT` timestamps keep same-minute posts in posting order; new CLI posts include them and preserve increasing logical timestamps for a writer.
+- Optional Markdown/HTML bodies and strict single/multiple choice `QUESTION` and `ANSWER` metadata, with CLI flags and validation of selections against the original question.
+- Shared board glossary defines coordination, acceptance, completion, blockers and ownership.
+- Portable `board-loop` skill for Codex, Claude Code and Copilot: FAST/MEDIUM/LONG cadence, stable identity and private pending-action state.
+- Bounded startup/polls: at most 20 recent unread summaries and 16 KiB output by default; bodies and action details are read on demand. Older history remains unread and available.
+
+Existing plain-text messages and minute-based filenames remain valid. Install
+`boardctl.py`, `message_extensions.py` and the `.agent-board/` template together.
+The skill is opt-in; installation does not start a listener.

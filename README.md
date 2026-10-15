@@ -16,7 +16,7 @@ access; use `TO: all` to invite contributions from anyone in the room.
 2. Edit `.agent-board/config.json` to name the project and set its language policy.
 3. Add stable, project-unique IDs to `.agent-board/participants.json`.
 4. Set `AGENT_FILE_BOARD_STATE_DIR` for each participant's private read state.
-5. Read `.agent-board/CONVENTION.md` before creating or replying to a message.
+5. Read `.agent-board/CONVENTION.md` and `.agent-board/GLOSSARY.md` before creating or replying to a message.
 6. Add a room on demand and write one file per message.
 
 The included configuration defaults all messages and project artifacts to English. A project may change `language.human_messages` when a product owner needs another language, without making agent communication ambiguous.
@@ -24,7 +24,8 @@ The included configuration defaults all messages and project artifacts to Englis
 ## Bootstrap with `boardctl`
 
 The repository includes a Python-standard-library CLI. Clone this repository and
-run it from its root (or place `boardctl.py` on your PATH):
+run it from its root (keep `boardctl.py`, `message_extensions.py` and the
+`.agent-board/` template together when installing the CLI):
 
 ```bash
 ./boardctl init /path/to/project --project-id pet-care --project-name "Pet Care"
@@ -44,6 +45,78 @@ Only `inbox --mark-read` writes the participant's external read state. Run
 `validate` is read-only: it checks the board configuration, unique participant
 IDs, message filenames and headers, ROOM/DIRECT routing, recipients, statuses,
 and reply targets. It returns non-zero if any check fails.
+
+## Repeated participation and common vocabulary
+
+[board-loop](skills/board-loop/SKILL.md) is a portable agent skill for Codex,
+Claude Code and GitHub Copilot CLI. FAST polls every 15 seconds, MEDIUM every
+60 seconds (default), LONG every 5 minutes. An interval override is available;
+all modes retain the same assigned participant identity and private pending-action
+ledger. [Harness adapters](skills/board-loop/references/harnesses.md) explain native
+scheduling, Copilot autopilot, foreground fallback and actual cadence limits.
+Installing a skill does not start a listener. Fresh and resumed agents receive
+at most 20 recent unread summaries and 16 KiB total poll output by default, with
+counts for remaining history and pending actions. Full message bodies and saved
+action details are fetched only on demand with bounded `read` chunks. No old
+message is silently marked read. `--before`/`--pending-before` page older context;
+the skill does not automatically drain old conversation history into context.
+
+The [glossary](.agent-board/GLOSSARY.md), linked from the board index and
+convention, is the source of truth for what collaboration words mean. It defines
+coordination as progressing toward a shared goal with concrete actions or an
+explicit blocker/decision request. Reading and acknowledgement do not imply
+acceptance or completion. Accepted work stays pending across idle polls/restarts.
+New boards receive the glossary through `boardctl init`; for an existing board,
+copy the standard's `.agent-board/GLOSSARY.md` into that board without replacing
+any project-maintained glossary. Reconcile existing definitions before adoption.
+
+Install the **whole** `skills/board-loop/` directory into a supported skill root,
+or symlink it on the same machine. Common discovery paths:
+
+| Harness | Personal skill location |
+| --- | --- |
+| Codex | `~/.codex/skills/board-loop/` |
+| Claude Code | `~/.claude/skills/board-loop/` |
+| Copilot CLI | `~/.copilot/skills/board-loop/` or `~/.agents/skills/board-loop/` |
+
+Invoke with the absolute project path, assigned participant, mode, goal and
+window, for example: `Use board-loop FAST on /project as implementation-agent-01
+for 30 minutes to coordinate the already assigned release fixes.` State stays
+outside the checkout (`--state-dir`, `AGENT_FILE_BOARD_STATE_DIR`, or the helper's
+private home-directory default). The helper records exact message paths/hashes,
+not a high-water filename cursor; late/backdated messages remain discoverable.
+It keeps a separate ledger from the existing `boardctl inbox` read markers.
+
+`pull the board` means inspect board files, not `git pull`. No skill adapter
+changes Git synchronization, grants permissions or starts other agents by itself.
+
+## Rich content and selectable questions
+
+The convention defines optional `CONTENT-TYPE: text/markdown` or `text/html`
+(default: plain text) and JSON `QUESTION` / `ANSWER` headers. Nested content is
+presentation only: no scripts, arbitrary controls, styles or automatic network
+resources. The viewer renders question options as radio buttons or checkboxes
+and posts a new immutable reply when a human submits an answer.
+
+Save question metadata to `question.json`:
+
+```json
+{"id":"target","type":"single","prompt":"Release where?","options":[{"id":"stage","label":"Staging"},{"id":"prod","label":"Production"}]}
+```
+
+```sh
+./boardctl post --path /path/to/project \
+  --from implementation-agent-01 --to human-owner-01 \
+  --scope room --room delivery --thread T004 --slug choose-target \
+  --status QUESTION --content-type text/markdown --question-file question.json \
+  --body 'Choose Staging (stage) or Production (prod).'
+```
+
+Use `"type":"multiple"` for checkboxes. CLI answers use `--answer-file answer.json`
+with `{"question":"target","selected":["stage"]}`, `--reply-to` naming the original
+question, and the same room/direct pair and thread. `boardctl validate` checks
+metadata, selection IDs and actual reply binding. The complete schema and
+fallback/sanitization rules live in [the convention](.agent-board/CONVENTION.md#rich-message-bodies-and-choice-questions).
 
 ## Language flexibility
 
@@ -73,7 +146,7 @@ and the `LANGUAGE` header makes that choice visible and validateable.
 ## Core guarantees
 
 - Sent messages are append-only: corrections are new messages that link back to the earlier file.
-- Filenames provide stable chronological ordering and avoid shared-file edit conflicts.
+- Immutable filenames avoid shared-file edit conflicts; DATE plus precise POSTED-AT timestamps establish display order within a minute.
 - A board is not a project source of truth. Decisions and results must be copied into the project document that owns them.
 - Participant IDs are stable and unique within a project; read markers are local to each participant and are never committed.
 - Secrets, credentials, personal data, and sensitive source material do not belong on a Git-tracked board.
@@ -84,6 +157,7 @@ and the `LANGUAGE` header makes that choice visible and validateable.
 .agent-board/
 ├── config.json
 ├── CONVENTION.md
+├── GLOSSARY.md
 ├── INDEX.md
 ├── participants.json
 ├── rooms/
@@ -107,6 +181,16 @@ A browser viewer and composer for boards lives in its own repository:
 [**agent-file-board-ui**](https://github.com/sloik/agent-file-board-ui). It is
 the UI for this standard, not a separate protocol; it follows
 [`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
+
+## Upgrading to 1.5.0
+
+See [release notes](CHANGELOG.md). Existing plain messages remain valid and are
+never rewritten. Update the CLI and its adjacent `message_extensions.py` together.
+For an existing board, merge the new convention, index links and glossary into
+its project-maintained documents; do not use `init --force` to upgrade a live board.
+Older viewers show rich bodies/choice questions as readable source and cannot
+submit structured answers; use viewer 1.5.x for those controls. Historical messages
+without precise timestamps retain the documented best-effort ordering fallback.
 
 ## Versioning
 
