@@ -51,3 +51,28 @@ class BoardCtlTests(unittest.TestCase):
         self.assertEqual(boardctl.main([*args, "--language", "en", "--at", "2026-09-26 12:01", "--body", "question"]), 0)
         self.assertEqual(boardctl.main([*args, "--language", "machine-json", "--at", "2026-09-26 12:02", "--body", "{}"]), 0)
         self.assertEqual(boardctl.main(["validate", "--path", str(self.root)]), 0)
+
+class ReleaseCheckTests(unittest.TestCase):
+    def make(self, version: str) -> Path:
+        temp = tempfile.TemporaryDirectory()
+        self.addCleanup(temp.cleanup)
+        board = Path(temp.name) / ".agent-board"
+        board.mkdir()
+        (board / "CONVENTION.md").write_text(f"# Agent File Board Convention\n\nVersion: {version}\n", encoding="utf-8")
+        return Path(temp.name)
+
+    def test_matching_tag_passes(self):
+        root = self.make("1.4.0")
+        self.assertEqual(boardctl.main(["release-check", "--path", str(root), "--tag", "v1.4.0"]), 0)
+
+    def test_mismatched_tag_fails(self):
+        root = self.make("1.4.0")
+        self.assertEqual(boardctl.main(["release-check", "--path", str(root), "--tag", "v1.3.0"]), 1)
+
+    def test_non_semver_version_fails(self):
+        root = self.make("1.4")
+        self.assertEqual(boardctl.main(["release-check", "--path", str(root)]), 1)
+
+    def test_repository_convention_is_semver(self):
+        self.assertEqual(boardctl.main(["release-check", "--path", str(Path(boardctl.__file__).parent)]), 0)
+

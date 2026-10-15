@@ -225,6 +225,33 @@ def command_validate(args: argparse.Namespace) -> int:
     return 0
 
 
+SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
+
+
+def convention_version(root: Path) -> str:
+    text = (root / ".agent-board" / "CONVENTION.md").read_text(encoding="utf-8")
+    match = re.search(r"^Version:\s*(\S+)\s*$", text, re.MULTILINE)
+    if not match:
+        raise BoardError("CONVENTION.md: missing 'Version:' line")
+    return match.group(1)
+
+
+def command_release_check(args: argparse.Namespace) -> int:
+    try:
+        version = convention_version(Path(args.path))
+    except (OSError, BoardError) as exc:
+        print(f"release-check: {exc}", file=sys.stderr)
+        return 1
+    if not SEMVER_RE.fullmatch(version):
+        print(f"release-check: Version '{version}' is not MAJOR.MINOR.PATCH", file=sys.stderr)
+        return 1
+    if args.tag is not None and args.tag != f"v{version}":
+        print(f"release-check: tag {args.tag} does not match CONVENTION.md Version {version} (expected v{version})", file=sys.stderr)
+        return 1
+    print(f"release-check: ok (v{version})")
+    return 0
+
+
 def state_path(root: Path, config: dict, participant_id: str, override: str | None) -> Path:
     base = Path(override or os.environ.get(config["participant_identity"]["state_directory_environment"], root / ".agent-board.local"))
     return base / config["project"]["id"] / f"{participant_id}.json"
@@ -258,6 +285,7 @@ def parser() -> argparse.ArgumentParser:
     join = commands.add_parser("join"); join.add_argument("participant_id"); join.add_argument("--path", default="."); join.add_argument("--kind", default="agent"); join.add_argument("--language", default="en"); join.set_defaults(func=command_join)
     post = commands.add_parser("post"); post.add_argument("--path", default="."); post.add_argument("--from", dest="sender", required=True); post.add_argument("--to", dest="recipient", required=True); post.add_argument("--scope", choices=("room", "direct"), required=True); post.add_argument("--room"); post.add_argument("--thread", required=True); post.add_argument("--slug", required=True); post.add_argument("--status", default="INFO"); post.add_argument("--language"); post.add_argument("--body", default=""); post.add_argument("--body-file"); post.add_argument("--reply-to"); post.add_argument("--runtime"); post.add_argument("--at"); post.set_defaults(func=command_post)
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
+    rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
     valid = commands.add_parser("validate"); valid.add_argument("--path", default="."); valid.set_defaults(func=command_validate)
     return cli
 
