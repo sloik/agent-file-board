@@ -1,4 +1,4 @@
 interface:
   display_name: "Board Loop"
-  short_description: "Poll boards and follow through on coordination work"
+  short_description: "Attach board sessions and coordinate on demand or in loops"
   default_prompt: "Use $board-loop in MEDIUM mode to poll my assigned board and advance accepted work under its glossary."

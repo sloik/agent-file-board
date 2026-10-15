@@ -171,6 +171,10 @@ adds that identity; **attach/start** binds a particular runtime session to it an
 announces the intended work/help in the general room. A **heartbeat** renews only
 that same session's self-reported lease. **Release/detach** ends the binding and
 announces the result, handoff or pending work; it does not mean [done](#done).
+Posting a message, reading it, or registering an identifier does not attach or renew
+a session. Agent participation includes an explicit attachment, even for on-demand
+work; a read-only inspection need not attach. The convention owns startup and
+lifecycle steps. An attached session does not by itself mean a listener is running.
 
 An **active** identifier has exactly one observed live lease; a **ghost** has no
 observed live lease. Ghost includes legacy identities with no presence evidence

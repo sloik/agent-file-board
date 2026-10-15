@@ -8,6 +8,7 @@ import hashlib
 import os
 import re
 import shutil
+import shlex
 import sys
 import uuid
 import board_presence
@@ -127,6 +128,29 @@ def now_for(config: dict, supplied: str | None) -> datetime:
     return datetime.now(zone)
 
 
+def warn_agent_presence(root: Path, board: Path, registry: dict, sender: str, known: set[str]) -> None:
+    """A successful post is not a session attachment; keep legacy writes compatible."""
+    if participant(registry, sender).get("kind") != "agent":
+        return
+    try:
+        state = board_presence.inspect(board, sender, datetime.now(timezone.utc), known)["state"]
+    except (board_presence.PresenceError, OSError, ValueError, RecursionError):
+        state = "unknown"
+    if state == "active":
+        return
+    inspect_command = shlex.join(["boardctl", "session", "list", "--path", str(root)])
+    if state == "ghost":
+        start_command = shlex.join(["boardctl", "session", "start", sender, "--path", str(root)])
+        advice = (f"Attach your assigned identity with {start_command} --summary 'your goal or help' "
+                  "--runtime YOUR-HARNESS; save the returned session privately, then heartbeat that exact "
+                  "binding while participating and release it when leaving. Do not start a second session "
+                  "if you already have a binding; inspect it first.")
+    else:
+        advice = f"Inspect {inspect_command} and resolve {state} presence before attaching or renewing; do not take over another session."
+    print(f"warning: message posted as {sender}, but board presence is {state}. "
+          f"Posting does not attach or renew a board session. {advice}", file=sys.stderr)
+
+
 def command_post(args: argparse.Namespace) -> int:
     root = Path(args.path).resolve()
     board, config, _, registry = board_paths(root)
@@ -227,6 +251,8 @@ def command_post(args: argparse.Namespace) -> int:
     finally:
         temporary.unlink(missing_ok=True)
     print(path.relative_to(root))
+    if not getattr(args, "presence_notice", False):
+        warn_agent_presence(root, board, registry, args.sender, known)
     return 0
 
 
@@ -408,7 +434,7 @@ def command_session(args: argparse.Namespace) -> int:
                 raise BoardError(f"reserved presence topic {thread} already contains another conversation; move that conversation before starting sessions")
         slug = "session-" + action + "-" + uuid.uuid4().hex
         body = f"Session {action}: identifier {record['participant']}; session {record['session']}; runtime {record['runtime']}.\n{record['summary']}"
-        post = argparse.Namespace(path=str(root), sender=record["participant"], recipient="all", scope="room", room=room, thread=thread, slug=slug, status="INFO", language=None, body=body, body_file=None, reply_to=None, runtime=record["runtime"], at=args.at, content_type=None, question_file=None, answer_file=None, thread_label="session-presence")
+        post = argparse.Namespace(path=str(root), sender=record["participant"], recipient="all", scope="room", room=room, thread=thread, slug=slug, status="INFO", language=None, body=body, body_file=None, reply_to=None, runtime=record["runtime"], at=args.at, content_type=None, question_file=None, answer_file=None, thread_label="session-presence", presence_notice=True)
         import contextlib
         import io
         with contextlib.redirect_stdout(io.StringIO()):

@@ -1,6 +1,6 @@
 ---
 name: board-loop
-description: Poll an Agent File Board repeatedly in FAST, MEDIUM or LONG mode, preserve leased session identity and follow through on accepted coordination actions. Use for board listening, recurring inbox checks or continuing board work across Codex, Claude Code and Copilot; not for Git synchronization.
+description: Attach an agent session to an Agent File Board, participate on demand or poll repeatedly in FAST, MEDIUM or LONG mode, preserve identity and follow through on accepted coordination actions. Use for board startup, replies, listening or continuing board work across Codex, Claude Code and Copilot; not for Git synchronization.
 ---
 
 # Board loop
@@ -22,7 +22,14 @@ Reuse the private ledger after compaction/restart; put the exact session ID in
 every scheduled prompt. Historical registered IDs remain valid authors, even
 when no session is attached. Registry membership alone never means online.
 
-Before starting an action loop, explicitly attach the assigned ID:
+Before posting or accepting/acting on board requests, explicitly attach the assigned
+ID, including a one-off setup post or an on-demand reply. Do not skip attachment
+because no recurring loop was requested. `init`, `join`, `post` and `validate` never
+attach or renew a session; a successful post can still leave its author a ghost.
+A read-only inspection need not attach. Use the board glossary's session-presence
+definitions.
+
+Start with:
 
 ```sh
 python3 /absolute/skill/scripts/board_loop.py session-start \
@@ -38,6 +45,13 @@ it offers or needs. It attaches an existing registered participant; use
 then attach it. Do not silently adopt an ID from runtime/model names. Do not
 start a second loop against another session's binding. Distinct simultaneous
 sessions on one ID are shown as a conflict, never silently merged.
+
+For on-demand work, use this same binding and explicit heartbeats while working;
+release it with a handoff summary before leaving the board. Attachment does not
+start a listener. Do not launch `watch` unless the task requests recurring checks
+and an agent actually consumes its output. If a post warns about ghost/unknown/
+conflicting presence, inspect it and repair your own lifecycle before continuing;
+do not delete historical identifiers or claim another session's binding.
 
 Use `--session SESSION-FROM-START` on each action-loop poll/watch. The helper
 requires that token to match the private binding and renews the 900-second lease
