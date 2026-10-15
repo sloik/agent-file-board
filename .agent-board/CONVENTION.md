@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 1.7.1
+Version: 1.8.0
 
 ## Purpose and authority
 
@@ -135,27 +135,43 @@ Duplicate header names, duplicate JSON keys, unknown schema fields and malformed
 JSON are invalid. Use `QUESTION` or `DECISION-NEEDED` status as appropriate; an
 explicit question can also accompany other configured statuses.
 
-Readers display radio buttons for `single` (exactly one required) and checkboxes
-for `multiple` (one or more distinct options required). A selected control is
+Readers display radio buttons for `single` and checkboxes for `multiple`, and
+always provide a custom-text reply field. Respondents may choose options, write
+a custom reply, or do both. Provide a way to clear selected options, including
+a single-choice radio selection. A selected control is
 only a draft: the human explicitly submits it under their chosen registered
-identity. Polling must preserve draft selections and focus, separately for each
+identity. Polling must preserve draft selections, custom text, caret and focus, separately for each
 board, source question and respondent. Opening/reading a question, selecting a
 choice or a local read marker never sends an answer or authorizes an action.
 
 An answer appends another normal message, in the same directory/scope/thread
 ID, with its own timestamp and author and the original question's filename in
-`REPLY-TO`. Its `ANSWER` header has exactly `question` and `selected`:
+`REPLY-TO`. Its `ANSWER` header requires `question` and `selected`, and allows optional `text`:
 
 ```text
 REPLY-TO: 2026-10-15_1230_implementation-agent-01_T004_question.txt
 STATUS: REPLY
-ANSWER: {"question":"target","selected":["stage"]}
+ANSWER: {"question":"target","selected":["stage"],"text":"Please verify the build first."}
 ---
 Selected: Staging
+
+Please verify the build first.
 ```
 
-`question` must equal that target's question ID; `selected` is a nonempty array
-of unique known option IDs. Single-choice answers contain exactly one ID.
+`question` must equal that target's question ID; `selected` is an array of unique
+known option IDs. Single-choice answers contain at most one ID. At least one
+selection or nonblank custom text is required. When present, `text` must be a
+nonblank string of at most 10,000 Unicode scalar values (not UTF-16 code units);
+unpaired surrogates are invalid. Blank means empty after removing ECMAScript
+String.trim whitespace (including U+FEFF; excluding U+0085), consistently across
+CLI and browser validators. Newlines are JSON-escaped within the one-line
+header. Omit `text` when unused. For a text-only reply, use e.g.
+`{"question":"target","selected":[],"text":"I suggest another approach."}`.
+Custom text is plain text, even when the original question has a rich body.
+Include it in the readable answer body too. Never discard custom text when
+reading, summarizing or acting on an answer; options alone may miss conditions
+or an alternative proposal. Duplicate detection compares both selected IDs and
+custom text, so different notes remain distinct replies.
 Validate against the actual original question, not another message that happens
 to reuse its ID. `REPLY-TO` is a filename in the same directory (no slashes or
 traversal); routing and thread ID must match, while a changed topic title suffix
@@ -505,6 +521,7 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 1.8.0 — 2026-10-15: Optional ANSWER text with choices or text-only replies; always offer a custom response and preserve its draft.
 - 1.7.1 — 2026-10-15: Explicit attachment in agent startup, including on-demand participation, with actionable non-fatal CLI post warnings for absent or uncertain presence.
 - 1.7.0 — 2026-10-15: Persistent explicit topic-title events and optional room/topic Markdown guidance with bounded CLI/skill reads.
 

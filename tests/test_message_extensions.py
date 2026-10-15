@@ -54,6 +54,19 @@ class ExtensionTests(unittest.TestCase):
         if scope == "room": args += ["--room", "general"]
         return args
 
+    def test_cli_custom_answers_are_preserved_and_validate(self):
+        q = self.post_question()
+        original = q.read_bytes()
+        for index, selected in enumerate((["stage"], [])):
+            payload = {"question": "release", "selected": selected, "text": "Custom plan\nPlease verify 🦊 <table> first."}
+            self.answer.write_text(json.dumps(payload))
+            code, path = self.cli(*self.answer_args(q, slug=f"custom-{index}"))
+            self.assertEqual(code, 0, self.capture.getvalue())
+            headers = dict(line.split(": ", 1) for line in (self.root / path).read_text().split("\n---\n", 1)[0].splitlines())
+            self.assertEqual(json.loads(headers["ANSWER"]), payload)
+        self.assertEqual(q.read_bytes(), original)
+        self.assertEqual(self.cli("validate", "--path", str(self.root))[0], 0)
+
     def test_cli_room_question_and_answer_keep_history_and_validate(self):
         q = self.post_question(); original = q.read_bytes()
         code, answer = self.cli(*self.answer_args(q))

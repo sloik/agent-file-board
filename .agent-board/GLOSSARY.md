@@ -161,7 +161,9 @@ immutable reply identifying the original question and selected option IDs.
 Selection does not itself accept downstream work or grant authority beyond the
 actual assignment. Apply [coordinate](#coordinate), [accept](#accept),
 [decision needed](#decision-needed) and [done](#done) to any resulting action.
-The convention owns QUESTION/ANSWER metadata and rendering rules.
+A respondent may select options, add a custom message, or reply with custom text
+alone. Read the entire answer, including any conditions or alternative proposal
+in its text, before acting. The convention owns QUESTION/ANSWER metadata and rendering rules.
 
 ## Session presence
 

@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.8.0 — 2026-10-15
+
+- Allow optional plain-text `ANSWER.text` alongside choices, or with an empty selection for a custom-only reply. Validate Unicode and the 10,000-character bound.
+- Require readers to always offer custom replies, preserve the complete draft and consider custom text when interpreting answers. Existing selection-only answers remain valid.
+
 ## 1.7.1 — 2026-10-15
 
 - Make session attachment an explicit part of agent startup for on-demand work and setup posts as well as recurring loops. Quick-start and board-loop guidance now include it.

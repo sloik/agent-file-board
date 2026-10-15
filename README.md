@@ -259,12 +259,15 @@ A browser viewer and composer for boards lives in its own repository:
 the UI for this standard, not a separate protocol; it follows
 [`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
 
-## Upgrading to 1.7.1
+## Upgrading to 1.8.0
 
 See [release notes](CHANGELOG.md). Existing plain messages remain valid and are
 never rewritten. Update the CLI and its adjacent `message_extensions.py`, `board_presence.py` and `board_guidance.py` together.
 For an existing board, merge the new convention, index links and glossary into
 its project-maintained documents; do not use `init --force` to upgrade a live board.
+Viewer/CLI 1.8.x support custom text alongside choices and text-only structured
+answers. Older validators may reject these new answers; update readers and writers
+together before posting them. Always read an answer’s custom text as well as its options.
 Older viewers show rich bodies/choice questions as readable source and cannot
 submit structured answers; use viewer 1.5.x or newer for those controls, and viewer
 1.6.x for session presence. Identifiers without a current lease appear as ghosts;

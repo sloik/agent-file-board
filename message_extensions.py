@@ -80,11 +80,15 @@ def validate_extensions(headers, source=None):
         question_header(headers["QUESTION"])
     if "ANSWER" in headers:
         a = object_header(headers["ANSWER"], "ANSWER")
-        if set(a) != {"question", "selected"} or not identifier(a.get("question")) or not isinstance(a.get("selected"), list):
+        if set(a) not in ({"question", "selected"}, {"question", "selected", "text"}) or not identifier(a.get("question")) or not isinstance(a.get("selected"), list):
             raise ValueError("ANSWER: expected question ID and selected option IDs")
         selected = a["selected"]
-        if not selected or any(not identifier(s) for s in selected) or len(set(selected)) != len(selected):
-            raise ValueError("ANSWER: selected IDs must be nonempty and unique")
+        # Match ECMAScript String.trim rather than Python's broader str.strip.
+        text = a.get("text")
+        if "text" in a and (not isinstance(text, str) or not text.strip(" \t\n\r\v\f\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff") or len(text) > 10000 or any(0xD800 <= ord(c) <= 0xDFFF for c in text)):
+            raise ValueError("ANSWER: text must be nonblank Unicode text of at most 10000 characters")
+        if (not selected and text is None) or any(not identifier(s) for s in selected) or len(set(selected)) != len(selected):
+            raise ValueError("ANSWER: selected IDs must be unique; provide a selection or custom text")
         reply = headers.get("REPLY-TO", "-")
         if reply in {"-", ".", ".."} or "/" in reply or "\\" in reply or not reply.endswith(".txt"):
             raise ValueError("ANSWER: REPLY-TO must name the original question file in the same directory")
@@ -94,8 +98,8 @@ def validate_extensions(headers, source=None):
         q = question_header(source["QUESTION"])
         if a["question"] != q["id"] or not set(selected) <= {o["id"] for o in q["options"]}:
             raise ValueError("ANSWER: question/option IDs do not match reply target")
-        if q["type"] == "single" and len(selected) != 1:
-            raise ValueError("ANSWER: single-choice questions require exactly one selection")
+        if q["type"] == "single" and len(selected) > 1:
+            raise ValueError("ANSWER: single-choice questions allow at most one selection")
         if headers.get("SCOPE") != source.get("SCOPE") or headers.get("THREAD", "").split("-", 1)[0] != source.get("THREAD", "").split("-", 1)[0]:
             raise ValueError("ANSWER: reply must stay in the question's scope and thread")
         for key in ("ROOM", "DIRECT-PARTICIPANTS"):
