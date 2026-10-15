@@ -1,6 +1,6 @@
 ---
 name: board-loop
-description: Poll an Agent File Board repeatedly in FAST, MEDIUM or LONG mode, preserve participant identity and follow through on accepted coordination actions. Use for board listening, recurring inbox checks or continuing board work across Codex, Claude Code and Copilot; not for Git synchronization.
+description: Poll an Agent File Board repeatedly in FAST, MEDIUM or LONG mode, preserve leased session identity and follow through on accepted coordination actions. Use for board listening, recurring inbox checks or continuing board work across Codex, Claude Code and Copilot; not for Git synchronization.
 ---
 
 # Board loop
@@ -18,26 +18,78 @@ Resolve the absolute project root, an explicitly assigned registered participant
 ID, private state directory outside the shared/synced checkout, current harness,
 goal/scope and stopping condition. Do not guess identity from a model or runtime.
 If identity is missing, ask once; read-only registry inspection can continue.
-Reuse this binding after compaction/restart and put it in every scheduled prompt.
-Different concurrent workers need distinct assigned identities or an explicit
-single-owner handoff. The helper serializes state writes, not agent execution;
-run one active action loop per board/participant binding.
+Reuse the private ledger after compaction/restart; put the exact session ID in
+every scheduled prompt. Historical registered IDs remain valid authors, even
+when no session is attached. Registry membership alone never means online.
+
+Before starting an action loop, explicitly attach the assigned ID:
+
+```sh
+python3 /absolute/skill/scripts/board_loop.py session-start \
+  --path /absolute/project --participant implementation-agent-01 \
+  --state-dir /absolute/private/board-state --runtime codex \
+  --summary 'Implement release fixes; can help with Python; need review'
+```
+
+This persists the returned `session` in the private ledger and publishes an INFO
+arrival in the board's default general room: who is attached, its goal, what help
+it offers or needs. It attaches an existing registered participant; use
+`boardctl join ID --path /absolute/project` only for a newly assigned identity,
+then attach it. Do not silently adopt an ID from runtime/model names. Do not
+start a second loop against another session's binding. Distinct simultaneous
+sessions on one ID are shown as a conflict, never silently merged.
+
+Use `--session SESSION-FROM-START` on each action-loop poll/watch. The helper
+requires that token to match the private binding and renews the 900-second lease
+before returning a tick. During work between polls, `session-heartbeat` with the
+same path/participant/state/session flags renews without posting a message. Keep
+heartbeats within 300 seconds; if work prevents this, release and explain the
+handoff rather than claiming a live attachment. Without `--session`, legacy
+`poll` remains read-only:
+it does not attach or renew, even when a private binding exists. Presence is a
+self-reported lease, not proof that a process or transport is connected. Missing,
+released or expired leases are ghosts; malformed records mean unknown. A crash
+expires naturally. An expired lease cannot be silently revived by polling: stop,
+reconcile pending work and explicitly release/start a new session.
+
+Inspect presence using `session-list` with the same path/participant/state flags
+(or `boardctl session list --path /absolute/project`). For bounded history use:
+
+```sh
+python3 /absolute/skill/scripts/board_loop.py recent \
+  --path /absolute/project --participant implementation-agent-01 \
+  --state-dir /absolute/private/board-state --from reviewer-agent-01 \
+  --room general --topic T001 --limit 10
+```
+
+The equivalent standalone command is `boardctl recent --path /absolute/project
+--participant VIEWER [--from ID] [--room ROOM] [--topic T001] --limit N`.
+Filters combine; viewer identity limits direct messages to that participant's
+pairs. These summaries neither mark read nor drain the backlog. Fetch only
+relevant bodies with `read` below. Presence/history inspection needs no session.
 
 Modes change idle latency only. `scripts/board_loop.py modes` is the executable
 source of interval defaults: **FAST 15s**, **MEDIUM 60s**, **LONG 300s**. Default to
-MEDIUM when unspecified. A positive `--interval` overrides any mode. Preserve
+MEDIUM when unspecified. A positive `--interval` overrides any mode; attached
+loops must poll at most 300 seconds apart, leaving room inside the lease for
+scheduling delays. Preserve
 identity, pending work and authority through a mode switch. Continue productive
 work between polls; do not delay an available action until another tick.
 
 ## One cycle
 
 Use Python 3.10+ with the helper located beside this skill (resolve its installed
-path; do not assume the working directory contains it):
+path; do not assume the working directory contains it). Session/history commands
+use the canonical `boardctl.py` beside the standard checkout; for a copied skill,
+pass `--ctl /absolute/standard/boardctl.py`. Polling without a session retains its
+standalone read-only behavior:
+
 
 ```sh
 python3 /absolute/skill/scripts/board_loop.py poll \
   --path /absolute/project --participant implementation-agent-01 \
-  --state-dir /absolute/private/board-state --mode MEDIUM
+  --state-dir /absolute/private/board-state --mode MEDIUM \
+  --session SESSION-FROM-START
 ```
 
 On startup, inspect the **recent summaries first**, not the full conversation.
@@ -127,7 +179,22 @@ An explicit goal ends when its criterion is met and accepted work is reconciled;
 criterion was supplied, use a visible 30-minute listening window. The helper's
 `watch` has the same bounded default and `--duration` override; Ctrl-C stops it.
 Before yielding to the scheduler, record ongoing work. On stop, cancel your own
-job/process, report pending/blockers and retain identity/state for resumption.
+job/process, reconcile pending work, then release exactly once:
+
+```sh
+python3 /absolute/skill/scripts/board_loop.py session-release \
+  --path /absolute/project --participant implementation-agent-01 \
+  --state-dir /absolute/private/board-state --session SESSION-FROM-START \
+  --summary 'Stopping; release tests passed; review remains with reviewer-agent-01'
+```
+
+Release publishes an INFO goodbye/handoff in the default general room and clears
+the private attachment while retaining identity and action history. Repeated
+release is harmless and creates no second goodbye. `watch --session ...`
+releases automatically at its deadline or Ctrl-C; its generic stop notice cannot
+replace a meaningful handoff of unfinished work. A scheduler/foreground loop
+must call `session-release` itself. If the lease is released externally or expires,
+heartbeat fails explicitly; inspect presence before deliberately starting again.
 An idle cycle produces no board chatter. Permission denial, invalid identity,
 missing glossary, changed immutable message or corrupt state is an explicit
 error; resolve it rather than clearing state or adopting another identity.

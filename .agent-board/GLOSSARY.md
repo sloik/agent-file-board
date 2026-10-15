@@ -162,3 +162,21 @@ Selection does not itself accept downstream work or grant authority beyond the
 actual assignment. Apply [coordinate](#coordinate), [accept](#accept),
 [decision needed](#decision-needed) and [done](#done) to any resulting action.
 The convention owns QUESTION/ANSWER metadata and rendering rules.
+
+## Session presence
+
+A **participant identifier** is a durable registered author/routing identity. It
+outlives individual sessions and remains valid in old messages. **Register/join**
+adds that identity; **attach/start** binds a particular runtime session to it and
+announces the intended work/help in the general room. A **heartbeat** renews only
+that same session's self-reported lease. **Release/detach** ends the binding and
+announces the result, handoff or pending work; it does not mean [done](#done).
+
+An **active** identifier has exactly one observed live lease; a **ghost** has no
+observed live lease. Ghost includes legacy identities with no presence evidence
+and does not prove a disconnected or dead process. **Conflict** means multiple
+live leases; **unknown** means presence data cannot be interpreted safely. These
+states describe observed optional metadata, not process verification or authority.
+See the convention for the sole wire schema, expiry and lifecycle rules. Presence
+announcements inform others; [coordinate](#coordinate) still requires appropriate
+action, ownership and follow-through.

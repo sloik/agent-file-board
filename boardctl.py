@@ -4,10 +4,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
 import os
 import re
 import shutil
 import sys
+import uuid
+import board_presence
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -123,7 +126,7 @@ def command_post(args: argparse.Namespace) -> int:
     root = Path(args.path).resolve()
     board, config, _, registry = board_paths(root)
     known = ids(registry)
-    if args.sender not in known or args.recipient not in known:
+    if args.sender not in known or (args.recipient not in known and not (args.scope == "room" and args.recipient == "all")):
         raise BoardError("sender and recipient must be registered participant IDs")
     allowed = allowed_languages(config)
     if not re.fullmatch(r"T\d{%d}" % config["board"]["thread_digits"], args.thread):
@@ -154,7 +157,7 @@ def command_post(args: argparse.Namespace) -> int:
         raise BoardError(f"message already exists: {path}")
     body = Path(args.body_file).read_text(encoding="utf-8") if args.body_file else args.body
     headers = [f"FROM: {args.sender}", f"TO: {args.recipient}", *scope_headers,
-               f"THREAD: {args.thread}-{args.slug}", f"DATE: {moment:%Y-%m-%d %H:%M}",
+               f"THREAD: {args.thread}-{getattr(args, 'thread_label', args.slug)}", f"DATE: {moment:%Y-%m-%d %H:%M}",
                f"LANGUAGE: {language}",
                f"REPLY-TO: {args.reply_to or '-'}", f"RUNTIME: {args.runtime}" if args.runtime else None,
                f"STATUS: {args.status}"]
@@ -200,14 +203,30 @@ def command_post(args: argparse.Namespace) -> int:
     except ValueError as exc:
         raise BoardError(str(exc)) from exc
     headers.extend(f"{key}: {value}" for key, value in extra.items())
-    path.write_text("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n", encoding="utf-8")
+    payload = ("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n").encode("utf-8")
+    temporary = directory / (".message-" + uuid.uuid4().hex + ".tmp")
+    try:
+        with temporary.open("xb") as handle:
+            handle.write(payload)
+        # Exclusive publication: immutable destination is never partial/overwritten.
+        os.link(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
     print(path.relative_to(root))
     return 0
 
 
+def header_lines(path: Path):
+    with path.open(encoding="utf-8") as handle:
+        for line in handle:
+            value = line.rstrip("\r\n")
+            yield value
+            if value == "---": break
+
+
 def parse_message(path: Path) -> dict[str, str]:
     headers: dict[str, str] = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
+    for line in header_lines(path):
         if line == "---":
             break
         if ": " in line:
@@ -230,6 +249,7 @@ def validate(root: Path) -> list[str]:
         known = ids(registry)
     except BoardError as exc:
         return [str(exc)]
+    errors.extend(board_presence.validation_errors(board, known))
     statuses = set(config.get("statuses", []))
     try:
         allowed = allowed_languages(config)
@@ -339,6 +359,110 @@ def command_inbox(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_session(args: argparse.Namespace) -> int:
+    root = Path(args.path).resolve()
+    board, config, _, registry = board_paths(root)
+    known = ids(registry)
+    now = now_for(config, args.at).astimezone(timezone.utc)
+    if args.session_action == "list":
+        result = []
+        for identity in sorted(known):
+            try:
+                item = board_presence.inspect(board, identity, now, known)
+            except board_presence.PresenceError as exc:
+                item = {"participant": identity, "state": "unknown", "sessions": [], "live_sessions": [], "errors": [str(exc)]}
+            if args.active and item["state"] != "active": continue
+            if args.ghosts and item["state"] != "ghost": continue
+            result.append(item)
+        print(json.dumps({"as_of": board_presence.timestamp(now), "participants": result}, ensure_ascii=False))
+        return 0
+    if args.participant_id not in known:
+        raise BoardError("participant must be registered; use boardctl join first")
+    def notice(record, action):
+        room = config["board"].get("default_room", "general")
+        thread = "T" + "0" * config["board"]["thread_digits"]
+        # An existing T000 title is left alone: the notice uses its own slug,
+        # never a title-update header or registry rewrite.
+        notice_dir = board / "rooms" / room
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", room) or any(p.is_symlink() for p in (board, board / "rooms", notice_dir)):
+            raise BoardError("unsafe session notice room path")
+        for existing in notice_dir.glob("*.txt"):
+            if existing.is_symlink(): raise BoardError("symbolic link in session notice room")
+            header = parse_message(existing)
+            if header["THREAD"].split("-", 1)[0] == thread and header["THREAD"] != thread + "-session-presence" and not header["THREAD"].startswith((thread + "-session-start-", thread + "-session-release-")):
+                raise BoardError(f"reserved presence topic {thread} already contains another conversation; move that conversation before starting sessions")
+        slug = "session-" + action + "-" + uuid.uuid4().hex
+        body = f"Session {action}: identifier {record['participant']}; session {record['session']}; runtime {record['runtime']}.\n{record['summary']}"
+        post = argparse.Namespace(path=str(root), sender=record["participant"], recipient="all", scope="room", room=room, thread=thread, slug=slug, status="INFO", language=None, body=body, body_file=None, reply_to=None, runtime=record["runtime"], at=args.at, content_type=None, question_file=None, answer_file=None, thread_label="session-presence")
+        import contextlib
+        import io
+        with contextlib.redirect_stdout(io.StringIO()):
+            command_post(post)
+    record = board_presence.mutate(board, args.participant_id, args.session, args.session_action, now, summary=args.summary, runtime=args.runtime, lease=args.lease_seconds, notice=notice, known=known)
+    print(json.dumps(record, ensure_ascii=False))
+    return 0
+
+
+def message_order(headers: dict, path: Path, config: dict) -> tuple:
+    # DATE remains the authoritative minute (including explicit corrections).
+    minute = now_for(config, headers["DATE"]).timestamp()
+    value = headers.get("POSTED-AT")
+    if value:
+        precise = board_presence.instant(value).timestamp()
+    else:
+        precise = path.stat().st_mtime
+    return minute, precise, path.name, str(path)
+
+
+def command_recent(args: argparse.Namespace) -> int:
+    root = Path(args.path).resolve()
+    board, config, _, registry = board_paths(root)
+    known = ids(registry)
+    if args.participant_id not in known: raise BoardError("viewer must be registered")
+    if args.sender and args.sender not in known: raise BoardError("sender must be registered")
+    if not 1 <= args.limit <= 200: raise BoardError("limit must be between 1 and 200")
+    if not 256 <= args.max_bytes <= 1048576: raise BoardError("max-bytes must be between 256 and 1048576")
+    if args.room and not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", args.room): raise BoardError("invalid room")
+    if args.topic and not re.fullmatch(r"T\d{%d}" % config["board"]["thread_digits"], args.topic): raise BoardError("invalid topic")
+    rows = []
+    paths = list((board / "rooms").glob("*/*.txt")) + list((board / config["board"]["direct_directory"]).glob("*/*.txt"))
+    for path in paths:
+        if path.is_symlink() or path.parent.is_symlink(): continue
+        headers = parse_message(path)
+        relative = path.relative_to(board)
+        if relative.parts[0] == config["board"]["direct_directory"]:
+            pair = [p.strip() for p in headers.get("DIRECT-PARTICIPANTS", "").split(",")]
+            if headers["SCOPE"] != "DIRECT" or args.participant_id not in pair or len(pair) != 2 or path.parent.name != "--".join(sorted(pair)) or headers["FROM"] not in pair or headers["TO"] not in pair: continue
+        elif relative.parts[0] == "rooms":
+            if headers["SCOPE"] != "ROOM" or headers.get("ROOM") != path.parent.name: continue
+        else:
+            continue
+        if args.sender and headers["FROM"] != args.sender: continue
+        if args.room and (headers["SCOPE"] != "ROOM" or headers.get("ROOM") != args.room): continue
+        if args.topic and headers["THREAD"].split("-", 1)[0] != args.topic: continue
+        rows.append((message_order(headers, path, config), {"path": str(path.relative_to(root)), "from": headers["FROM"], "to": headers["TO"], "scope": headers["SCOPE"], "room": headers.get("ROOM"), "topic": headers["THREAD"].split("-", 1)[0], "thread": headers["THREAD"], "status": headers["STATUS"], "date": headers["DATE"], "posted_at": headers.get("POSTED-AT")}))
+    rows.sort(key=lambda row: row[0], reverse=True)
+    result = {"messages": [], "total_matching": len(rows), "truncated": len(rows) > args.limit}
+    for _, row in rows[:args.limit]:
+        source = root / row["path"]
+        digest = hashlib.sha256()
+        with source.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(65536), b""):
+                digest.update(chunk)
+        with source.open(encoding="utf-8") as handle:
+            for line in handle:
+                if line.rstrip("\r\n") == "---": break
+            preview = " ".join(handle.read(160).split())
+        row = dict(row, sha256=digest.hexdigest(), preview=preview)
+        candidate = dict(result, messages=[*result["messages"], row])
+        if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 > args.max_bytes:
+            result["truncated"] = True
+            break
+        result = candidate
+    print(json.dumps(result, ensure_ascii=False))
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(prog="boardctl")
     commands = cli.add_subparsers(dest="command", required=True)
@@ -351,6 +475,26 @@ def parser() -> argparse.ArgumentParser:
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
     valid = commands.add_parser("validate"); valid.add_argument("--path", default="."); valid.set_defaults(func=command_validate)
+    session = commands.add_parser("session")
+    actions = session.add_subparsers(dest="session_action", required=True)
+    for action in ("start", "heartbeat", "release", "list"):
+        sub = actions.add_parser(action)
+        sub.add_argument("--path", default="."); sub.add_argument("--at")
+        if action == "list":
+            filters = sub.add_mutually_exclusive_group()
+            filters.add_argument("--active", action="store_true"); filters.add_argument("--ghosts", action="store_true")
+        else:
+            sub.add_argument("participant_id")
+            sub.add_argument("--session", required=action != "start")
+            sub.add_argument("--summary", required=action in {"start", "release"})
+            sub.add_argument("--runtime", default="unknown")
+            sub.add_argument("--lease-seconds", type=int, default=900)
+        sub.set_defaults(func=command_session)
+    recent = commands.add_parser("recent")
+    recent.add_argument("--path", default="."); recent.add_argument("--participant", dest="participant_id", required=True)
+    recent.add_argument("--from", dest="sender"); recent.add_argument("--room"); recent.add_argument("--topic")
+    recent.add_argument("--limit", type=int, default=20); recent.add_argument("--max-bytes", type=int, default=16384)
+    recent.set_defaults(func=command_recent)
     return cli
 
 
@@ -358,7 +502,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser().parse_args(argv)
     try:
         return args.func(args)
-    except BoardError as exc:
+    except (BoardError, board_presence.PresenceError, OSError, UnicodeError) as exc:
         print(f"boardctl: {exc}", file=sys.stderr)
         return 2
 

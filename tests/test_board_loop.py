@@ -217,6 +217,152 @@ class BoardLoopTests(unittest.TestCase):
             self.assertEqual(loop.main(["watch", *self.common]), 130)
 
 
+class SessionAttachmentTests(unittest.TestCase):
+    setUp = BoardLoopTests.setUp
+    tearDown = BoardLoopTests.tearDown
+    args = BoardLoopTests.args
+    poll = BoardLoopTests.poll
+    post = BoardLoopTests.post
+    record = BoardLoopTests.record
+    # Reuse fixture utilities, without replaying the inherited baseline tests.
+    def start(self, session="session-alpha"):
+        return loop.session_command(self.args("session-start", "--session", session, "--runtime", "codex", "--summary", "Fix release tests; can help with Python; need review"))
+
+    def release(self, session="session-alpha"):
+        return loop.session_command(self.args("session-release", "--session", session, "--summary", "Stopping; test fix ready; reviewer owns review"))
+
+    def lease_path(self, session="session-alpha"):
+        return self.root / ".agent-board/presence/alpha-agent" / f"{session}.json"
+
+    def test_start_persists_explicit_binding_and_poll_without_token_never_renews(self):
+        self.post()
+        result = self.start()
+        self.assertEqual(result["status"], "active")
+        state = Path(self.poll()["state_file"])
+        saved = json.loads(state.read_text())
+        self.assertEqual(saved["session"], {"participant": "alpha-agent", "session": "session-alpha"})
+        before = self.lease_path().read_bytes()
+        read_only = self.poll()
+        self.assertIsNone(read_only["attachment"])
+        self.assertEqual(self.lease_path().read_bytes(), before)
+        notices = [m for m in read_only["messages"] if m["headers"]["FROM"] == "alpha-agent"]
+        self.assertEqual(len(notices), 1)
+        self.assertIn("session-alpha", (self.root / notices[0]["path"]).read_text())
+        self.assertIn("need review", (self.root / notices[0]["path"]).read_text())
+
+    def test_generated_session_round_trips_main_and_cannot_take_over_live_id(self):
+        with contextlib.redirect_stdout(io.StringIO()) as out:
+            self.assertEqual(loop.main(["session-start", *self.common, "--runtime", "claude", "--summary", "Review Python changes; available for review"]), 0)
+        generated = json.loads(out.getvalue())["session"]
+        self.assertTrue(generated.startswith("session-"))
+        self.assertEqual(loop.session_command(self.args("session-heartbeat", "--session", generated))["session"], generated)
+        other = self.args("session-start", "--runtime", "copilot", "--summary", "Take over review")
+        other.state_dir = str(self.private / "other-worker")
+        with self.assertRaisesRegex(loop.LoopError, "live session"):
+            loop.session_command(other)
+        state = Path(self.poll()["state_file"])
+        saved = json.loads(state.read_text())
+        saved["session"]["participant"] = "bravo-agent"
+        state.write_text(json.dumps(saved))
+        original = state.read_bytes()
+        with self.assertRaisesRegex(loop.LoopError, "Corrupt private session"):
+            self.poll("--session", generated)
+        self.assertEqual(state.read_bytes(), original)
+
+    def test_every_mode_renews_only_owned_session_without_chatter_and_preserves_actions(self):
+        self.post(); request = self.poll()["messages"][0]; self.record(request)
+        self.start()
+        before_count = len(list(self.root.rglob("*.txt")))
+        from datetime import datetime, timedelta, timezone
+        path = self.lease_path()
+        record = json.loads(path.read_text())
+        old = datetime.now(timezone.utc)-timedelta(seconds=30)
+        stamp = lambda value: value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+        record.update(started_at=stamp(old), heartbeat_at=stamp(old), expires_at=stamp(old+timedelta(seconds=900)))
+        path.write_text(json.dumps(record))
+        previous_expiry = record["expires_at"]
+        for mode in loop.MODES:
+            result = self.poll("--session", "session-alpha", "--mode", mode)
+            self.assertGreater(result["attachment"]["expires_at"], previous_expiry)
+            self.assertEqual(result["attachment"]["session"], "session-alpha")
+            self.assertEqual(result["attachment"]["status"], "active")
+            self.assertEqual(result["pending_actions"][0]["action"]["disposition"], "accepted")
+        self.assertEqual(len(list(self.root.rglob("*.txt"))), before_count)
+        with self.assertRaisesRegex(loop.LoopError, "match the private"):
+            self.poll("--session", "some-other-session")
+        with self.assertRaisesRegex(loop.LoopError, "at most 300"):
+            self.poll("--session", "session-alpha", "--interval", "901")
+
+    def test_expired_lease_is_not_revived_or_binding_discarded(self):
+        from datetime import datetime, timedelta, timezone
+        self.start()
+        path = self.lease_path(); record = json.loads(path.read_text())
+        now = datetime.now(timezone.utc)
+        stamp = lambda value: value.isoformat(timespec="milliseconds").replace("+00:00", "Z")
+        record.update(started_at=stamp(now-timedelta(seconds=1800)), heartbeat_at=stamp(now-timedelta(seconds=1000)), expires_at=stamp(now-timedelta(seconds=100)))
+        path.write_text(json.dumps(record))
+        before = path.read_bytes()
+        with self.assertRaisesRegex(loop.LoopError, "expired|active"):
+            self.poll("--session", "session-alpha")
+        self.assertEqual(path.read_bytes(), before)
+        with self.assertRaisesRegex(loop.LoopError, "already exists"):
+            self.start("session-new")
+        states = loop.session_command(self.args("session-list"))["participants"]
+        self.assertEqual(next(p["state"] for p in states if p["participant"] == "alpha-agent"), "ghost")
+        self.release(); self.start("session-new")
+        self.assertEqual(self.poll("--session", "session-new")["attachment"]["session"], "session-new")
+
+    def test_release_announces_once_keeps_pending_work_and_revokes_heartbeat(self):
+        self.post(); message = self.poll()["messages"][0]; self.record(message)
+        self.start(); count = len(list(self.root.rglob("*.txt")))
+        self.release()
+        self.assertEqual(len(list(self.root.rglob("*.txt"))), count+1)
+        self.assertTrue(self.release()["already_released"])
+        self.assertEqual(len(list(self.root.rglob("*.txt"))), count+1)
+        self.assertEqual(self.poll()["pending_total"], 1)
+        self.assertNotIn("session", json.loads(Path(self.poll()["state_file"]).read_text()))
+        with self.assertRaisesRegex(loop.LoopError, "match the private"):
+            self.poll("--session", "session-alpha")
+        self.assertEqual(json.loads(self.lease_path().read_text())["status"], "released")
+
+    def test_recent_filters_are_bounded_and_do_not_consume_or_publish(self):
+        self.post("first"); self.post("second"); self.post("other", sender="charlie-agent")
+        before = {str(p): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+        got = loop.session_command(self.args("recent", "--from", "bravo-agent", "--room", "general", "--topic", "T001", "--limit", "1"))
+        self.assertEqual(len(got["messages"]), 1)
+        self.assertEqual(got["messages"][0]["from"], "bravo-agent")
+        self.assertTrue(got["messages"][0]["path"].endswith("second.txt"))
+        self.assertEqual(got["total_matching"], 2)
+        self.assertTrue(got["truncated"])
+        self.assertEqual(self.poll()["unread_total"], 3)
+        self.assertEqual(before, {str(p): p.read_bytes() for p in self.root.rglob("*") if p.is_file()})
+
+    def test_failed_or_empty_cli_response_never_claims_attachment(self):
+        for result in (loop.subprocess.CompletedProcess([], 0, "", ""), loop.subprocess.CompletedProcess([], 1, "", "denied")):
+            with patch.object(loop.subprocess, "run", return_value=result):
+                with self.assertRaises(loop.LoopError): self.start()
+            self.assertFalse(Path(self.poll()["state_file"]).exists())
+        with contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(loop.main(["session-start", *self.common, "--runtime", "codex", "--summary", "", "--session", "session-alpha"]), 2)
+        self.assertFalse(self.lease_path().exists())
+
+    def test_watch_releases_owned_session_at_deadline_and_interrupt(self):
+        for interrupt in (False, True):
+            session = "session-interrupt" if interrupt else "session-deadline"
+            self.start(session)
+            clock = [0]
+            def sleep(seconds):
+                if interrupt: raise KeyboardInterrupt
+                clock[0] += seconds
+            args = self.args("watch", "--session", session, "--duration", "1")
+            if interrupt:
+                with self.assertRaises(KeyboardInterrupt):
+                    loop.watch(args, now=lambda: clock[0], sleep=sleep, emit=lambda *a, **k: None)
+            else:
+                self.assertEqual(loop.watch(args, now=lambda: clock[0], sleep=sleep, emit=lambda *a, **k: None), 0)
+            self.assertEqual(json.loads(self.lease_path(session).read_text())["status"], "released")
+
+
 
 class BoundedStartupTests(unittest.TestCase):
     setUp = BoardLoopTests.setUp

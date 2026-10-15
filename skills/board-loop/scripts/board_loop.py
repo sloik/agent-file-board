@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Portable, offline polling and exact-message disposition ledger. Never runs an agent."""
+"""Bounded board polling, owned session leases and private action ledger. Never runs an agent."""
 from __future__ import annotations
 
 import argparse
@@ -9,6 +9,8 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
+import sys
 import tempfile
 import time
 from datetime import datetime, timezone
@@ -99,6 +101,10 @@ def ledger(state, identity):
     for path, record in data["messages"].items():
         if not isinstance(record, dict) or record.get("disposition") not in DISPOSITIONS or not re.fullmatch(r"[a-f0-9]{64}", record.get("sha256", "")):
             raise LoopError(f"Corrupt ledger record: {path}")
+    session = data.get("session")
+    if session is not None and (not isinstance(session, dict) or not isinstance(session.get("session"), str) or not ID.fullmatch(session["session"])
+                                or session.get("participant") != identity["participant_id"]):
+        raise LoopError("Corrupt private session binding; do not reset it to continue")
     return data
 
 
@@ -115,6 +121,78 @@ def save(state, data):
     finally:
         if os.path.exists(name):
             os.unlink(name)
+
+
+def ctl(args, *words):
+    """Use the installed canonical CLI, preserving its validation and lease rules."""
+    script = Path(args.ctl).expanduser().resolve() if args.ctl else Path(__file__).resolve().parents[3] / "boardctl.py"
+    if not script.is_file():
+        raise LoopError("Canonical boardctl.py missing; pass --ctl /absolute/standard/boardctl.py")
+    result = subprocess.run([sys.executable, str(script), *words, "--path", str(Path(args.path).resolve())],
+                            capture_output=True, text=True)
+    if result.returncode:
+        raise LoopError(result.stderr.strip() or f"boardctl failed with exit {result.returncode}")
+    try:
+        value = json.loads(result.stdout)
+    except ValueError as exc:
+        raise LoopError("boardctl returned invalid/empty JSON; attachment not confirmed") from exc
+    if not isinstance(value, dict):
+        raise LoopError("boardctl returned no object; attachment not confirmed")
+    return value
+
+
+def owned_session(args, data):
+    token = getattr(args, "session", None)
+    current = data.get("session")
+    if not token or not current or current["session"] != token:
+        raise LoopError("Explicit --session must match the private attachment; start/reconcile it first")
+    return current
+
+
+def renew(args, data):
+    current = owned_session(args, data)
+    result = ctl(args, "session", "heartbeat", args.participant, "--session", current["session"], "--lease-seconds", "900")
+    if result.get("session") != current["session"] or result.get("participant") != args.participant or result.get("status") != "active":
+        raise LoopError("boardctl did not confirm the owned active session")
+    return result
+
+
+def session_command(args):
+    root, board, config, known, identity, state = binding(args)
+    if args.command == "session-list":
+        return ctl(args, "session", "list")
+    if args.command == "recent":
+        words = ["recent", "--participant", args.participant, "--limit", str(args.limit), "--max-bytes", str(args.max_bytes)]
+        for flag, value in (("--from", args.sender), ("--room", args.room), ("--topic", args.topic)):
+            if value: words += [flag, value]
+        return ctl(args, *words)
+    with locked(state):
+        data = ledger(state, identity)
+        if args.command == "session-start":
+            if data.get("session"):
+                raise LoopError("A private attachment already exists; inspect/release it before explicitly starting another")
+            words = ["session", "start", args.participant, "--summary", args.summary, "--runtime", args.runtime, "--lease-seconds", "900"]
+            if args.session: words += ["--session", args.session]
+            result = ctl(args, *words)
+            if (not isinstance(result.get("session"), str) or not ID.fullmatch(result["session"])
+                    or result.get("participant") != args.participant or result.get("status") != "active"):
+                raise LoopError("boardctl did not confirm an active session; inspect leases before retrying")
+            data["session"] = {"participant": args.participant, "session": result["session"]}
+            data.pop("released_session", None)
+            save(state, data)
+            return result
+        if args.command == "session-release" and not data.get("session") and data.get("released_session") == args.session:
+            return {"participant": args.participant, "session": args.session, "status": "released", "already_released": True}
+        current = owned_session(args, data)
+        if args.command == "session-heartbeat":
+            return renew(args, data)
+        result = ctl(args, "session", "release", args.participant, "--session", current["session"], "--summary", args.summary)
+        if result.get("session") != current["session"] or result.get("participant") != args.participant or result.get("status") != "released":
+            raise LoopError("boardctl did not confirm release; retain the private attachment")
+        data["released_session"] = current["session"]
+        del data["session"]
+        save(state, data)
+        return result
 
 
 def messages(root, board, config, known, participant):
@@ -200,6 +278,11 @@ def snapshot(args):
     root, board, config, known, identity, state = binding(args)
     with locked(state):
         data = ledger(state, identity)
+        attachment = None
+        if getattr(args, "session", None):
+            if (args.interval or MODES[args.mode]) > 300:
+                raise LoopError("Attached action loops require an interval of at most 300 seconds")
+            attachment = renew(args, data)
         found = messages(root, board, config, known, args.participant)
         for path, record in data["messages"].items():
             if path not in found or found[path]["sha256"] != record["sha256"]:
@@ -216,7 +299,7 @@ def snapshot(args):
                   "glossary": {"path": str(glossary), "sha256": digest(glossary.read_bytes())},
                   "convention": str(board / "CONVENTION.md"), "state_file": str(state),
                   "summary_only": True, "order": "newest_first", "max_bytes": args.max_bytes,
-                  "unread_total": unread_total, "pending_total": pending_total,
+                  "attachment": attachment, "unread_total": unread_total, "pending_total": pending_total,
                   "messages": [], "pending_actions": [], "remaining_messages": len(unseen),
                   "remaining_pending": len(pending), "next_before": None, "next_pending_before": None}
         base_size = output_size(result)
@@ -345,11 +428,27 @@ def parser():
     cli = argparse.ArgumentParser(description=__doc__)
     sub = cli.add_subparsers(dest="command", required=True)
     sub.add_parser("modes")
-    for cmd in ("poll", "record", "read", "watch"):
+    for cmd in ("poll", "record", "read", "watch", "session-start", "session-heartbeat", "session-release", "session-list", "recent"):
         p = sub.add_parser(cmd)
         p.add_argument("--path", required=True)
         p.add_argument("--participant", required=True)
         p.add_argument("--state-dir")
+        p.add_argument("--ctl", help="Absolute canonical boardctl.py if installed separately")
+        if cmd.startswith("session-") or cmd in {"poll", "watch"}:
+            p.add_argument("--session", required=cmd in {"session-heartbeat", "session-release"})
+        if cmd in {"session-start", "session-release"}:
+            p.add_argument("--summary", required=True)
+        if cmd == "session-start":
+            p.add_argument("--runtime", required=True)
+        if cmd.startswith("session-"):
+            continue
+        if cmd == "recent":
+            p.add_argument("--from", dest="sender")
+            p.add_argument("--room")
+            p.add_argument("--topic")
+            p.add_argument("--limit", type=page_limit, default=20)
+            p.add_argument("--max-bytes", type=byte_budget, default=16384)
+            continue
         if cmd in {"poll", "read", "watch"}:
             p.add_argument("--max-bytes", type=byte_budget, default=16384)
         if cmd == "read":
@@ -376,14 +475,28 @@ def parser():
 
 def watch(args, *, now=time.monotonic, sleep=time.sleep, emit=print):
     deadline = now() + args.duration
-    while now() < deadline:
-        emit(json.dumps(snapshot(args), ensure_ascii=False), flush=True)
-        remaining = min(args.interval or MODES[args.mode], deadline - now())
-        while remaining > 0:
-            chunk = min(remaining, 60)
-            sleep(chunk)
-            remaining = min(remaining - chunk, deadline - now())
-    return 0
+    try:
+        while now() < deadline:
+            emit(json.dumps(snapshot(args), ensure_ascii=False), flush=True)
+            remaining = min(args.interval or MODES[args.mode], deadline - now())
+            while remaining > 0:
+                chunk = min(remaining, 60)
+                sleep(chunk)
+                remaining = min(remaining - chunk, deadline - now())
+        return 0
+    finally:
+        if args.session:
+            # Preserve a primary polling failure, but always report cleanup failures.
+            primary_error = sys.exc_info()[0] is not None
+            stop = argparse.Namespace(**vars(args))
+            stop.command = "session-release"
+            stop.summary = "Board listener stopped; pending action details remain in its private ledger; reconcile handoff with the owner."
+            try:
+                session_command(stop)
+            except (LoopError, OSError, KeyError, TypeError, UnicodeError) as exc:
+                if not primary_error:
+                    raise
+                print(f"board-loop: release failed: {exc}", file=sys.stderr)
 
 
 def main(argv=None):
@@ -394,7 +507,7 @@ def main(argv=None):
         elif args.command == "watch":
             return watch(args)
         else:
-            result = record_message(args) if args.command == "record" else read_message(args) if args.command == "read" else snapshot(args)
+            result = session_command(args) if args.command.startswith("session-") or args.command == "recent" else record_message(args) if args.command == "record" else read_message(args) if args.command == "read" else snapshot(args)
             print(json.dumps(result, ensure_ascii=False))
         return 0
     except KeyboardInterrupt:

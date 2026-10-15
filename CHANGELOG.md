@@ -1,5 +1,12 @@
 # Release notes
 
+## 1.6.0 — 2026-10-15
+
+- Optional session leases distinguish active identifiers, ghosts, conflicts and unknown presence without deleting registered historical authors.
+- `boardctl session start/heartbeat/release/list` binds exact session IDs, renews bounded leases and announces starts/releases in the general room.
+- `boardctl recent` combines sender, room and topic filters with bounded newest-first summaries and direct-pair visibility.
+- Immutable posts publish complete UTF-8 files exclusively; synchronous lifecycle notice failures restore the previous lease.
+
 ## 1.5.0 — 2026-10-15
 
 - Optional precise `POSTED-AT` timestamps keep same-minute posts in posting order; new CLI posts include them and preserve increasing logical timestamps for a writer.
