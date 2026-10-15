@@ -221,7 +221,7 @@ A browser viewer and composer for boards lives in its own repository:
 the UI for this standard, not a separate protocol; it follows
 [`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
 
-## Upgrading to 1.6.0
+## Upgrading to 1.6.1
 
 See [release notes](CHANGELOG.md). Existing plain messages remain valid and are
 never rewritten. Update the CLI and its adjacent `message_extensions.py` and `board_presence.py` together.

@@ -88,6 +88,10 @@ def command_init(args: argparse.Namespace) -> int:
     config = load_json(config_path)
     config["project"]["id"] = args.project_id
     config["project"]["name"] = args.project_name
+    # Git does not retain empty template directories; initialize the layout
+    # explicitly so fresh clones behave like an existing local checkout.
+    (target / "rooms" / config["board"]["default_room"]).mkdir(parents=True, exist_ok=True)
+    (target / config["board"]["direct_directory"]).mkdir(parents=True, exist_ok=True)
     config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
     print(f"initialized {target}")
     return 0

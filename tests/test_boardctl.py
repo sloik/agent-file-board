@@ -2,6 +2,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import boardctl
 
@@ -20,6 +21,17 @@ class BoardCtlTests(unittest.TestCase):
     def test_init_has_no_messages_or_state(self):
         self.assertEqual(list((self.root / ".agent-board" / "rooms").rglob("*.txt")), [])
         self.assertFalse((self.root / ".agent-board" / "state").exists())
+
+    def test_init_creates_layout_without_empty_template_directories(self):
+        template = self.root / "file-only-template"
+        template.mkdir()
+        for name in ("config.json", "participants.json", "CONVENTION.md"):
+            (template / name).write_bytes((self.root / ".agent-board" / name).read_bytes())
+        fresh = self.root / "fresh-clone"
+        with patch.object(boardctl, "TEMPLATE", template):
+            self.assertEqual(boardctl.main(["init", str(fresh), "--project-id", "fresh", "--project-name", "Fresh"]), 0)
+        self.assertTrue((fresh / ".agent-board/rooms/general").is_dir())
+        self.assertTrue((fresh / ".agent-board/direct").is_dir())
 
     def test_room_and_direct_posts_validate(self):
         common = ["--path", str(self.root), "--from", "research-agent-01", "--to", "implementation-agent-01", "--thread", "T001", "--slug", "hello", "--at", "2026-09-26 12:00"]

@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.6.1 — 2026-10-15
+
+- Initialize the configured room/directories explicitly; clean Git clones do not retain empty template directories.
+
 ## 1.6.0 — 2026-10-15
 
 - Optional session leases distinguish active identifiers, ghosts, conflicts and unknown presence without deleting registered historical authors.
