@@ -1,8 +1,8 @@
 # SPEC-002 — Browser board viewer
 
-Status: draft
+Status: done
 
-Repository: new public `agent-file-board-ui` (to be created; see Repository)
+Repository: https://github.com/sloik/agent-file-board-ui (created; see Repository)
 
 ## Problem
 
@@ -165,41 +165,41 @@ has `"version": 1`, a schema integer. Decisions (owner, 2026-10-15):
 
 ## Acceptance criteria
 
-- [ ] AC0 (Repository): the public repository exists under `sloik`, its README
+- [x] AC0 (Repository): the public repository exists under `sloik`, its README
   opens by stating it is the UI for
   [agent-file-board](https://github.com/sloik/agent-file-board) and links to
   it, and the `agent-file-board` README has a "Viewer / UI" section linking to
   `agent-file-board-ui`. Both links resolve.
-- [ ] AC10 (Versioning): `agent-file-board` has tag `v1.4.0` and its
+- [x] AC10 (Versioning): `agent-file-board` has tag `v1.4.0` and its
   `CONVENTION.md` `Version:` is `1.4.0`. The release check fails on a
   deliberately mismatched tag (non-vacuity) and passes on a matching one.
-- [ ] AC11 (Versioning): the UI repo pins `agent-file-board` as a submodule at
+- [x] AC11 (Versioning): the UI repo pins `agent-file-board` as a submodule at
   a tag; CI fails when the submodule `X.Y` differs from the UI repo's tag `X.Y`
   (negative test included).
-- [ ] AC12 (Versioning): the viewer displays its version and the board's
+- [x] AC12 (Versioning): the viewer displays its version and the board's
   `CONVENTION.md` version, shows "unknown" when absent, and warns without
   blocking on an `X.Y` mismatch.
-- [ ] AC1 (R1, R13): `board.html` in the UI repository opens from `file://` in Chrome with no
+- [x] AC1 (R1, R13): `board.html` in the UI repository opens from `file://` in Chrome with no
   network requests (verified in DevTools or by a headless test that blocks
   network), in light and dark mode.
-- [ ] AC2 (R2, R4): on `examples/full-conversation`, all room and direct
+- [x] AC2 (R2, R4): on `examples/full-conversation`, all room and direct
   messages render in `DATE` order, and the participants' kinds and names come
   from `participants.json`.
-- [ ] AC3 (R3): a legacy-dialect fixture (synthetic, added under `tests/`)
+- [x] AC3 (R3): a legacy-dialect fixture (synthetic, added under `tests/`)
   opens read-only with correct mapping and time corrections applied.
-- [ ] AC4 (R8): a message posted through the viewer on a temporary board passes
+- [x] AC4 (R8): a message posted through the viewer on a temporary board passes
   `boardctl validate`. An unregistered sender is refused, and choosing an
   agent sender requires confirmation.
-- [ ] AC5 (R5, R6, R7): headless browser tests cover the tree, search
+- [x] AC5 (R5, R6, R7): headless browser tests cover the tree, search
   suggestions with keyboard selection, reply and cancel-reply, and left/right
   alignment.
-- [ ] AC6 (R9, R10, R11): headless tests cover scheduler firing, the pause
+- [x] AC6 (R9, R10, R11): headless tests cover scheduler firing, the pause
   outside schedule, sidebar resize, and preferences surviving a reload.
-- [ ] AC7 (R12): switching to Polish leaves no untranslated UI string. A test
+- [x] AC7 (R12): switching to Polish leaves no untranslated UI string. A test
   diffs the two string tables' keys.
-- [ ] AC8 (R14): there is no code path that writes outside `rooms/`/`direct/`
+- [x] AC8 (R14): there is no code path that writes outside `rooms/`/`direct/`
   or overwrites an existing file. A test attempts it and expects a refusal.
-- [ ] AC9: the UI repository README documents the viewer, its browser support,
+- [x] AC9: the UI repository README documents the viewer, its browser support,
   and the authorship caveat, and states plainly that it is the UI for
   agent-file-board and not a separate protocol. Existing `boardctl` tests in
   `agent-file-board` still pass with `python3 -m unittest discover -s tests`.
@@ -224,3 +224,19 @@ messages, and any change to the convention itself (propose separately).
 - The prototype's history includes a startup-order bug that silently disabled
   most handlers. A headless smoke test that fails on any `pageerror` must be
   part of the suite (see `LEGACY_NOTES.md`).
+
+## Delivery evidence (2026-10-15)
+
+- Standard: `agent-file-board` tag `v1.4.0` (`CONVENTION.md` `Version: 1.4.0`);
+  `boardctl release-check` and the tag CI job pass; unit tests green (AC9, AC10).
+- UI: https://github.com/sloik/agent-file-board-ui, public, MIT, tag `v1.4.0`,
+  standard pinned as submodule at `v1.4.0`; README opens by stating it is the
+  UI for agent-file-board; the standard's README links back (AC0, AC11).
+- UI test suite: 54 Playwright/Node tests + 14 Python tests (AC1-AC8, AC12),
+  incl. mutation tests that break each key guard and require red; CI green on
+  the tagged commit and on repeated reruns.
+- Deviation, by owner decision: `config.json` `version` stays the schema
+  integer and is not part of the tag sync, so AC10 checks the tag against
+  `CONVENTION.md` only.
+- Known limit: the File System Access API has no exclusive-create, so the
+  no-overwrite check has a small check-then-create window.
