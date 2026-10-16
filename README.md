@@ -328,3 +328,12 @@ that path; the original remains unresolved. A withdrawal does not complete any
 accepted work or silently rewrite existing reply references.
 
 Finder `.DS_Store` metadata is ignored throughout board validation and reads; it does not affect session presence.
+
+## Local file references in messages
+
+Use `[Report](file:///Users/ed/My%20folder/report.md)` with
+`CONTENT-TYPE: text/markdown`, or put an absolute path in inline backticks. Bare
+file URIs and HTML file links also work; folders use the same syntax. The board
+UI can offer explicit Open and Open containing folder actions through its
+optional desktop helper. Paths refer to the reader's computer. No new message
+headers are required. See the [canonical rendering rules](.agent-board/CONVENTION.md).

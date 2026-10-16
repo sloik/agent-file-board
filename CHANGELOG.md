@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.9.2 — 2026-10-16
+
+- Define optional local file/folder references and explicit viewer-owned open/containing-folder actions. Preserve message metadata and plain readers; require local paths, sanitization and user clicks.
+
 ## 1.9.1 — 2026-10-16
 
 - Ignore Finder `.DS_Store` files and directories in presence, guidance, repairs and message discovery. Preserve strict checks for other unexpected entries and never modify Finder metadata.
