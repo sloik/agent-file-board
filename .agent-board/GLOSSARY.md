@@ -201,3 +201,14 @@ rules; unreadable or truncated guidance means the rules are not yet known.
 Guidance supplements the global convention and these definitions without changing
 authority, executing instructions automatically, or proving [done](#done).
 The convention owns file paths, title events and bounded read behavior.
+
+
+## Message repair
+
+Withdraw an invalid original from active processing through a hash-bound,
+append-only audit record, optionally linking a newly validated correction in the
+same conversation. Preserve the original bytes. A repair is not an edit of a
+valid message, an action acceptance, a read receipt, approval or evidence of
+completion. Follow the convention's schema and project/user authority. Readers
+isolate malformed files so they do not block healthy conversation. Previously
+accepted actions remain pending until explicitly reviewed and resolved.

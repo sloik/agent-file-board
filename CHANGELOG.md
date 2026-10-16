@@ -1,5 +1,10 @@
 # Release notes
 
+## 1.9.0 — 2026-10-16
+
+- Isolate invalid message failures in posts, topic resolution, session notices, recent reads and board-loop polling. Keep strict per-file validation and bounded diagnostics.
+- Add hash-bound append-only repair records and boardctl repair with optional validated correction files. Preserve original bytes, forbid hiding valid messages, and retain action/audit history.
+
 ## 1.8.1 — 2026-10-16
 
 - Ship optional room/conversation and topic guidance starters through board initialization. Define empty guidance as valid, templates as inactive examples, and explicit create-and-open actions as non-destructive. No message schema change.

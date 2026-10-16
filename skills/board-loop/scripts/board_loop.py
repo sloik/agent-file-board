@@ -200,7 +200,22 @@ def session_command(args):
         return result
 
 
-def messages(root, board, config, known, participant):
+def messages(root, board, config, known, participant, ctl_path=None):
+    import importlib.util
+    script = Path(__file__).resolve().parents[3] / "boardctl.py"
+    if not script.is_file() and ctl_path: script = Path(ctl_path).expanduser().resolve()
+    standard = None
+    if script.is_file():
+        spec = importlib.util.spec_from_file_location("_board_loop_reader", script)
+        standard = importlib.util.module_from_spec(spec)
+        sys.path.insert(0, str(script.parent))
+        try: spec.loader.exec_module(standard)
+        finally: sys.path.pop(0)
+    if not standard or not hasattr(standard, "check_message"):
+        raise LoopError("Update canonical boardctl and pass --ctl to use the shared strict message reader")
+    quarantined, repair_errors = standard.message_repairs.scan(board, config, known, lambda p: standard.message_error(p, board, config, known))
+    for error in repair_errors[:10]: print("board-loop: repair issue: " + error, file=sys.stderr)
+    invalid_count = 0
     direct = config["board"].get("direct_directory", "direct")
     if not isinstance(direct, str) or not re.fullmatch(r"[a-zA-Z0-9_-]+", direct) or direct == "rooms":
         raise LoopError("Invalid direct directory")
@@ -212,41 +227,49 @@ def messages(root, board, config, known, participant):
                 continue
             if not within(path, board):
                 raise LoopError(f"Message escapes the board: {path}")
-            raw = path.read_bytes()
-            head, sep, body = raw.decode("utf-8").replace("\r\n", "\n").partition("\n---\n")
-            if not sep:
-                raise LoopError(f"Missing header separator: {path}")
-            headers = {}
-            for line in head.splitlines():
-                if ": " in line:
-                    key, value = line.split(": ", 1)
-                    if key in headers:
-                        raise LoopError(f"Duplicate header {key}: {path}")
-                    headers[key] = value
-            required = {"FROM", "TO", "SCOPE", "THREAD", "DATE", "LANGUAGE", "STATUS", "REPLY-TO"}
-            if not required <= headers.keys() or headers["FROM"] not in known:
-                raise LoopError(f"Invalid headers/sender: {path}")
-            to = {s.strip() for s in headers["TO"].split(",")}
-            if not to or not to <= known | {"all"} or headers["STATUS"] not in config["statuses"]:
-                raise LoopError(f"Invalid recipients/status: {path}")
-            if top == "rooms":
-                if headers["SCOPE"] != "ROOM" or headers.get("ROOM") != path.parent.name:
-                    raise LoopError(f"Invalid room routing: {path}")
-            elif len(pair) != 2 or pair != sorted(set(pair)) or headers["SCOPE"] != "DIRECT" or headers.get("DIRECT-PARTICIPANTS") != ", ".join(pair) or headers["FROM"] not in pair or to != set(pair) - {headers["FROM"]}:
-                raise LoopError(f"Invalid direct routing: {path}")
-            posted = headers.get("POSTED-AT")
-            if posted is not None:
-                try:
-                    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", posted):
-                        raise ValueError("UTC milliseconds required")
-                    ordering = datetime.fromisoformat(posted.replace("Z", "+00:00")).timestamp() * 1000
-                except ValueError as exc:
-                    raise LoopError(f"Invalid POSTED-AT: {path}") from exc
-            else:
-                ordering = path.stat().st_mtime_ns // 1_000_000
-            rel = str(path.relative_to(root))
-            result[rel] = {"path": rel, "sha256": digest(raw), "headers": headers, "body": body,
-                           "addressed": participant in to or "all" in to, "ordering_timestamp": ordering}
+            try:
+                if path.relative_to(board).as_posix() in quarantined: continue
+                standard.check_message(path, board, config, known)
+                raw = path.read_bytes()
+                head, sep, body = raw.decode("utf-8").replace("\r\n", "\n").partition("\n---\n")
+                if not sep:
+                    raise LoopError(f"Missing header separator: {path}")
+                headers = {}
+                for line in head.splitlines():
+                    if ": " in line:
+                        key, value = line.split(": ", 1)
+                        if key in headers:
+                            raise LoopError(f"Duplicate header {key}: {path}")
+                        headers[key] = value
+                required = {"FROM", "TO", "SCOPE", "THREAD", "DATE", "LANGUAGE", "STATUS", "REPLY-TO"}
+                if not required <= headers.keys() or headers["FROM"] not in known:
+                    raise LoopError(f"Invalid headers/sender: {path}")
+                to = {s.strip() for s in headers["TO"].split(",")}
+                if not to or not to <= known | {"all"} or headers["STATUS"] not in config["statuses"]:
+                    raise LoopError(f"Invalid recipients/status: {path}")
+                if top == "rooms":
+                    if headers["SCOPE"] != "ROOM" or headers.get("ROOM") != path.parent.name:
+                        raise LoopError(f"Invalid room routing: {path}")
+                elif len(pair) != 2 or pair != sorted(set(pair)) or headers["SCOPE"] != "DIRECT" or headers.get("DIRECT-PARTICIPANTS") != ", ".join(pair) or headers["FROM"] not in pair or to != set(pair) - {headers["FROM"]}:
+                    raise LoopError(f"Invalid direct routing: {path}")
+                posted = headers.get("POSTED-AT")
+                if posted is not None:
+                    try:
+                        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z", posted):
+                            raise ValueError("UTC milliseconds required")
+                        ordering = datetime.fromisoformat(posted.replace("Z", "+00:00")).timestamp() * 1000
+                    except ValueError as exc:
+                        raise LoopError(f"Invalid POSTED-AT: {path}") from exc
+                else:
+                    ordering = path.stat().st_mtime_ns // 1_000_000
+                rel = str(path.relative_to(root))
+                result[rel] = {"path": rel, "sha256": digest(raw), "headers": headers, "body": body,
+                               "addressed": participant in to or "all" in to, "ordering_timestamp": ordering}
+            except (LoopError, ValueError, OSError, KeyError, TypeError) as exc:
+                invalid_count += 1
+                if invalid_count <= 10: print(f"board-loop: invalid message skipped: {path}: {exc}", file=sys.stderr)
+                continue
+
     return dict(sorted(result.items(), key=lambda row: (row[1]["headers"]["DATE"], row[1]["ordering_timestamp"], row[0])))
 
 
@@ -288,8 +311,11 @@ def snapshot(args):
             if (args.interval or MODES[args.mode]) > 300:
                 raise LoopError("Attached action loops require an interval of at most 300 seconds")
             attachment = renew(args, data)
-        found = messages(root, board, config, known, args.participant)
+        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None))
+        repair_review = []
         for path, record in data["messages"].items():
+            if path not in found and (root / path).is_file() and digest((root / path).read_bytes()) == record["sha256"]:
+                repair_review.append(path); continue
             if path not in found or found[path]["sha256"] != record["sha256"]:
                 raise LoopError(f"Immutable recorded message changed or disappeared: {path}")
         recent = list(reversed(list(found.values())))
@@ -304,7 +330,7 @@ def snapshot(args):
                   "glossary": {"path": str(glossary), "sha256": digest(glossary.read_bytes())},
                   "convention": str(board / "CONVENTION.md"), "state_file": str(state),
                   "summary_only": True, "order": "newest_first", "max_bytes": args.max_bytes,
-                  "attachment": attachment, "unread_total": unread_total, "pending_total": pending_total,
+                  "attachment": attachment, "repair_review_required": repair_review[:10], "repair_review_total": len(repair_review), "unread_total": unread_total, "pending_total": pending_total,
                   "messages": [], "pending_actions": [], "remaining_messages": len(unseen),
                   "remaining_pending": len(pending), "next_before": None, "next_pending_before": None}
         base_size = output_size(result)
@@ -334,7 +360,7 @@ def snapshot(args):
 def read_message(args):
     root, board, config, known, identity, state = binding(args)
     with locked(state):
-        found = messages(root, board, config, known, args.participant)
+        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None))
         message = found.get(args.message)
         if not message or (args.sha256 and args.sha256 != message["sha256"]):
             raise LoopError("Message not visible or snapshot changed; poll again")
@@ -370,7 +396,7 @@ def record_message(args):
     root, board, config, known, identity, state = binding(args)
     with locked(state):
         data = ledger(state, identity)
-        found = messages(root, board, config, known, args.participant)
+        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None))
         message = found.get(args.message)
         if not message or message["sha256"] != args.sha256:
             raise LoopError("Record only an exact message path and SHA256 returned by poll; source missing/changed")

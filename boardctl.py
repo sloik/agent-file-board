@@ -13,6 +13,7 @@ import sys
 import uuid
 import board_presence
 import board_guidance
+import message_repairs
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -200,7 +201,8 @@ def command_post(args: argparse.Namespace) -> int:
     posted = moment.astimezone(timezone.utc)
     if not args.at:
         for previous in list((board / "rooms").glob("*/*.txt")) + list((board / config["board"]["direct_directory"]).glob("*/*.txt")):
-            old = parse_message(previous)
+            try: old = check_message(previous, board, config, known)
+            except (ValueError, OSError, KeyError, TypeError, RecursionError): continue
             if old["FROM"] == args.sender or (previous.name == args.reply_to and previous.parent == directory):
                 value = old.get("POSTED-AT")
                 if value:
@@ -282,6 +284,66 @@ def parse_message(path: Path) -> dict[str, str]:
     return headers
 
 
+def check_message(path, board, config, known, source_path=None):
+    source_path = source_path or path
+    if not source_path.is_file() or source_path.is_symlink(): raise BoardError(f"{path}: message must be a regular file")
+    for parent in path.parents:
+        if parent.is_symlink(): raise BoardError(f"{path}: message parent cannot be a symlink")
+        if parent == board: break
+    statuses = set(config.get("statuses", []))
+    allowed = allowed_languages(config)
+    pattern = re.compile(rf"^\d{{4}}-\d{{2}}-\d{{2}}_\d{{4}}_({ID_RE.pattern[1:-1]})_(T\d{{{config['board']['thread_digits']}}})_([a-z0-9]+(?:-[a-z0-9]+)*)\.txt$")
+    headers = parse_message(source_path)
+    match = pattern.fullmatch(path.name)
+    if not match or match.group(1) != headers["FROM"] or not headers["THREAD"].startswith(match.group(2) + "-"):
+        raise BoardError(f"{path}: filename does not match sender/thread header")
+    if headers["FROM"] not in known or headers["STATUS"] not in statuses or headers["LANGUAGE"] not in allowed:
+        raise BoardError(f"{path}: unknown sender, status, or language")
+    recipients = [item.strip() for item in headers["TO"].split(",")]
+    if headers["TO"] != "all" and any(item not in known for item in recipients):
+        raise BoardError(f"{path}: unknown recipient")
+    relative = path.relative_to(board)
+    if headers["SCOPE"] == "ROOM":
+        if len(relative.parts) != 3 or relative.parts[0] != "rooms" or headers.get("ROOM") != relative.parts[1]:
+            raise BoardError(f"{path}: ROOM routing does not match path")
+    elif headers["SCOPE"] == "DIRECT":
+        pair = tuple(item.strip() for item in headers.get("DIRECT-PARTICIPANTS", "").split(","))
+        if len(pair) != 2 or tuple(sorted(pair)) != pair or len(relative.parts) != 3 or relative.parts[0] != config["board"]["direct_directory"] or relative.parts[1] != "--".join(pair) or headers["FROM"] not in pair or headers["TO"] not in pair:
+            raise BoardError(f"{path}: DIRECT routing does not match path")
+    else:
+        raise BoardError(f"{path}: SCOPE must be ROOM or DIRECT")
+    source = None
+    if "ANSWER" in headers:
+        reply = headers["REPLY-TO"]
+        if "/" in reply or "\\" in reply or reply in {"-", ".", ".."}:
+            raise BoardError(f"{path}: ANSWER requires a question filename")
+        target = path.parent / reply
+        if not target.is_file():
+            raise BoardError(f"{path}: ANSWER reply target is missing")
+        source = parse_message(target)
+    try:
+        validate_extensions(headers, source)
+    except ValueError as exc:
+        raise BoardError(f"{path}: {exc}") from exc
+    if headers["REPLY-TO"] != "-" and ("/" in headers["REPLY-TO"] or "\\" in headers["REPLY-TO"] or not (path.parent / headers["REPLY-TO"]).is_file()):
+        raise BoardError(f"{path}: REPLY-TO target is missing")
+    message_order(headers, source_path, config)
+    import codecs
+    decoder = codecs.getincrementaldecoder("utf-8")("strict")
+    with source_path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(65536), b""): decoder.decode(chunk)
+        decoder.decode(b"", final=True)
+    return headers
+
+
+def message_error(path, board, config, known):
+    try:
+        check_message(path, board, config, known)
+    except (ValueError, OSError, KeyError, TypeError, RecursionError) as exc:
+        return str(exc)
+    return None
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
     try:
@@ -296,45 +358,12 @@ def validate(root: Path) -> list[str]:
         allowed = allowed_languages(config)
     except BoardError as exc:
         return [str(exc)]
-    pattern = re.compile(rf"^\d{{4}}-\d{{2}}-\d{{2}}_\d{{4}}_({ID_RE.pattern[1:-1]})_(T\d{{{config['board']['thread_digits']}}})_([a-z0-9]+(?:-[a-z0-9]+)*)\.txt$")
+    quarantined, repair_errors = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
+    errors.extend(repair_errors)
     for path in sorted((board / "rooms").glob("**/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("**/*.txt")):
-        try:
-            headers = parse_message(path)
-            match = pattern.fullmatch(path.name)
-            if not match or match.group(1) != headers["FROM"] or not headers["THREAD"].startswith(match.group(2) + "-"):
-                raise BoardError(f"{path}: filename does not match sender/thread header")
-            if headers["FROM"] not in known or headers["STATUS"] not in statuses or headers["LANGUAGE"] not in allowed:
-                raise BoardError(f"{path}: unknown sender, status, or language")
-            recipients = [item.strip() for item in headers["TO"].split(",")]
-            if headers["TO"] != "all" and any(item not in known for item in recipients):
-                raise BoardError(f"{path}: unknown recipient")
-            relative = path.relative_to(board)
-            if headers["SCOPE"] == "ROOM":
-                if len(relative.parts) != 3 or relative.parts[0] != "rooms" or headers.get("ROOM") != relative.parts[1]:
-                    raise BoardError(f"{path}: ROOM routing does not match path")
-            elif headers["SCOPE"] == "DIRECT":
-                pair = tuple(item.strip() for item in headers.get("DIRECT-PARTICIPANTS", "").split(","))
-                if len(pair) != 2 or tuple(sorted(pair)) != pair or len(relative.parts) != 3 or relative.parts[0] != config["board"]["direct_directory"] or relative.parts[1] != "--".join(pair) or headers["FROM"] not in pair or headers["TO"] not in pair:
-                    raise BoardError(f"{path}: DIRECT routing does not match path")
-            else:
-                raise BoardError(f"{path}: SCOPE must be ROOM or DIRECT")
-            source = None
-            if "ANSWER" in headers:
-                reply = headers["REPLY-TO"]
-                if "/" in reply or "\\" in reply or reply in {"-", ".", ".."}:
-                    raise BoardError(f"{path}: ANSWER requires a question filename")
-                target = path.parent / reply
-                if not target.is_file():
-                    raise BoardError(f"{path}: ANSWER reply target is missing")
-                source = parse_message(target)
-            try:
-                validate_extensions(headers, source)
-            except ValueError as exc:
-                raise BoardError(f"{path}: {exc}") from exc
-            if headers["REPLY-TO"] != "-" and not (path.parent / headers["REPLY-TO"]).is_file():
-                raise BoardError(f"{path}: REPLY-TO target is missing")
-        except (BoardError, OSError) as exc:
-            errors.append(str(exc))
+        if path.relative_to(board).as_posix() in quarantined: continue
+        error = message_error(path, board, config, known)
+        if error: errors.append(error)
     return errors
 
 
@@ -429,7 +458,8 @@ def command_session(args: argparse.Namespace) -> int:
             raise BoardError("unsafe session notice room path")
         for existing in notice_dir.glob("*.txt"):
             if existing.is_symlink(): raise BoardError("symbolic link in session notice room")
-            header = parse_message(existing)
+            try: header = check_message(existing, board, config, known)
+            except (ValueError, OSError, KeyError, TypeError, RecursionError): continue
             if header["THREAD"].split("-", 1)[0] == thread and header["THREAD"] != thread + "-session-presence" and not header["THREAD"].startswith((thread + "-session-start-", thread + "-session-release-")):
                 raise BoardError(f"reserved presence topic {thread} already contains another conversation; move that conversation before starting sessions")
         slug = "session-" + action + "-" + uuid.uuid4().hex
@@ -459,7 +489,8 @@ def resolve_topic(directory: Path, thread: str, config: dict):
     """Explicit events win; ordinary message labels never rename an existing topic."""
     messages = []
     for path in directory.glob("*.txt"):
-        headers = parse_message(path)
+        try: headers = check_message(path, directory.parent.parent, config, ids(load_json(directory.parent.parent / "participants.json")))
+        except (ValueError, OSError, KeyError, TypeError, RecursionError): continue
         if headers["THREAD"].split("-", 1)[0] != thread:
             continue
         validate_extensions({k: v for k, v in headers.items() if k in {"TOPIC-TITLE", "POSTED-AT"}})
@@ -492,11 +523,18 @@ def command_recent(args: argparse.Namespace) -> int:
     if args.room and not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", args.room): raise BoardError("invalid room")
     if args.topic and not re.fullmatch(r"T\d{%d}" % config["board"]["thread_digits"], args.topic): raise BoardError("invalid topic")
     rows = []
+    invalid = []
+    quarantined, repair_errors = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
     paths = list((board / "rooms").glob("*/*.txt")) + list((board / config["board"]["direct_directory"]).glob("*/*.txt"))
     for path in paths:
         if path.is_symlink() or path.parent.is_symlink(): continue
-        headers = parse_message(path)
         relative = path.relative_to(board)
+        if relative.parts[0] == config["board"]["direct_directory"] and args.participant_id not in path.parent.name.split("--"): continue
+        if args.room and (relative.parts[0] != "rooms" or path.parent.name != args.room): continue
+        if relative.as_posix() in quarantined: continue
+        try: headers = check_message(path, board, config, known)
+        except (ValueError, OSError, KeyError, TypeError, RecursionError) as exc:
+            invalid.append({"path": str(path.relative_to(root)), "error": str(exc)[:160]}); continue
         if relative.parts[0] == config["board"]["direct_directory"]:
             pair = [p.strip() for p in headers.get("DIRECT-PARTICIPANTS", "").split(",")]
             if headers["SCOPE"] != "DIRECT" or args.participant_id not in pair or len(pair) != 2 or path.parent.name != "--".join(sorted(pair)) or headers["FROM"] not in pair or headers["TO"] not in pair: continue
@@ -509,7 +547,10 @@ def command_recent(args: argparse.Namespace) -> int:
         if args.topic and headers["THREAD"].split("-", 1)[0] != args.topic: continue
         rows.append((message_order(headers, path, config), {"path": str(path.relative_to(root)), "from": headers["FROM"], "to": headers["TO"], "scope": headers["SCOPE"], "room": headers.get("ROOM"), "topic": headers["THREAD"].split("-", 1)[0], "thread": headers["THREAD"], "status": headers["STATUS"], "date": headers["DATE"], "posted_at": headers.get("POSTED-AT")}))
     rows.sort(key=lambda row: row[0], reverse=True)
-    result = {"messages": [], "total_matching": len(rows), "truncated": len(rows) > args.limit}
+    result = {"messages": [], "total_matching": len(rows), "truncated": len(rows) > args.limit, "invalid_count": len(invalid), "invalid_messages": [], "repair_error_count": len(repair_errors)}
+    for issue in invalid[:10]:
+        candidate = dict(result, invalid_messages=[*result["invalid_messages"], issue])
+        if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 <= args.max_bytes: result = candidate
     for _, row in rows[:args.limit]:
         source = root / row["path"]
         digest = hashlib.sha256()
@@ -530,6 +571,52 @@ def command_recent(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_repair(args):
+    root = Path(args.path).resolve()
+    board, config, _, registry = board_paths(root)
+    known = ids(registry)
+    target = message_repairs.target_path(board, config, args.message)
+    if args.actor not in known: raise BoardError("repair actor must be registered")
+    if target.parent.parent.name == config["board"]["direct_directory"] and args.actor not in target.parent.name.split("--"): raise BoardError("repair requires a direct pair member")
+    if not args.reason.strip(message_repairs.REPAIR_WS) or len(args.reason)>2000 or any(0xD800 <= ord(c) <= 0xDFFF for c in args.reason): raise BoardError("repair reason must be nonblank Unicode text, at most 2000 characters")
+    if not message_error(target, board, config, known): raise BoardError("valid messages are immutable; post a normal follow-up")
+    original = message_repairs.file_hash(target)
+    record = {"version": 1, "target": target.relative_to(board).as_posix(), "sha256": original, "by": args.actor, "at": datetime.now(timezone.utc).isoformat(timespec="milliseconds").replace("+00:00", "Z"), "reason": args.reason.strip(message_repairs.REPAIR_WS), "replacement": None}
+    directory = board / "repairs"
+    if directory.is_symlink(): raise BoardError("unsafe repairs directory")
+    replacement = None
+    if args.replacement_file:
+        raw = Path(args.replacement_file).read_bytes(); raw.decode("utf-8")
+        # Read recoverable headers to choose a fresh filename; normal validation follows.
+        with __import__("tempfile").TemporaryDirectory() as tmp:
+            draft = Path(tmp) / "draft.txt"; draft.write_bytes(raw); headers = parse_message(draft)
+        if not ID_RE.fullmatch(headers["FROM"]) or not re.fullmatch(r"T\d{%d}-[a-z0-9]+(?:-[a-z0-9]+)*" % config["board"]["thread_digits"], headers["THREAD"]): raise BoardError("invalid replacement author/thread")
+        stamp = now_for(config, headers["DATE"])
+        name = f"{stamp:%Y-%m-%d_%H%M}_{headers['FROM']}_{headers['THREAD'].split('-',1)[0]}_amend-{uuid.uuid4().hex}.txt"
+        replacement = target.parent / name
+        with __import__("tempfile").TemporaryDirectory() as tmp:
+            draft = Path(tmp) / "draft.txt"; draft.write_bytes(raw)
+            check_message(replacement, board, config, known, source_path=draft)
+        directory.mkdir(exist_ok=True)
+        with replacement.open("xb") as handle: handle.write(raw)
+        record["replacement"] = replacement.relative_to(board).as_posix()
+    directory.mkdir(exist_ok=True)
+    try:
+        if message_repairs.file_hash(target) != original: raise BoardError("original changed; reload before repairing")
+        destination = directory / (uuid.uuid4().hex + ".json")
+        temporary = board / (".repair-tmp-" + uuid.uuid4().hex)
+        try:
+            with temporary.open("x", encoding="utf-8") as handle: json.dump(record, handle, ensure_ascii=False)
+            os.link(temporary, destination)
+        finally:
+            temporary.unlink(missing_ok=True)
+    except (ValueError, OSError) as exc:
+        suffix = f"; correction already published at {replacement}; original still requires repair" if replacement else ""
+        raise BoardError(str(exc) + suffix) from exc
+    print(destination.relative_to(root))
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(prog="boardctl")
     commands = cli.add_subparsers(dest="command", required=True)
@@ -542,6 +629,7 @@ def parser() -> argparse.ArgumentParser:
     post.add_argument("--answer-file", help="JSON answer metadata file; requires --reply-to")
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
+    repair = commands.add_parser("repair"); repair.add_argument("--path", default="."); repair.add_argument("--message", required=True); repair.add_argument("--by", dest="actor", required=True); repair.add_argument("--reason", required=True); repair.add_argument("--replacement-file"); repair.set_defaults(func=command_repair)
     valid = commands.add_parser("validate"); valid.add_argument("--path", default="."); valid.set_defaults(func=command_validate)
     session = commands.add_parser("session")
     actions = session.add_subparsers(dest="session_action", required=True)

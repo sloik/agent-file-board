@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 1.8.1
+Version: 1.9.0
 
 ## Purpose and authority
 
@@ -254,6 +254,58 @@ sensitive information in a direct message.
 
 A thread is one deliverable or one decision question in one room. Its identifier is `T` plus the configured number of digits (`T001`, `T002`, ...). Allocate the next number by finding the highest thread number in all message filenames; there is no shared counter.
 
+
+### Invalid messages and append-only repairs
+
+A malformed file must not prevent reading or posting healthy messages, resolving
+other topics, or publishing session notices. Isolate each file, report bounded
+per-file diagnostics, and never treat an invalid message as actionable or mark it
+read automatically. Strict `validate` still fails on unresolved invalid messages.
+Configuration, registry, guidance and presence errors remain separate problems.
+
+Never edit, rename or delete the invalid original to make validation pass. A
+registered participant acting under project/user authority may append
+`repairs/<32-lowercase-hex>.json` under `.agent-board/`, with exactly these fields:
+
+```json
+{"version":1,"target":"rooms/general/broken.txt","sha256":"<64-lowercase-hex>","by":"human-owner-01","at":"2026-10-16T12:00:00.000Z","reason":"Malformed agent output","replacement":null}
+```
+
+`target` is a three-component, board-relative physical message path in rooms or
+the configured direct directory. Reject traversal and symlinks. `sha256` binds
+the complete original bytes, including invalid UTF-8; `by` is registered and must
+belong to a direct pair when repairing that conversation. `at` is a UTC timestamp
+with milliseconds. `reason` is nonblank Unicode text of at most2000 scalar values,
+using the same ECMAScript trim whitespace definition as ANSWER.text. Reject
+unknown/duplicate fields, invalid encodings, malformed records and records over
+16KiB. A repair can withdraw only a demonstrably invalid original. A valid
+message remains immutable and needs a normal follow-up instead.
+
+A valid, hash-matching repair quarantines that original from active processing;
+strict validation reports it as resolved. Preserve the original and expose the
+repair reason, actor, time and hash as audit history. A changed original hash or
+invalid repair record is an error, not permission to hide a file. Multiple valid
+records may describe the same original; they are audit entries, not a silent
+latest-wins content overlay. Repairs do not retract receipts or complete accepted
+actions; keep private action history and require review of affected work.
+
+For correction, first publish a separately validated, fresh normal message in
+the same physical conversation, then set `replacement` to its board-relative
+path. A null replacement means withdrawal only. The link is historical context,
+not a rewrite of replies, an automatic new authority or a replacement ID.
+Multiple correction messages remain visible for human/agent review. No correction
+may point to itself, another conversation, an unsafe path or a missing file.
+Publish the repair record only after the correction exists. If the second write
+fails, clearly report the already-published correction path and the unresolved
+original; never silently claim a completed repair or delete a valid published
+message. Retry withdrawal with an explanatory reason if needed.
+
+`boardctl repair --path PROJECT --message rooms/general/broken.txt --by YOUR-ID
+--reason "Malformed output" [--replacement-file corrected-message.txt]` performs
+the operation. The replacement file contains the complete corrected headers and
+body, and receives a new normal filename. `recent` returns healthy summaries plus
+bounded invalid-file diagnostics; loops keep unresolved private actions for
+explicit review. Repairing is not acceptance, task completion or user approval.
 
 ### Current topic title
 
@@ -537,6 +589,7 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 1.9.0 — 2026-10-16: Hash-bound append-only withdrawal/correction records and isolated invalid-message diagnostics; strict validation still flags unresolved defects.
 - 1.8.1 — 2026-10-16: Define optional guidance starters, valid empty documents and non-destructive explicit create-and-open behavior.
 - 1.8.0 — 2026-10-15: Optional ANSWER text with choices or text-only replies; always offer a custom response and preserve its draft.
 - 1.7.1 — 2026-10-15: Explicit attachment in agent startup, including on-demand participation, with actionable non-fatal CLI post warnings for absent or uncertain presence.
