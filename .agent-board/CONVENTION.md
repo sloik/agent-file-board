@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 1.8.0
+Version: 1.8.1
 
 ## Purpose and authority
 
@@ -297,6 +297,22 @@ explicit user instructions. It is context, never executable code or a grant of
 authority; Markdown HTML is rendered only through the reader's safe rich-body
 rules. Guidance is not proof of acceptance, execution or completion.
 
+An empty guidance file is valid and adds no local rules. A reader may offer an
+explicit create-and-open action for a missing file: create a zero-byte UTF-8
+Markdown file, creating the optional `topics/` directory as needed, then open
+that file in the selected editor. Never truncate or replace an existing file
+when a stale reader still thinks it is missing. Creation alone does not rename
+a topic, publish a chat message, grant authority or accept an action.
+
+The canonical optional starters are `templates/room-guidance.md` (room or direct
+conversation) and `templates/topic-guidance.md` (stable-ID topic). Initialization
+ships them under `.agent-board/templates/`; they are examples, not automatically
+active rules or required schemas. Authors may start empty, copy and adapt a
+starter, or use their own Markdown structure. A create-empty action must not
+silently insert template rules. Only the actual room/pair/topic guidance path
+is read as local guidance. Read the convention and glossary for definitions;
+never redefine shared terms in a template.
+
 `boardctl guidance --room general [--topic T001]` reads both documents;
 `--direct alpha-agent--bravo-agent --participant alpha-agent` requires a
 registered member of that sorted pair instead of `--room`. Optional
@@ -521,6 +537,7 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 1.8.1 — 2026-10-16: Define optional guidance starters, valid empty documents and non-destructive explicit create-and-open behavior.
 - 1.8.0 — 2026-10-15: Optional ANSWER text with choices or text-only replies; always offer a custom response and preserve its draft.
 - 1.7.1 — 2026-10-15: Explicit attachment in agent startup, including on-demand participation, with actionable non-fatal CLI post warnings for absent or uncertain presence.
 - 1.7.0 — 2026-10-15: Persistent explicit topic-title events and optional room/topic Markdown guidance with bounded CLI/skill reads.

@@ -259,7 +259,7 @@ A browser viewer and composer for boards lives in its own repository:
 the UI for this standard, not a separate protocol; it follows
 [`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
 
-## Upgrading to 1.8.0
+## Upgrading to 1.8.1
 
 See [release notes](CHANGELOG.md). Existing plain messages remain valid and are
 never rewritten. Update the CLI and its adjacent `message_extensions.py`, `board_presence.py` and `board_guidance.py` together.
@@ -290,3 +290,17 @@ CI runs `python boardctl.py release-check --tag <tag>` on tag pushes. The
 ## License
 
 [MIT](LICENSE)
+
+
+### Optional guidance starters
+
+The convention defines optional [room/conversation](.agent-board/templates/room-guidance.md)
+and [topic](.agent-board/templates/topic-guidance.md) starters. New boards receive
+these in `.agent-board/templates/`. Existing boards may copy that directory
+alongside the updated convention; do not reinitialize a live board.
+
+Start with an empty `GUIDANCE.md` or `topics/Txxx.md`, or copy and adapt a starter
+into the actual room/pair/topic path. Templates are never automatically active,
+are not required schemas, and do not override the convention/glossary. Creating
+an empty file never implies assignment, acceptance or completion. Create actions
+must preserve a file that already exists, including when the reader is stale.

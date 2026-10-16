@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.8.1 — 2026-10-16
+
+- Ship optional room/conversation and topic guidance starters through board initialization. Define empty guidance as valid, templates as inactive examples, and explicit create-and-open actions as non-destructive. No message schema change.
+
 ## 1.8.0 — 2026-10-15
 
 - Allow optional plain-text `ANSWER.text` alongside choices, or with an empty selection for a custom-only reply. Validate Unicode and the 10,000-character bound.

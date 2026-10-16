@@ -24,6 +24,20 @@ class TopicGuidanceTests(unittest.TestCase):
         self.config = boardctl.board_paths(self.root)[1]
         self.room = self.board / 'rooms/general'
 
+    def test_optional_templates_ship_without_becoming_active_and_empty_guidance_is_valid(self):
+        for name in ("room-guidance.md", "topic-guidance.md"):
+            self.assertTrue((self.board / "templates" / name).is_file())
+        code, data, _ = self.guidance("--room", "general", "--topic", "T001")
+        self.assertEqual(code, 0)
+        self.assertEqual([d["status"] for d in data["documents"]], ["missing", "missing"])
+        (self.room / "GUIDANCE.md").write_bytes(b"")
+        code, data, _ = self.guidance("--room", "general")
+        self.assertEqual(code, 0)
+        self.assertEqual(data["documents"][0]["status"], "ok")
+        self.assertEqual(data["documents"][0]["markdown"], "")
+        with contextlib.redirect_stdout(io.StringIO()):
+            self.assertEqual(boardctl.main(["validate", "--path", str(self.root)]), 0)
+
     def post(self, slug, at, title=None):
         args = ['post', '--path', str(self.root), '--from', 'alpha-agent', '--to', 'all', '--scope', 'room', '--room', 'general', '--thread', 'T001', '--slug', slug, '--at', at]
         if title is not None:
