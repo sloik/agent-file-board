@@ -100,6 +100,7 @@ def validation_errors(board, config):
         if not scope_path.is_dir():
             continue
         for directory in scope_path.iterdir():
+            if directory.name == ".DS_Store": continue
             if not directory.is_dir() and not directory.is_symlink():
                 continue
             candidates = [directory / "GUIDANCE.md"]
@@ -112,6 +113,7 @@ def validation_errors(board, config):
                 continue
             if topics.is_dir():
                 for path in topics.iterdir():
+                    if path.name == ".DS_Store": continue
                     if not re.fullmatch(r"T\d{%d}\.md" % config["board"]["thread_digits"], path.name):
                         errors.append(f"{path}: guidance topic filename must bind a configured thread ID")
                     candidates.append(path)

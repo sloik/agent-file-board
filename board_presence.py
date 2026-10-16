@@ -83,7 +83,7 @@ def root_errors(board: Path, known: set[str] | None = None) -> list[str]:
         base = safe_path(board)
         if not base.exists(): return []
         for path in sorted(base.iterdir()):
-            if re.fullmatch(r"\.tmp-[0-9a-f]{32}", path.name): continue
+            if path.name == ".DS_Store" or re.fullmatch(r"\.tmp-[0-9a-f]{32}", path.name): continue
             if path.name == ".write-lock" and path.is_dir() and not path.is_symlink(): continue
             if path.is_symlink() or not path.is_dir() or not ID_RE.fullmatch(path.name):
                 errors.append(f"{path}: unsafe or unexpected presence entry")
@@ -108,7 +108,7 @@ def inspect(board: Path, participant: str, now: datetime, known: set[str] | None
                 paths = []
                 errors.append(str(exc))
             for path in paths:
-                if re.fullmatch(r"\.tmp-[0-9a-f]{32}", path.name): continue
+                if path.name == ".DS_Store" or re.fullmatch(r"\.tmp-[0-9a-f]{32}", path.name): continue
                 try:
                     if path.suffix != ".json":
                         raise PresenceError("unexpected presence file")
@@ -133,7 +133,7 @@ def validation_errors(board: Path, known: set[str]) -> list[str]:
     except (PresenceError, OSError) as exc:
         return [str(exc)]
     for path in entries:
-        if re.fullmatch(r"\.tmp-[0-9a-f]{32}", path.name): continue
+        if path.name == ".DS_Store" or re.fullmatch(r"\.tmp-[0-9a-f]{32}", path.name): continue
         if path.name == ".write-lock" and path.is_dir() and not path.is_symlink(): continue
         try:
             identity = safe_id(path.name)

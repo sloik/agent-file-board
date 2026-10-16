@@ -222,6 +222,7 @@ def messages(root, board, config, known, participant, ctl_path=None):
     result = {}
     for top in ("rooms", direct):
         for path in sorted((board / top).glob("*/*.txt")):
+            if ".DS_Store" in path.relative_to(board).parts: continue
             pair = path.parent.name.split("--")
             if top == direct and participant not in pair:
                 continue

@@ -36,6 +36,7 @@ def scan(board, config, known, invalid):
     except OSError as exc:
         return {}, [str(exc)]
     for path in records:
+        if path.name == ".DS_Store": continue
         try:
             if path.is_symlink() or not path.is_file() or not re.fullmatch(r"[a-f0-9]{32}\.json", path.name) or path.stat().st_size > 16384:
                 raise ValueError("invalid repair record path/size")

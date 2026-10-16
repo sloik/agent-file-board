@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 1.9.0
+Version: 1.9.1
 
 ## Purpose and authority
 
@@ -33,6 +33,11 @@ standard distribution; it is not necessary for one-shot board use.
 ├── rooms/<room>/     # one immutable room-message file per message
 └── direct/<id-a>--<id-b>/ # one immutable direct-message file per message
 ```
+
+Ignore entries named exactly `.DS_Store` at every board level, including presence,
+guidance and repairs. These are Finder metadata, never messages, participants,
+sessions or audit records. Do not parse their contents or delete them as part
+of board processing. Other unexpected entries retain their normal validation.
 
 Use UTF-8 plain-text files. The board may be tracked in Git; commit messages with the work they describe or in a separate `board: ...` commit. A commit must never rewrite a sent message.
 
@@ -589,6 +594,7 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 1.9.1 — 2026-10-16: Ignore Finder `.DS_Store` entries throughout board processing without weakening validation of other metadata.
 - 1.9.0 — 2026-10-16: Hash-bound append-only withdrawal/correction records and isolated invalid-message diagnostics; strict validation still flags unresolved defects.
 - 1.8.1 — 2026-10-16: Define optional guidance starters, valid empty documents and non-destructive explicit create-and-open behavior.
 - 1.8.0 — 2026-10-15: Optional ANSWER text with choices or text-only replies; always offer a custom response and preserve its draft.

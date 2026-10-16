@@ -259,7 +259,7 @@ A browser viewer and composer for boards lives in its own repository:
 the UI for this standard, not a separate protocol; it follows
 [`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
 
-## Upgrading to 1.9.0
+## Upgrading to 1.9.1
 
 See [release notes](CHANGELOG.md). Existing plain messages remain valid and are
 never rewritten. Update the CLI and its adjacent `message_extensions.py`, `board_presence.py`, `board_guidance.py` and `message_repairs.py` together.
@@ -326,3 +326,5 @@ understand resolved invalid files and may still reject them. The UI offers
 If a correction was published but its repair record failed, the command reports
 that path; the original remains unresolved. A withdrawal does not complete any
 accepted work or silently rewrite existing reply references.
+
+Finder `.DS_Store` metadata is ignored throughout board validation and reads; it does not affect session presence.

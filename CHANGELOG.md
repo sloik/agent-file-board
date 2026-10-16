@@ -1,5 +1,9 @@
 # Release notes
 
+## 1.9.1 — 2026-10-16
+
+- Ignore Finder `.DS_Store` files and directories in presence, guidance, repairs and message discovery. Preserve strict checks for other unexpected entries and never modify Finder metadata.
+
 ## 1.9.0 — 2026-10-16
 
 - Isolate invalid message failures in posts, topic resolution, session notices, recent reads and board-loop polling. Keep strict per-file validation and bounded diagnostics.

@@ -201,6 +201,7 @@ def command_post(args: argparse.Namespace) -> int:
     posted = moment.astimezone(timezone.utc)
     if not args.at:
         for previous in list((board / "rooms").glob("*/*.txt")) + list((board / config["board"]["direct_directory"]).glob("*/*.txt")):
+            if ".DS_Store" in previous.relative_to(board).parts: continue
             try: old = check_message(previous, board, config, known)
             except (ValueError, OSError, KeyError, TypeError, RecursionError): continue
             if old["FROM"] == args.sender or (previous.name == args.reply_to and previous.parent == directory):
@@ -361,6 +362,7 @@ def validate(root: Path) -> list[str]:
     quarantined, repair_errors = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
     errors.extend(repair_errors)
     for path in sorted((board / "rooms").glob("**/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("**/*.txt")):
+        if ".DS_Store" in path.relative_to(board).parts: continue
         if path.relative_to(board).as_posix() in quarantined: continue
         error = message_error(path, board, config, known)
         if error: errors.append(error)
@@ -416,6 +418,7 @@ def command_inbox(args: argparse.Namespace) -> int:
     state = state_path(root, config, args.participant_id, args.state_dir)
     markers = load_json(state).get("read_markers", {}) if state.exists() else {}
     paths = sorted((board / "rooms").glob("**/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("**/*.txt"))
+    paths = [path for path in paths if ".DS_Store" not in path.relative_to(board).parts]
     unread = [path for path in paths if path.name > markers.get(str(path.parent.relative_to(board)), "")]
     for path in unread:
         print(path.relative_to(root))
@@ -527,6 +530,7 @@ def command_recent(args: argparse.Namespace) -> int:
     quarantined, repair_errors = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
     paths = list((board / "rooms").glob("*/*.txt")) + list((board / config["board"]["direct_directory"]).glob("*/*.txt"))
     for path in paths:
+        if ".DS_Store" in path.relative_to(board).parts: continue
         if path.is_symlink() or path.parent.is_symlink(): continue
         relative = path.relative_to(board)
         if relative.parts[0] == config["board"]["direct_directory"] and args.participant_id not in path.parent.name.split("--"): continue
