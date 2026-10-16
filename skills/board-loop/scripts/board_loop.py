@@ -270,6 +270,11 @@ def messages(root, board, config, known, participant, ctl_path=None):
                 if invalid_count <= 10: print(f"board-loop: invalid message skipped: {path}: {exc}", file=sys.stderr)
                 continue
 
+    for records in quarantined.values():
+        for record in records:
+            if record["replacement"]:
+                key = str((board / record["replacement"]).relative_to(root))
+                if key in result: result[key]["repair"] = {"original": record["target"], "by": record["by"], "record": "repairs/" + record["record"]}
     return dict(sorted(result.items(), key=lambda row: (row[1]["headers"]["DATE"], row[1]["ordering_timestamp"], row[0])))
 
 
@@ -289,6 +294,7 @@ def summary(message, action=None):
         result["action"] = {"disposition": action["disposition"], "note": action["note"][:300],
                             "evidence": [p[:240] for p in action["evidence"][:3]],
                             "note_truncated": len(action["note"]) > 300, "evidence_total": len(action["evidence"])}
+    if "repair" in message: result["repair"] = message["repair"]
     return result
 
 

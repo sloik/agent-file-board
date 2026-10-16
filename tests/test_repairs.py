@@ -37,6 +37,7 @@ class RepairsTests(unittest.TestCase):
         self.assertEqual(self.repair('--replacement-file',str(replacement))[0],0)
         record=json.loads(next((self.board/'repairs').glob('*.json')).read_text())
         new=self.board/record['replacement'];self.assertEqual(new.read_text(),raw)
+        code,out=self.cli('recent','--participant','test-human','--path',str(self.root));self.assertEqual(code,0);self.assertEqual(json.loads(out)['messages'][0]['repair']['by'],'test-human')
         self.assertEqual(self.cli('validate','--path',str(self.root))[0],0)
         self.assertNotEqual(self.cli('repair','--path',str(self.root),'--message',record['replacement'],'--by','test-human','--reason','hide valid message')[0],0)
     def test_invalid_replacement_and_unsafe_targets_are_refused(self):

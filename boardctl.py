@@ -562,6 +562,9 @@ def command_recent(args: argparse.Namespace) -> int:
                 if line.rstrip("\r\n") == "---": break
             preview = " ".join(handle.read(160).split())
         row = dict(row, sha256=digest.hexdigest(), preview=preview)
+        for records in quarantined.values():
+            for record in records:
+                if record["replacement"] == source.relative_to(board).as_posix(): row["repair"] = {"original": record["target"], "by": record["by"], "record": "repairs/" + record["record"]}
         candidate = dict(result, messages=[*result["messages"], row])
         if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 > args.max_bytes:
             result["truncated"] = True
