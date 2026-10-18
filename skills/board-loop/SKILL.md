@@ -316,12 +316,20 @@ Upgrade CLI/viewer/metadata to2.4 for v3; older forms/reports retain their meani
 Browser drafts are local convenience only, never submitted answers or accepted work.
 
 
-### Human-facing authoring/review tools (UI2.4.1)
+### Human-facing authoring/review tools (UI2.4.2)
 
 The viewer's JSON preview, answer comparisons and draft backups are local
 conveniences. Read and validate actual QUESTION/ANSWER message metadata for agent
 work; neither a preview, imported draft nor a displayed comparison submits an
 answer, accepts responsibility or authorizes execution. A draft backup JSON file
-is not a board question/answer payload. The UI2.4.1 demo's T015 illustrates an
+is not a board question/answer payload. The UI2.4.2 demo's T015 illustrates an
 explicit fictional agent question, human typed reply and agent read/follow-up.
 Canonical2.4.0 remains the contract; no listener/backend is added.
+
+UI2.4.2 also has a visual form builder and persistent authoring workspace. Saved
+attachments restore only explicitly on the matching native board; editor work is
+independent of board/respondent and supports unfinished JSON. Authoring backups
+(`agent-file-board-authoring`, version1) and answer-draft backups are separate
+viewer formats, never valid CLI question/answer input. No automatic posting or
+execution is implied. The packaged workflow trial is rehearsal, not verified
+real human adoption.

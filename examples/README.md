@@ -19,8 +19,13 @@ canonical CLI uses only the Python standard library; the viewer supplies OpenUI.
 Nothing below `examples/` is bootstrapped into a project.
 
 
-Viewer2.4.1 adds a local JSON authoring preview, typed answer comparisons and
+Viewer2.4.2 adds a local JSON authoring preview, typed answer comparisons and
 draft backup tools without changing canonical2.4.0 payloads. The complete viewer
 demo includes reports/T015's fictional agent/human/agent cycle and a viewer-only
 draft backup example. See the
-[illustrated guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.1/docs/WORKBENCH.md).
+[illustrated guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.2/docs/WORKBENCH.md).
+
+UI2.4.2 adds visual form building, browser-local authoring recovery, named
+snapshots and explicit authoring backup import/export. The demo includes
+authoring-example.json and WORKFLOW-TRIAL.md; these remain fictional rehearsal
+evidence. Authoring backups are not canonical QUESTION/ANSWER payloads.

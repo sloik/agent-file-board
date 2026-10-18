@@ -179,10 +179,15 @@ The downloadable full demo includes this workflow in T013/T014.
 
 ## Viewer authoring, comparisons and draft backups
 
-UI2.4.1 can load these five report/form definitions through **Structured message**,
+UI2.4.2 can load these five report/form definitions through **Structured message**,
 validate them using the existing contract and render them locally before normal
 posting. The same viewer shows read-only typed answer comparisons and provides
 **Saved drafts** export/import/delete. Canonical2.4.0 payloads remain unchanged.
 A viewer draft backup is a separate format; never pass it as a question or answer
 file to boardctl. See the
-[tool guide and fictional roundtrip demo](https://github.com/sloik/agent-file-board-ui/blob/v2.4.1/docs/WORKBENCH.md).
+[tool guide and fictional roundtrip demo](https://github.com/sloik/agent-file-board-ui/blob/v2.4.2/docs/WORKBENCH.md).
+
+UI2.4.2 adds visual form building, browser-local authoring recovery, named
+snapshots and explicit authoring backup import/export. The demo includes
+authoring-example.json and WORKFLOW-TRIAL.md; these remain fictional rehearsal
+evidence. Authoring backups are not canonical QUESTION/ANSWER payloads.
