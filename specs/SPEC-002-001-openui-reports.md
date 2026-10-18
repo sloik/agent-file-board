@@ -3,7 +3,7 @@ id: SPEC-002-001
 title: Versioned OpenUI board reports and offline viewer integration
 parent: SPEC-002
 type: feature
-status: in_progress
+status: done
 created: 2026-10-18
 ---
 
@@ -40,18 +40,18 @@ authorized scope without installing an autonomous loop.
 
 ## Acceptance criteria
 
-- [ ] CLI round-trip table/chart plus existing question and answer passes strict
+- [x] CLI round-trip table/chart plus existing question and answer passes strict
   validation and preserves original message bytes; invalid reports publish nothing.
-- [ ] Shared positive/negative fixtures agree across Python and browser including
+- [x] Shared positive/negative fixtures agree across Python and browser including
   unknown versions, duplicate keys, unsafe strings, nonfinite/bool numbers,
   oversized/mismatched arrays and extra executable/resource keys.
-- [ ] Actual OpenUI renderer displays a completed report from `file://` with zero
+- [x] Actual OpenUI renderer displays a completed report from `file://` with zero
   network requests in light/dark themes and a 375px viewport; text is escaped.
-- [ ] Choice submissions remain normal immutable ANSWER files; refresh preserves
+- [x] Choice submissions remain normal immutable ANSWER files; refresh preserves
   the draft, focus and report lifecycle; uploaded boards keep download behavior.
-- [ ] Bad payload/renderer failure stays readable, has no active report controls
+- [x] Bad payload/renderer failure stays readable, has no active report controls
   and does not stop healthy sibling messages. Existing regression suites pass.
-- [ ] Version/release consistency checks pass; a standalone report example and
+- [x] Version/release consistency checks pass; a standalone report example and
   screenshot document the integration and migration limits.
 
 ## Context and validation
@@ -68,3 +68,16 @@ required by this implementation scope.
 
 General forms/new answer schemas, streaming server or AG-UI transport, arbitrary
 OpenUI Lang programs, model gateway, automatic execution and native app SDKs.
+
+## Verification — 2026-10-18
+
+Canonical Python suite: 98 passed. UI JavaScript/browser suite: 158 passed,
+including 9 new OpenUI tests, shared metadata fixtures, real offline rendering,
+choice reply persistence, root disposal, large headers, failure isolation and
+375px/theme checks. Existing offline resource guards and assertions remain intact.
+Only exact version expectations changed in existing compose/render/i18n tests.
+Desktop/phone screenshots were generated from the actual viewer and inspected.
+OpenUI production bundle is 603208 bytes; standalone viewer is 876113 bytes.
+Canonical imports no renderer packages. Canonical/UI local version and pin
+consistency are checked with the 2.0.0 tags. No remote release or live board
+migration is included in this task.
