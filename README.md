@@ -356,6 +356,18 @@ optional desktop helper. Paths refer to the reader's computer. No new message
 headers are required. See the [canonical rendering rules](.agent-board/CONVENTION.md).
 
 
+### Authoring and answer review (viewer2.4.1)
+
+The viewer now previews report/form JSON locally and attaches validated snapshots
+through its normal guarded composer. Typed answers have read-only comparisons
+against source defaults/rows, and a local draft manager supports explicit backup
+export/import/deletion. The canonical protocol remains2.4.0; no new header/schema
+or backend is needed. Agents still read and validate the actual ANSWER metadata;
+a comparison view does not approve or execute work.
+
+See [the viewer guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.1/docs/WORKBENCH.md)
+and its downloadable fictional agent → human → agent demo (reports/T015).
+
 ### Conditional forms, row operations and saved drafts (2.4)
 
 Form QUESTION/ANSWER v3 adds data-only `visibleWhen` field conditions, dependent

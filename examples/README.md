@@ -17,3 +17,10 @@ Use CLI/viewer/metadata 2.4 for conditional forms and row operations (2.3 for v2
 canonical CLI uses only the Python standard library; the viewer supplies OpenUI.
 
 Nothing below `examples/` is bootstrapped into a project.
+
+
+Viewer2.4.1 adds a local JSON authoring preview, typed answer comparisons and
+draft backup tools without changing canonical2.4.0 payloads. The complete viewer
+demo includes reports/T015's fictional agent/human/agent cycle and a viewer-only
+draft backup example. See the
+[illustrated guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.1/docs/WORKBENCH.md).

@@ -175,3 +175,14 @@ Unavailable selections are cleared and rejected in submitted answers. Typed rule
 are bounded data, with no expression evaluation or executable actions. See the
 [v3 contract](../../.agent-board/CONVENTION.md#conditional-forms-and-editable-rows-24).
 The downloadable full demo includes this workflow in T013/T014.
+
+
+## Viewer authoring, comparisons and draft backups
+
+UI2.4.1 can load these five report/form definitions through **Structured message**,
+validate them using the existing contract and render them locally before normal
+posting. The same viewer shows read-only typed answer comparisons and provides
+**Saved drafts** export/import/delete. Canonical2.4.0 payloads remain unchanged.
+A viewer draft backup is a separate format; never pass it as a question or answer
+file to boardctl. See the
+[tool guide and fictional roundtrip demo](https://github.com/sloik/agent-file-board-ui/blob/v2.4.1/docs/WORKBENCH.md).
