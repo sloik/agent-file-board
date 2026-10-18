@@ -46,7 +46,7 @@ example JSON paths. Report data is escaped plain text. No upstream DSL or HTML
 can be submitted in this library version.
 
 The 2.x viewer adds the report above the familiar choice controls. Selecting an
-option and pressing Send response creates a new ordinary `ANSWER` file with
+option and pressing **Send answer** creates a new ordinary `ANSWER` file with
 `REPLY-TO` pointing to the report message; the original file remains unchanged.
 Read-only uploaded boards download that reply for manual placement. Agents read
 the reply through the same board-loop workflow as any existing choice answer.
