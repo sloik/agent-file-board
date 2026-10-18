@@ -4,6 +4,7 @@ import math
 import re
 import unicodedata
 from static_reports import validate_report
+from extended_static_reports import extension_validator
 from datetime import datetime
 
 CONTENT_TYPES = {"text/plain", "text/markdown", "text/html"}
@@ -62,14 +63,18 @@ def topic_title(value):
 
 
 def ui_header(raw):
-    """Validate board-report v1 data without importing a renderer or SDK."""
-    if not isinstance(raw, str) or len(raw.encode("utf-8", errors="surrogatepass")) > 16384:
-        raise ValueError("UI: maximum 16384 UTF-8 bytes")
+    """Validate versioned report data without a renderer or SDK."""
+    if not isinstance(raw, str) or len(raw.encode("utf-8", errors="surrogatepass")) > 262144:
+        raise ValueError("UI: maximum 262144 UTF-8 bytes")
     try:
         ui = object_header(raw, "UI")
     except RecursionError as exc:
         raise ValueError("UI: JSON nesting is too deep") from exc
 
+    if ui.get("version") == 3:
+        return validate_report(ui, version=3, extra=extension_validator())
+    if len(raw.encode("utf-8", errors="surrogatepass")) > 16384:
+        raise ValueError("UI: maximum 16384 UTF-8 bytes")
     if ui.get("version") == 2:
         return validate_report(ui)
 

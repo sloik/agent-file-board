@@ -27,16 +27,16 @@ An already-current board is a no-op. The path is the project containing
 `.agent-board`, not the viewer repository or a Chrome URL. Symlink destinations
 are refused; use the physical project path.
 
-A pristine 1.9.2 board previews replacement of `CONVENTION.md`, addition of
-`components/board-report-v1.schema.json`, and preservation of `GLOSSARY.md` if it
-already matches. A pristine 2.0.0 board only needs the new convention version.
-Automatic migration supports pristine 1.9.2, 2.0.0 and 2.0.1; other versions need
-manual review. No downgrades are allowed.
+The 2.2.0 template supports pristine 1.9.2, 2.0.0, 2.0.1 and 2.1.0 boards;
+other versions need manual review. No downgrades are allowed. Missing schemas
+are added; known pristine metadata is updated with exact backups.
 
 The fixed managed set is:
 
 - `.agent-board/GLOSSARY.md`
 - `.agent-board/components/board-report-v1.schema.json`
+- `.agent-board/components/board-report-v2.schema.json`
+- `.agent-board/components/board-report-v3.schema.json`
 - `.agent-board/CONVENTION.md` (written last)
 
 Each existing file must match a known pristine release hash or the target hash.

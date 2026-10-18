@@ -13,7 +13,8 @@
     "name": "board-report",
     "versions": [
       1,
-      2
+      2,
+      3
     ],
     "implementedTypes": [
       "table",
@@ -33,7 +34,23 @@
       "line-chart",
       "area-chart",
       "grouped-bar-chart",
-      "stacked-bar-chart"
+      "stacked-bar-chart",
+      "pie-chart",
+      "radial-chart",
+      "radar-chart",
+      "scatter-chart",
+      "single-stacked-bar-chart",
+      "icon",
+      "icon-text",
+      "metric-comparison",
+      "tag-block",
+      "markdown",
+      "image",
+      "image-gallery",
+      "image-text",
+      "card-grid",
+      "carousel",
+      "modal"
     ]
   },
   "components": [
@@ -87,7 +104,9 @@
     },
     {
       "upstream": "Carousel",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "carousel",
+      "introducedIn": 3
     },
     {
       "upstream": "CheckBoxGroup",
@@ -117,19 +136,27 @@
     },
     {
       "upstream": "CompositeCardBlock",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card-grid:composite",
+      "introducedIn": 3
     },
     {
       "upstream": "CompositeCardItem",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card in composite grid",
+      "introducedIn": 3
     },
     {
       "upstream": "ContextCardBlock",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card-grid:context",
+      "introducedIn": 3
     },
     {
       "upstream": "ContextCardItem",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card in context grid",
+      "introducedIn": 3
     },
     {
       "upstream": "DatePicker",
@@ -159,7 +186,10 @@
     },
     {
       "upstream": "Icon",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "icon",
+      "introducedIn": 3,
+      "constraints": "Twelve fixed icon names; see v3 schema."
     },
     {
       "upstream": "IconButton",
@@ -167,27 +197,45 @@
     },
     {
       "upstream": "IconText",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "icon-text",
+      "introducedIn": 3,
+      "constraints": "Twelve fixed icon names; see v3 schema."
     },
     {
       "upstream": "Image",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "image",
+      "introducedIn": 3,
+      "constraints": "Embedded bounded PNG only; no URLs, SVG or animated formats."
     },
     {
       "upstream": "ImageBlock",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "image with caption",
+      "introducedIn": 3,
+      "constraints": "Embedded bounded PNG only; no URLs, SVG or animated formats."
     },
     {
       "upstream": "ImageGallery",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "image-gallery",
+      "introducedIn": 3,
+      "constraints": "Embedded bounded PNG only; no URLs, SVG or animated formats."
     },
     {
       "upstream": "ImageText",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "image-text:small",
+      "introducedIn": 3,
+      "constraints": "Embedded bounded PNG only; no URLs, SVG or animated formats."
     },
     {
       "upstream": "ImageTextLarge",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "image-text:large",
+      "introducedIn": 3,
+      "constraints": "Embedded bounded PNG only; no URLs, SVG or animated formats."
     },
     {
       "upstream": "InlineHeader",
@@ -219,7 +267,10 @@
     },
     {
       "upstream": "MarkDownRenderer",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "markdown",
+      "introducedIn": 3,
+      "constraints": "Static sanitized tags; no active links, media or arbitrary HTML."
     },
     {
       "upstream": "MetricIndicatorInline",
@@ -228,11 +279,15 @@
     },
     {
       "upstream": "MetricIndicatorWithStrikethrough",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "metric-comparison",
+      "introducedIn": 3
     },
     {
       "upstream": "Modal",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "modal",
+      "introducedIn": 3
     },
     {
       "upstream": "OptionCard",
@@ -254,19 +309,27 @@
     },
     {
       "upstream": "PieChart",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "pie-chart:pie/donut",
+      "introducedIn": 3
     },
     {
       "upstream": "Point",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "scatter point (x,y,optional z)",
+      "introducedIn": 3
     },
     {
       "upstream": "RadarChart",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "radar-chart",
+      "introducedIn": 3
     },
     {
       "upstream": "RadialChart",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "radial-chart",
+      "introducedIn": 3
     },
     {
       "upstream": "RadioGroup",
@@ -278,11 +341,15 @@
     },
     {
       "upstream": "ScatterChart",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "scatter-chart",
+      "introducedIn": 3
     },
     {
       "upstream": "ScatterSeries",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "scatter dataset",
+      "introducedIn": 3
     },
     {
       "upstream": "Select",
@@ -304,11 +371,15 @@
     },
     {
       "upstream": "SingleStackedBarChart",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "single-stacked-bar-chart",
+      "introducedIn": 3
     },
     {
       "upstream": "Slice",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "part-chart label/value pair",
+      "introducedIn": 3
     },
     {
       "upstream": "Slider",
@@ -316,11 +387,15 @@
     },
     {
       "upstream": "SnippetCardBlock",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card-grid:snippet",
+      "introducedIn": 3
     },
     {
       "upstream": "SnippetCardItem",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card in snippet grid",
+      "introducedIn": 3
     },
     {
       "upstream": "Stack",
@@ -367,7 +442,9 @@
     },
     {
       "upstream": "TagBlock",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "tag-block",
+      "introducedIn": 3
     },
     {
       "upstream": "Text",
@@ -390,11 +467,17 @@
     },
     {
       "upstream": "VisualCardBlock",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card-grid:visual",
+      "introducedIn": 3,
+      "constraints": "Embedded bounded PNG only; no URLs, SVG or animated formats."
     },
     {
       "upstream": "VisualCardItem",
-      "status": "later-static-candidate"
+      "status": "adapted",
+      "boardEquivalent": "card with leading image in visual grid",
+      "introducedIn": 3,
+      "constraints": "Embedded bounded PNG only; no URLs, SVG or animated formats."
     }
   ]
 }

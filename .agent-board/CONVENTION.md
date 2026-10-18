@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.1.0
+Version: 2.2.0
 
 ## Purpose and authority
 
@@ -176,6 +176,43 @@ are outside v2. Every report retains a readable body fallback as required above.
 Use `examples/openui-report/static-dashboard.json` from the repository with
 `boardctl post --ui-file` after upgrading CLI, viewer and metadata to2.1 together.
 Old v1 messages remain valid; older readers may reject v2 without rewriting it.
+
+### Static reports, library version 3 (2.2)
+
+Version `3` retains every v2 component and adds sixteen board types:
+`pie-chart` (pie/donut), `radial-chart`, `radar-chart`, `scatter-chart`,
+`single-stacked-bar-chart`, `icon`, `icon-text`, `metric-comparison`, `tag-block`,
+`markdown`, `image`, `image-gallery`, `image-text`, `card-grid`, `carousel`,
+`modal`. The exact shapes are in `components/board-report-v3.schema.json`;
+`examples/openui-report/static-candidates.json` exercises all additions.
+
+V3 UI JSON is at most **262144 UTF-8 bytes**. V1/v2 retain **16384 bytes**.
+All versions retain their own validation; v3 keeps v2's 64-node, depth 4 and
+16-child limits. Carousel has at most 8 entries with unique IDs. Card grids
+contain cards only; visual grids require each card's first child to be an image.
+Modal children cannot contain another modal, including through containers.
+
+Images must be canonical `data:image/png;base64,` strings, at most 65536 decoded
+bytes each, maximum 1024 by 1024 pixels and 4194304 combined pixels per report.
+Validate PNG signature, chunk bounds/CRC, IHDR, IDAT, terminal IEND, supported
+color/bit-depth combinations and no trailing bytes. Reject APNG, unknown critical
+chunks, external/file URLs, SVG and MIME mismatches. A PNG that passes structural
+validation but fails browser decoding shows an isolated readable fallback.
+The twelve icon names are `info`, `check`, `warning`, `error`, `star`, `heart`,
+`file`, `folder`, `chart`, `image`, `clock`, `user`.
+
+Markdown is presentation only: headings, paragraphs, lists, quotes, tables,
+code and inline emphasis. Remove active links, images, scripts, styles, forms,
+attributes and embedded resources. Carousel and modal controls only change local
+view state; polling and language changes preserve it, and closing a modal returns
+focus to its trigger. These controls do not write messages or execute actions.
+Part/radial/radar values are nonnegative; scatter coordinates may be signed and
+optional bubble size `z` is nonnegative. Full numeric tables accompany charts.
+
+The pinned upstream catalogue now maps 59 of 82 entries to adapted board
+capabilities. The other 23 require an interaction contract. This is not arbitrary
+OpenUI Lang or complete upstream prop compatibility. Upgrade CLI, viewer and
+metadata to 2.2 together using the previewed, backed-up metadata updater.
 
 ### Migrating from 1.x
 

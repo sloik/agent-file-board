@@ -16,16 +16,16 @@ def number(value):
     return type(value) in (int, float) and abs(value) <= 1e12 and math.isfinite(value)
 
 
-def validate_report(report):
+def validate_report(report, version=2, extra=None):
     def require(condition, message):
         if not condition:
-            raise ValueError('UI v2: ' + message)
+            raise ValueError(f'UI v{version}: ' + message)
 
     def keys(obj, names):
         return isinstance(obj, dict) and set(obj) == set(names.split())
 
     require(keys(report, 'library version title components') and report['library'] == 'board-report'
-            and type(report['version']) in (int, float) and report['version'] == 2 and text(report['title']), 'invalid report')
+            and type(report['version']) in (int, float) and report['version'] == version and text(report['title']), 'invalid report')
     count = 0
 
     def children(items, depth):
@@ -90,8 +90,10 @@ def validate_report(report):
             for item in c['items']:
                 require(keys(item, 'title text state') and text(item['title']) and text(item['text'], 1000)
                         and isinstance(item['state'], str) and item['state'] in {'pending', 'current', 'complete'}, 'invalid step')
+        elif extra is not None:
+            extra(c, depth, children)
         else:
-            raise ValueError('UI v2: unknown component ' + kind)
+            raise ValueError(f'UI v{version}: unknown component ' + kind)
 
     children(report['components'], 1)
     return report

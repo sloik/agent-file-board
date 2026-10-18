@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build audited upgrade data from the template and two supported release tags."""
+"""Build audited upgrade data from the template and supported release tags."""
 import base64
 import hashlib
 import json
@@ -9,8 +9,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "CONVENTION.md")
-BASELINES = ("1.9.2", "2.0.0", "2.0.1")
+PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "components/board-report-v3.schema.json", "CONVENTION.md")
+BASELINES = ("1.9.2", "2.0.0", "2.0.1", "2.1.0")
 
 
 def build():
@@ -23,8 +23,16 @@ def build():
             result = subprocess.run(["git", "-C", str(ROOT), "show", f"v{baseline}:.agent-board/{path}"], capture_output=True)
             if result.returncode == 0:
                 known.add(hashlib.sha256(result.stdout).hexdigest())
-            elif not ((path == "components/board-report-v1.schema.json" and baseline == "1.9.2") or path == "components/board-report-v2.schema.json"):
-                raise RuntimeError(result.stderr.decode())
+            else:
+                introduced = {"components/board-report-v1.schema.json": (2, 0, 0),
+                              "components/board-report-v2.schema.json": (2, 1, 0),
+                              "components/board-report-v3.schema.json": (2, 2, 0)}
+                expected_absent = path in introduced and tuple(map(int, baseline.split("."))) < introduced[path]
+                # Confirm the tag exists and the path is absent. Never swallow
+                # arbitrary git read errors just because this is an old schema.
+                listing = subprocess.run(["git", "-C", str(ROOT), "ls-tree", "-z", f"v{baseline}", "--", f".agent-board/{path}"], capture_output=True, check=True)
+                if not expected_absent or listing.stdout:
+                    raise RuntimeError(result.stderr.decode())
         files.append({"path": path, "content": base64.b64encode(content).decode(),
                       "sha256": hashlib.sha256(content).hexdigest(), "known": sorted(known)})
     return {"version": version, "supported": [*BASELINES, version], "files": files}

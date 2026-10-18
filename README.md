@@ -357,6 +357,21 @@ optional desktop helper. Paths refer to the reader's computer. No new message
 headers are required. See the [canonical rendering rules](.agent-board/CONVENTION.md).
 
 
+### Remaining static OpenUI reports (2.2)
+
+`board-report` version 3 extends v2 to **34 board types**: specialty charts,
+icons, metric comparison, tag blocks, static Markdown, embedded PNGs, card grids,
+carousel and modal. All 28 static candidates now have adaptations: **59 of 82**
+pinned upstream catalogue entries are adapted; **23** await an interaction contract.
+
+Use [the complete v3 example](examples/openui-report/static-candidates.json),
+[the v3 schema](.agent-board/components/board-report-v3.schema.json), and
+[the illustrated viewer guide](https://github.com/sloik/agent-file-board-ui/blob/main/docs/OPENUI.md).
+V3 headers allow 256 KiB. PNGs are embedded only, at most 64 KiB decoded bytes,
+1024 × 1024 pixels each and 4,194,304 combined pixels. V1/v2 remain unchanged.
+Upgrade CLI, viewer and metadata to 2.2 together; the previewed updater also
+supports pristine 2.1.0 boards, backs up changed files and preserves history.
+
 ### Static OpenUI reports (2.1)
 
 `board-report` version2 adds eighteen bounded static report types while retaining

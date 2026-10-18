@@ -22,7 +22,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 200,
-      "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+$"
+      "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+(?![\\s\\S])"
     },
     "components": {
       "type": "array",
@@ -47,7 +47,7 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 200,
-                "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+$"
+                "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+(?![\\s\\S])"
               },
               "columns": {
                 "type": "array",
@@ -57,7 +57,7 @@
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 200,
-                  "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+$"
+                  "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+(?![\\s\\S])"
                 }
               },
               "rows": {
@@ -72,7 +72,7 @@
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 1000,
-                    "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+$"
+                    "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+(?![\\s\\S])"
                   }
                 }
               }
@@ -95,7 +95,7 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 200,
-                "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+$"
+                "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+(?![\\s\\S])"
               },
               "labels": {
                 "type": "array",
@@ -105,7 +105,7 @@
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 200,
-                  "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+$"
+                  "pattern": "^[^\\u0000-\\u001f\\u007f\\ud800-\\udfff]+(?![\\s\\S])"
                 }
               },
               "values": {

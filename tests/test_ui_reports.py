@@ -1,6 +1,7 @@
 import contextlib
 import io
 import json
+import re
 from pathlib import Path
 import tempfile
 import unittest
@@ -37,6 +38,43 @@ class ReportTests(unittest.TestCase):
             self.assertEqual(cli(*args)[0], 2)
             self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob('*') if p.is_file()}, before)
             self.assertEqual((root / rel).read_bytes(), original)
+
+    def test_static_v3_cli_round_trip_and_invalid_payload_publish_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / 'board'
+            output = io.StringIO()
+            def cli(*args):
+                output.seek(0); output.truncate()
+                with contextlib.redirect_stdout(output), contextlib.redirect_stderr(io.StringIO()):
+                    code = boardctl.main(list(args))
+                return code, output.getvalue().strip()
+            self.assertEqual(cli('init', str(root), '--project-id', 'static', '--project-name', 'Static reports')[0], 0)
+            self.assertEqual(cli('join', 'alpha-agent', '--path', str(root))[0], 0)
+            example = Path(boardctl.__file__).parent / 'examples/openui-report/static-candidates.json'
+            args = ['post', '--path', str(root), '--from', 'alpha-agent', '--to', 'all', '--scope', 'room', '--room', 'general', '--thread', 'T001', '--slug', 'static', '--ui-file', str(example), '--body', 'Synthetic results: 170 passed, 2 failed. Review before publishing.']
+            code, rel = cli(*args)
+            self.assertEqual(code, 0, rel)
+            original = (root / rel).read_bytes()
+            self.assertEqual(json.loads(boardctl.parse_message(root / rel)['UI']), json.loads(example.read_text()))
+            self.assertEqual(boardctl.validate(root), [])
+            before = {p.relative_to(root): p.read_bytes() for p in root.rglob('*') if p.is_file()}
+            invalid = Path(tmp) / 'invalid.json'
+            report = json.loads(example.read_text())
+            report['components'][0]['action'] = 'run'
+            invalid.write_text(json.dumps(report))
+            args[args.index('--ui-file') + 1] = str(invalid)
+            self.assertEqual(cli(*args)[0], 2)
+            self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob('*') if p.is_file()}, before)
+            self.assertEqual((root / rel).read_bytes(), original)
+
+    def test_schema_text_patterns_match_runtime_text_rules(self):
+        for version in (1, 2, 3):
+            schema = json.loads((Path(boardctl.__file__).parent / f'.agent-board/components/board-report-v{version}.schema.json').read_text())
+            pattern = schema['properties']['title']['pattern']
+            for title in ('Release review', 'Unicode żółć', 'x'):
+                self.assertIsNotNone(re.search(pattern, title))
+            for title in ('x\n', 'x\x00', 'x\x7f', 'x\ud800'):
+                self.assertIsNone(re.search(pattern, title))
 
     def test_shared_contract(self):
         cases = json.loads((Path(__file__).parent / "fixtures/ui-metadata.json").read_text())

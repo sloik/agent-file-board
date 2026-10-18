@@ -1,0 +1,347 @@
+{
+  "library": "board-report",
+  "version": 3,
+  "title": "Complete static component gallery",
+  "components": [
+    {
+      "type": "pie-chart",
+      "title": "Outcome distribution",
+      "labels": [
+        "Passed",
+        "Failed",
+        "Deferred"
+      ],
+      "values": [
+        170,
+        2,
+        8
+      ],
+      "variant": "donut"
+    },
+    {
+      "type": "radial-chart",
+      "title": "Readiness by area",
+      "labels": [
+        "Tests",
+        "Docs",
+        "Review"
+      ],
+      "values": [
+        100,
+        80,
+        65
+      ]
+    },
+    {
+      "type": "radar-chart",
+      "title": "Option comparison",
+      "labels": [
+        "Speed",
+        "Quality",
+        "Cost",
+        "Reach"
+      ],
+      "series": [
+        {
+          "name": "Option A",
+          "values": [
+            8,
+            9,
+            4,
+            7
+          ]
+        },
+        {
+          "name": "Option B",
+          "values": [
+            6,
+            8,
+            8,
+            9
+          ]
+        }
+      ]
+    },
+    {
+      "type": "scatter-chart",
+      "title": "Cost versus benefit",
+      "xLabel": "Cost",
+      "yLabel": "Benefit",
+      "datasets": [
+        {
+          "name": "Candidates",
+          "points": [
+            {
+              "x": -2,
+              "y": 3
+            },
+            {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            {
+              "x": 4,
+              "y": 8,
+              "z": 20
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "single-stacked-bar-chart",
+      "title": "Capacity allocation",
+      "labels": [
+        "Build",
+        "Review",
+        "Buffer"
+      ],
+      "values": [
+        60,
+        25,
+        15
+      ]
+    },
+    {
+      "type": "icon",
+      "title": "Information",
+      "name": "info"
+    },
+    {
+      "type": "icon-text",
+      "title": "Ready for review",
+      "name": "check",
+      "text": "This is a local static component."
+    },
+    {
+      "type": "metric-comparison",
+      "title": "Bundle size",
+      "value": "1.1 MB",
+      "previous": "1.3 MB",
+      "detail": "Synthetic comparison; no remote data."
+    },
+    {
+      "type": "tag-block",
+      "title": "Release labels",
+      "items": [
+        {
+          "text": "Offline",
+          "tone": "success"
+        },
+        {
+          "text": "Review needed",
+          "tone": "warning"
+        }
+      ]
+    },
+    {
+      "type": "markdown",
+      "title": "Review notes",
+      "text": "**Static Markdown** supports lists and code.\n\n- No backend\n- No remote assets\n\n```sh\nnpm test\n```"
+    },
+    {
+      "type": "image",
+      "title": "Embedded landscape",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACx0lEQVR4nO3SQU0lABBEwa8HJyjAAj7WCuGGESygAA97QAEHkkl6plNJOXjv8fX9n52e/33yV494Nn4Tn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU+Xx9PoONQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUeL28flIlfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVwX9AH8pA5TK/Zd1AAAAAElFTkSuQmCC",
+      "alt": "Synthetic geometric landscape in blue",
+      "caption": "Embedded PNG; no external image service."
+    },
+    {
+      "type": "image-gallery",
+      "title": "Two embedded variations",
+      "images": [
+        {
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACx0lEQVR4nO3SQU0lABBEwa8HJyjAAj7WCuGGESygAA97QAEHkkl6plNJOXjv8fX9n52e/33yV494Nn4Tn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU+Xx9PoONQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUeL28flIlfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVwX9AH8pA5TK/Zd1AAAAAElFTkSuQmCC",
+          "alt": "Blue landscape",
+          "caption": "Blue variation"
+        },
+        {
+          "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACxklEQVR4nO3SMU0lABBF0a8HI1ihRNJWeEALBqDAwRYooCCZ5M28nOQ4uPfx8fWfnT7/PfNXj3g2fhOf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNT5fH08gY1DE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VR7f76+UiV9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXBf0A633YarJnz/oAAAAASUVORK5CYII=",
+          "alt": "Amber landscape",
+          "caption": "Amber variation"
+        }
+      ]
+    },
+    {
+      "type": "image-text",
+      "title": "Image with a summary",
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACxklEQVR4nO3SMU0lABBF0a8HI1ihRNJWeEALBqDAwRYooCCZ5M28nOQ4uPfx8fWfnT7/PfNXj3g2fhOf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNT5fH08gY1DE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VR7f76+UiV9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXBf0A633YarJnz/oAAAAASUVORK5CYII=",
+      "alt": "Amber geometric landscape",
+      "text": "The picture and text travel with this immutable message.",
+      "size": "large"
+    },
+    {
+      "type": "card-grid",
+      "title": "Visual cards",
+      "variant": "visual",
+      "children": [
+        {
+          "type": "card",
+          "title": "Blue option",
+          "children": [
+            {
+              "type": "image",
+              "title": "Embedded landscape",
+              "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACx0lEQVR4nO3SQU0lABBEwa8HJyjAAj7WCuGGESygAA97QAEHkkl6plNJOXjv8fX9n52e/33yV494Nn4Tn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ+8Vn+MiQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU+Xx9PoONQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUeL28flIlfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVxmaSfGrDM2k+FWGZlL8KkMzKX6VoZkUv8rQTIpfZWgmxa8yNJPiVwX9AH8pA5TK/Zd1AAAAAElFTkSuQmCC",
+              "alt": "Synthetic geometric landscape in blue",
+              "caption": "Embedded PNG; no external image service."
+            },
+            {
+              "type": "text",
+              "title": "Summary",
+              "text": "A compact visual card."
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "Amber option",
+          "children": [
+            {
+              "type": "image",
+              "title": "Amber landscape",
+              "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPAAAACQCAIAAAC5w3GfAAACxklEQVR4nO3SMU0lABBF0a8HI1ihRNJWeEALBqDAwRYooCCZ5M28nOQ4uPfx8fWfnT7/PfNXj3g2fhOf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJD7xWf4yJDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNT5fH08gY1DE0VQ1PF0FQxNFUMTRVDU8XQVDE0VQxNFUNTxdBUMTRVDE0VQ1PF0FQxNFUMTRVDU8XQVDE0VR7f76+UiV9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXGZpJ8asMzaT4VYZmUvwqQzMpfpWhmRS/ytBMil9laCbFrzI0k+JXBf0A633YarJnz/oAAAAASUVORK5CYII=",
+              "alt": "Amber geometric landscape"
+            },
+            {
+              "type": "metric",
+              "title": "Readiness",
+              "value": "85%"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "carousel",
+      "title": "Card layouts",
+      "items": [
+        {
+          "id": "snippet",
+          "title": "Snippet cards",
+          "children": [
+            {
+              "type": "card-grid",
+              "title": "Key facts",
+              "variant": "snippet",
+              "children": [
+                {
+                  "type": "card",
+                  "title": "Runtime",
+                  "children": [
+                    {
+                      "type": "icon-text",
+                      "title": "Offline",
+                      "name": "file",
+                      "text": "Single HTML file"
+                    }
+                  ]
+                },
+                {
+                  "type": "card",
+                  "title": "Storage",
+                  "children": [
+                    {
+                      "type": "text",
+                      "title": "Immutable",
+                      "text": "Original messages remain unchanged."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "context",
+          "title": "Context cards",
+          "children": [
+            {
+              "type": "card-grid",
+              "title": "Background",
+              "variant": "context",
+              "children": [
+                {
+                  "type": "card",
+                  "title": "Decision context",
+                  "children": [
+                    {
+                      "type": "text",
+                      "title": "Trade-off",
+                      "text": "More visual information without an execution service."
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "composite",
+          "title": "Composite cards",
+          "children": [
+            {
+              "type": "card-grid",
+              "title": "Combined evidence",
+              "variant": "composite",
+              "children": [
+                {
+                  "type": "card",
+                  "title": "Readiness",
+                  "children": [
+                    {
+                      "type": "metric-comparison",
+                      "title": "Before and after",
+                      "value": "95%",
+                      "previous": "80%"
+                    },
+                    {
+                      "type": "tag-block",
+                      "title": "State",
+                      "items": [
+                        {
+                          "text": "Review",
+                          "tone": "info"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "modal",
+      "title": "Open supporting details",
+      "children": [
+        {
+          "type": "markdown",
+          "title": "Local evidence",
+          "text": "This dialog contains **embedded** evidence.\n\nClosing it writes no files."
+        },
+        {
+          "type": "table",
+          "title": "Evidence",
+          "columns": [
+            "Check",
+            "Result"
+          ],
+          "rows": [
+            [
+              "Offline",
+              "Pass"
+            ],
+            [
+              "History preserved",
+              "Pass"
+            ]
+          ]
+        }
+      ]
+    }
+  ]
+}

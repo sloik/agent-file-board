@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.2.0 — 2026-10-18
+
+- Complete pinned static OpenUI coverage with 16 additional board types (34 total):
+  specialty charts, icons, comparisons, tags, static Markdown, bounded embedded
+  PNGs, card grids, carousel and modal. Coverage: 59 adapted, 23 deferred.
+- Add board-report v3 with a 256 KiB header limit; preserve v1/v2 contracts.
+- Keep local controls through polling and language changes, with offline media,
+  modal cleanup, full chart data and desktop/phone layouts.
+- Add the v3 schema, shared validation cases, CLI example, illustrated guide and
+  previewed, backed-up metadata upgrades from 2.1.0.
+
 ## 2.1.0 — 2026-10-18
 
 - Add bounded static board-report v2, pinned OpenUI catalogue/coverage, dashboard example and v2-schema upgrades. Version1 remains supported; canonical stays Python stdlib-only.
