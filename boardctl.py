@@ -17,7 +17,7 @@ import message_repairs
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
-from message_extensions import CONTENT_TYPES, object_header, validate_extensions, topic_title
+from message_extensions import CONTENT_TYPES, object_header, validate_extensions, topic_title, ui_header
 
 TEMPLATE = Path(__file__).with_name(".agent-board")
 ID_RE = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
@@ -222,8 +222,8 @@ def command_post(args: argparse.Namespace) -> int:
             try:
                 raw = Path(file).read_text(encoding="utf-8")
                 # Validate the original JSON too, so duplicate keys cannot be normalized away.
-                object_header(raw, name)
-                extra[name] = json.dumps(json.loads(raw), ensure_ascii=False, separators=(",", ":"))
+                value = ui_header(raw) if name == "UI" else object_header(raw, name)
+                extra[name] = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
             except (OSError, ValueError) as exc:
                 raise BoardError(str(exc)) from exc
     header_map = dict(line.split(": ", 1) for line in headers if line)
