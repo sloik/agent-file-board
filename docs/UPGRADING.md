@@ -27,7 +27,7 @@ An already-current board is a no-op. The path is the project containing
 `.agent-board`, not the viewer repository or a Chrome URL. Symlink destinations
 are refused; use the physical project path.
 
-The 2.3.0 template supports pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0 and 2.2.0 boards;
+The 2.4.0 template supports pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0, 2.2.0 and 2.3.0 boards;
 other versions need manual review. No downgrades are allowed. Missing schemas
 are added; known pristine metadata is updated with exact backups.
 
@@ -39,6 +39,8 @@ The fixed managed set is:
 - `.agent-board/components/board-report-v3.schema.json`
 - `.agent-board/components/form-question-v2.schema.json`
 - `.agent-board/components/form-answer-v2.schema.json`
+- `.agent-board/components/form-question-v3.schema.json`
+- `.agent-board/components/form-answer-v3.schema.json`
 - `.agent-board/CONVENTION.md` (written last)
 
 Each existing file must match a known pristine release hash or the target hash.
@@ -118,7 +120,7 @@ retained; there is no automatic deletion or rollback.
 ## Maintainers
 
 `upgrade-manifest.json` contains target bytes and audited hashes from tags
-`v1.9.2`, `v2.0.0`, `v2.0.1`, `v2.1.0` and `v2.2.0`. Regenerate after template/version changes with
+`v1.9.2`, `v2.0.0`, `v2.0.1`, `v2.1.0`, `v2.2.0` and `v2.3.0`. Regenerate after template/version changes with
 `python3 scripts/build_upgrade_manifest.py`; verify with `--check`. Fetch those
 tags when testing a fresh clone. Extend supported versions only after reviewing
 their migration requirements. The UI embeds this data from its exact canonical

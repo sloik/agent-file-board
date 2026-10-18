@@ -1,0 +1,40 @@
+{
+  "version": 3,
+  "question": "offline-release-plan",
+  "values": {
+    "environment": "production",
+    "region": "eu",
+    "approver": "Demo owner",
+    "start": "2026-10-20",
+    "end": "2026-10-22",
+    "requested": 150,
+    "approved": 200,
+    "tasks": {
+      "changes": [
+        {
+          "row": "schema",
+          "column": "hours",
+          "value": 3
+        }
+      ],
+      "added": [
+        {
+          "id": "release-notes",
+          "values": {
+            "task": "Write release notes",
+            "hours": 1,
+            "state": "pending",
+            "approved": false
+          }
+        }
+      ],
+      "removed": [
+        "viewer"
+      ],
+      "order": [
+        "release-notes",
+        "schema"
+      ]
+    }
+  }
+}

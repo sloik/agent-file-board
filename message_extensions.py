@@ -37,7 +37,7 @@ def identifier(value):
 
 def question_header(raw):
     q = object_header(raw, "QUESTION")
-    if q.get("version") == 2:
+    if q.get("version") in (2,3):
         if len(raw.encode("utf-8", errors="surrogatepass")) > 65536:
             raise ValueError("QUESTION form: maximum 65536 UTF-8 bytes")
         return validate_form(q)
@@ -80,7 +80,7 @@ def ui_header(raw):
         return validate_report(ui, version=3, extra=extension_validator())
     if len(raw.encode("utf-8", errors="surrogatepass")) > 16384:
         raise ValueError("UI: maximum 16384 UTF-8 bytes")
-    if ui.get("version") == 2:
+    if ui.get("version") in (2,3):
         return validate_report(ui)
 
     def text(value, limit):
@@ -151,13 +151,13 @@ def validate_extensions(headers, source=None):
             raise ValueError("ANSWER: reply target must contain a valid QUESTION")
         validate_extensions(source)
         q = question_header(source["QUESTION"])
-        if a.get("version") == 2:
+        if a.get("version") in (2,3):
             if len(headers["ANSWER"].encode("utf-8", errors="surrogatepass")) > 65536:
                 raise ValueError("ANSWER form: maximum 65536 UTF-8 bytes")
             validate_answer(a, q)
         else:
-            if q.get("version") == 2:
-                raise ValueError("ANSWER: typed form requires version2 answer")
+            if q.get("version") in (2,3):
+                raise ValueError("ANSWER: typed form requires matching version2/3 answer")
             if set(a) not in ({"question", "selected"}, {"question", "selected", "text"}) or not identifier(a.get("question")) or not isinstance(a.get("selected"), list):
                 raise ValueError("ANSWER: expected question ID and selected option IDs")
             selected = a["selected"]

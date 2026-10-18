@@ -13,7 +13,7 @@
 [`openui-report/`](openui-report/) contains all 34 versioned report types, legacy choices and all 11 typed form fields,
 with answer payloads and two complete immutable v1 report/answer messages. Its
 README includes temporary-board walkthroughs and the downloadable full demo.
-Use CLI/viewer/metadata 2.3 for forms; older report versions remain valid. The
+Use CLI/viewer/metadata 2.4 for conditional forms and row operations (2.3 for v2 forms); older report versions remain valid. The
 canonical CLI uses only the Python standard library; the viewer supplies OpenUI.
 
 Nothing below `examples/` is bootstrapped into a project.

@@ -1,6 +1,13 @@
 # Release notes
 
-## Unreleased
+## 2.4.0 — 2026-10-18
+
+- Add form v3 conditional fields/options and typed cross-field comparisons.
+- Add bounded immutable table row additions/removals/reordering with typed patches.
+- Define local draft persistence scoping, limits and memory fallback behavior.
+- Preserve form v2/legacy/report contracts; add v3 schemas, parity vectors and
+  previewed/backed-up upgrades from pristine2.3.0.
+
 
 - Audit current documentation and example indexes for 2.3 reports/forms; correct
   installation, upgrade, renderer, demo and minimum-version guidance.

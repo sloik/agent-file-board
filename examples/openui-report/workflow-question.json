@@ -1,0 +1,205 @@
+{
+  "version": 3,
+  "id": "offline-release-plan",
+  "type": "form",
+  "prompt": "Plan a fictional release entirely offline. Production requires an approver; dates and budgets must agree. Add, remove or move task rows, then send a separate reply.",
+  "fields": [
+    {
+      "id": "environment",
+      "type": "select",
+      "label": "Environment",
+      "required": true,
+      "options": [
+        {
+          "id": "staging",
+          "label": "Staging"
+        },
+        {
+          "id": "production",
+          "label": "Production"
+        }
+      ],
+      "default": "staging"
+    },
+    {
+      "id": "region",
+      "type": "select",
+      "label": "Deployment region",
+      "required": true,
+      "options": [
+        {
+          "id": "local",
+          "label": "Local sandbox",
+          "when": {
+            "field": "environment",
+            "equals": "staging"
+          }
+        },
+        {
+          "id": "eu",
+          "label": "Europe",
+          "when": {
+            "field": "environment",
+            "equals": "production"
+          }
+        },
+        {
+          "id": "us",
+          "label": "United States",
+          "when": {
+            "field": "environment",
+            "equals": "production"
+          }
+        }
+      ],
+      "default": "local"
+    },
+    {
+      "id": "approver",
+      "type": "input",
+      "dataType": "text",
+      "maxLength": 100,
+      "label": "Production approver",
+      "required": true,
+      "visibleWhen": {
+        "field": "environment",
+        "equals": "production"
+      }
+    },
+    {
+      "id": "start",
+      "type": "date-picker",
+      "label": "Window start",
+      "required": true,
+      "default": "2026-10-20"
+    },
+    {
+      "id": "end",
+      "type": "date-picker",
+      "label": "Window end",
+      "required": true,
+      "default": "2026-10-21"
+    },
+    {
+      "id": "requested",
+      "type": "input",
+      "dataType": "number",
+      "min": 0,
+      "max": 10000,
+      "label": "Requested budget",
+      "required": true,
+      "default": 100
+    },
+    {
+      "id": "approved",
+      "type": "input",
+      "dataType": "number",
+      "min": 0,
+      "max": 10000,
+      "label": "Approved budget",
+      "required": true,
+      "default": 200
+    },
+    {
+      "id": "tasks",
+      "type": "editable-table",
+      "label": "Editable task estimates",
+      "required": false,
+      "help": "Edit cells; replies contain changes without rewriting the source table.",
+      "columns": [
+        {
+          "id": "task",
+          "type": "text",
+          "label": "Task",
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "id": "hours",
+          "type": "number",
+          "label": "Hours",
+          "required": true,
+          "min": 0,
+          "max": 100
+        },
+        {
+          "id": "state",
+          "type": "select",
+          "label": "State",
+          "required": true,
+          "options": [
+            {
+              "id": "pending",
+              "label": "Pending"
+            },
+            {
+              "id": "done",
+              "label": "Done"
+            }
+          ]
+        },
+        {
+          "id": "approved",
+          "type": "boolean",
+          "label": "Approved",
+          "required": true
+        }
+      ],
+      "rows": [
+        {
+          "id": "schema",
+          "values": {
+            "task": "Review schema",
+            "hours": 0,
+            "state": "pending",
+            "approved": false
+          }
+        },
+        {
+          "id": "viewer",
+          "values": {
+            "task": "Test viewer",
+            "hours": 2,
+            "state": "pending",
+            "approved": false
+          }
+        }
+      ],
+      "rowOperations": {
+        "add": true,
+        "remove": true,
+        "reorder": true,
+        "minRows": 1,
+        "maxRows": 8
+      }
+    }
+  ],
+  "buttons": [
+    {
+      "id": "send",
+      "label": "Send form answer",
+      "action": "submit",
+      "icon": "check"
+    },
+    {
+      "id": "reset",
+      "label": "Reset form",
+      "action": "reset",
+      "icon": "clock"
+    }
+  ],
+  "validations": [
+    {
+      "left": "start",
+      "op": "lte",
+      "right": "end",
+      "message": "Window end must be on or after the start."
+    },
+    {
+      "left": "requested",
+      "op": "lte",
+      "right": "approved",
+      "message": "Requested budget must fit within the approved budget."
+    }
+  ]
+}

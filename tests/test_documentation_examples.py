@@ -13,8 +13,8 @@ class DocumentationExamplesTests(unittest.TestCase):
     def test_published_report_and_form_walkthroughs(self):
         guide = (ROOT / 'examples/openui-report/README.md').read_text()
         blocks = re.findall(r'```sh\n(.*?)```', guide, re.S)
-        selected = [b for b in blocks if b.startswith(('demo_board=', './boardctl post --path "$demo_board"', 'form_board='))]
-        self.assertEqual(len(selected), 3)
+        selected = [b for b in blocks if b.startswith(('demo_board=', './boardctl post --path "$demo_board"', 'form_board=', 'workflow_board='))]
+        self.assertEqual(len(selected), 4)
         with tempfile.TemporaryDirectory() as directory:
             env = dict(os.environ, TMPDIR=directory,
                        AGENT_FILE_BOARD_STATE_DIR=str(Path(directory) / 'state'))

@@ -276,7 +276,7 @@ write messages or authorize work. Always supply a readable body. Preserve v1
 reports and use explicit existing QUESTION/ANSWER for decisions.
 
 
-### Static report v3 and typed forms (2.3 current)
+### Static report v3 and typed forms (2.3+)
 
 Read CONVENTION.md and the corresponding schema before posting. Report v3
 (`--ui-file`, minimum 2.2) adds specialty charts, bounded embedded PNGs, cards,
@@ -297,3 +297,20 @@ submission creates a separate immutable reply, and does not authorize actions.
 All 82 pinned upstream entries have bounded board adaptations; this does not
 accept arbitrary upstream props, DSL, streaming, remote media or callbacks.
 See examples/openui-report/README.md for runnable synthetic walkthroughs.
+
+
+### Conditional workflows and mutable row replies (2.4)
+
+Current form v3 adds visibleWhen/option when conditions on earlier scalar fields
+and bounded cross-field validations. Always read the exact source definition;
+hidden fields submit null and cannot satisfy required inputs or activate further
+conditions. Reject unavailable option IDs and failed typed comparison rules.
+
+A table with rowOperations submits changes,added,removed,order against its source
+baseline. Added rows contain all typed cells and fresh IDs; removed IDs are
+baseline rows; order lists every final row exactly once. Patches cannot target
+removed/added rows. Enforce enabled operations, row bounds and400-cell capacity.
+Columns stay fixed. Every answer remains a separate immutable file, not an edit.
+Use workflow-question.json/workflow-answer.json and the current convention/schema.
+Upgrade CLI/viewer/metadata to2.4 for v3; older forms/reports retain their meanings.
+Browser drafts are local convenience only, never submitted answers or accepted work.

@@ -90,7 +90,7 @@ are local views of embedded data and never submit or execute anything.
 
 ## Example catalogue and minimum versions
 
-Use the current 2.3 CLI/viewer/metadata for all examples. Payload versions are
+Use the current 2.4 CLI/viewer/metadata for all examples. Payload versions are
 independent of release versions: a report v3 and a form v2 both work in 2.3.
 
 | Payload | Minimum CLI/viewer/metadata | Contents |
@@ -99,6 +99,7 @@ independent of release versions: a report v3 and a form v2 both work in 2.3.
 | static-dashboard.json | 2.1 | All 18 v2 report types and local table/tab controls. |
 | static-candidates.json | 2.2 | V3 specialty charts, embedded PNGs, cards, carousel and modal; completes 34 report types. |
 | form-question.json + form-answer.json | 2.3 | All 11 typed form fields, including text/number input and editable-cell patches. |
+| workflow-question.json + workflow-answer.json | 2.4 | Conditional fields/options, cross-field rules, row additions/removals/reordering. |
 
 For the complete live gallery, [download the offline demo](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)
 and follow its [tour](https://github.com/sloik/agent-file-board-ui/blob/main/docs/DEMO.md).
@@ -138,3 +139,39 @@ Do not send form-answer.json in response to question.json (a legacy choice).
 Both headers have a 64 KiB UTF-8 limit. Read the
 [form contract](../../.agent-board/CONVENTION.md#offline-forms-and-typed-replies-23)
 and [schemas](../../.agent-board/components/) before adapting these examples.
+
+
+## Conditional workflow and row operations (2.4)
+
+Run this independent walkthrough from the canonical checkout. All discussions and
+values are fictional. It requires current2.4 CLI/viewer/metadata, no backend.
+
+```sh
+workflow_board=$(mktemp -d "${TMPDIR:-/tmp}/afb-workflow.XXXXXX")
+./boardctl init "$workflow_board" --project-id workflow-demo --project-name "Offline workflow demo"
+./boardctl join implementation-agent-01 --path "$workflow_board"
+./boardctl join human-owner-01 --kind human --path "$workflow_board"
+workflow_message=$(./boardctl post --path "$workflow_board" \
+  --from implementation-agent-01 --to human-owner-01 \
+  --scope room --room general --thread T001 --slug workflow \
+  --question-file examples/openui-report/workflow-question.json \
+  --body "Fictional release plan. Production requires an approver; dates and budgets must agree. Reply with typed values and row operations.")
+./boardctl post --path "$workflow_board" --from human-owner-01 --to implementation-agent-01 \
+  --scope room --room general --thread T001 --slug workflow-answer --status REPLY \
+  --reply-to "${workflow_message##*/}" --answer-file examples/openui-report/workflow-answer.json \
+  --body "Fictional production plan: added release-notes, removed viewer, moved release-notes first and changed schema hours to3."
+./boardctl validate --path "$workflow_board"
+printf 'Open this folder in the 2.4 viewer: %s\n' "$workflow_board"
+```
+
+Switch Environment to Production to show the approver and change available
+regions. Window start must not exceed end; requested budget must fit the approved
+budget. Add/remove/move table rows locally; the reply includes changes, complete
+added rows, removed baseline IDs and final row order. It never rewrites originals.
+Without rowOperations, tables still submit only cell changes. Columns stay fixed.
+
+V3 conditions refer only to earlier scalar fields; hidden fields submit null.
+Unavailable selections are cleared and rejected in submitted answers. Typed rules
+are bounded data, with no expression evaluation or executable actions. See the
+[v3 contract](../../.agent-board/CONVENTION.md#conditional-forms-and-editable-rows-24).
+The downloadable full demo includes this workflow in T013/T014.

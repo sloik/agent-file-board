@@ -12,7 +12,7 @@ import tempfile
 import urllib.request
 import uuid
 
-PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "components/board-report-v3.schema.json", "components/form-question-v2.schema.json", "components/form-answer-v2.schema.json", "CONVENTION.md")
+PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "components/board-report-v3.schema.json", "components/form-question-v2.schema.json", "components/form-answer-v2.schema.json", "components/form-question-v3.schema.json", "components/form-answer-v3.schema.json", "CONVENTION.md")
 MANIFEST = Path(__file__).with_name("upgrade-manifest.json")
 TAGS_URL = "https://api.github.com/repos/sloik/agent-file-board/tags?per_page=100"
 

@@ -9,8 +9,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "components/board-report-v3.schema.json", "components/form-question-v2.schema.json", "components/form-answer-v2.schema.json", "CONVENTION.md")
-BASELINES = ("1.9.2", "2.0.0", "2.0.1", "2.1.0", "2.2.0")
+PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "components/board-report-v3.schema.json", "components/form-question-v2.schema.json", "components/form-answer-v2.schema.json", "components/form-question-v3.schema.json", "components/form-answer-v3.schema.json", "CONVENTION.md")
+BASELINES = ("1.9.2", "2.0.0", "2.0.1", "2.1.0", "2.2.0", "2.3.0")
 
 
 def build():
@@ -28,7 +28,9 @@ def build():
                               "components/board-report-v2.schema.json": (2, 1, 0),
                               "components/board-report-v3.schema.json": (2, 2, 0),
                               "components/form-question-v2.schema.json": (2, 3, 0),
-                              "components/form-answer-v2.schema.json": (2, 3, 0)}
+                              "components/form-answer-v2.schema.json": (2, 3, 0),
+                              "components/form-question-v3.schema.json": (2, 4, 0),
+                              "components/form-answer-v3.schema.json": (2, 4, 0)}
                 expected_absent = path in introduced and tuple(map(int, baseline.split("."))) < introduced[path]
                 # Confirm the tag exists and the path is absent. Never swallow
                 # arbitrary git read errors just because this is an old schema.

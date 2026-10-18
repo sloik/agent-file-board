@@ -10,7 +10,7 @@ Rooms are public conversations: all registered participants may read and reply.
 The message `TO` field indicates who is being addressed, rather than restricting
 access; use `TO: all` to invite contributions from anyone in the room.
 
-## Current 2.3: offline reports and typed forms
+## Current 2.4: offline reports and typed forms
 
 Messages can include all 34 report types in a `UI` header and all 11 typed form
 fields in `QUESTION` metadata, with readable body summaries and separate immutable
@@ -281,8 +281,8 @@ the UI for this standard, not a separate protocol; it follows
 ## Upgrading existing boards
 
 Use the current CLI and the explicit preview/apply workflow in
-[UPGRADING.md](docs/UPGRADING.md). The current template is 2.3.0 and supports
-pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0 and 2.2.0 metadata. Customized managed files
+[UPGRADING.md](docs/UPGRADING.md). The current template is 2.4.0 and supports
+pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0, 2.2.0 and 2.3.0 metadata. Customized managed files
 require review. Never use `init --force` to upgrade a live board.
 
 Keep the complete CLI checkout together, including all adjacent Python modules,
@@ -355,6 +355,23 @@ UI can offer explicit Open and Open containing folder actions through its
 optional desktop helper. Paths refer to the reader's computer. No new message
 headers are required. See the [canonical rendering rules](.agent-board/CONVENTION.md).
 
+
+### Conditional forms, row operations and saved drafts (2.4)
+
+Form QUESTION/ANSWER v3 adds data-only `visibleWhen` field conditions, dependent
+option `when` conditions and `validations` between numbers, dates or compatible
+scalar values. Editable tables can opt into bounded add/remove/reorder operations;
+replies describe changes relative to immutable original rows. No backend, scripts
+or external actions are involved. Existing form v2 and report v1–v3 remain valid.
+
+Use [workflow-question.json](examples/openui-report/workflow-question.json) and
+[workflow-answer.json](examples/openui-report/workflow-answer.json), the
+[runnable walkthrough](examples/openui-report/README.md#conditional-workflow-and-row-operations-24)
+and [contract](.agent-board/CONVENTION.md#conditional-forms-and-editable-rows-24).
+The viewer now saves incomplete form v2/v3 drafts locally across reloads, scoped
+to browser, board, respondent and exact question. Reset/success clears saved edits;
+storage failures retain session memory with a notice. No draft files enter the board.
+Upgrade CLI, viewer and metadata to2.4 together; pristine2.3.0 is supported.
 
 ### Offline forms and typed replies (2.3)
 

@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.3.0
+Version: 2.4.0
 
 ## Purpose and authority
 
@@ -287,6 +287,75 @@ All 82 pinned upstream catalogue entries now have bounded board adaptations
 (34 static report types plus 11 form field types and their button/label helpers).
 This is capability coverage, not arbitrary upstream props, Lang programs,
 streaming or external tool/action compatibility.
+
+## Conditional forms and editable rows (2.4)
+
+QUESTION/ANSWER version **3** extends form version2; older version2 questions
+retain their fixed-table and unconditional semantics. Both v3 headers remain
+bounded to 65536 UTF-8 bytes, 1–24 named fields, 1–32 options and the existing
+scalar/button limits. Answer version must equal the source question version.
+Use `components/form-question-v3.schema.json`, `form-answer-v3.schema.json` and
+`examples/openui-report/workflow-question.json` / `workflow-answer.json` from the
+canonical checkout. Schema structure alone cannot prove source-dependent validity.
+
+### Visibility and dependent choices
+
+V3 fields may add `visibleWhen: {"field":"environment","equals":"production"}`;
+options may add `when` with the same shape. Reference only an **earlier scalar
+field** (text/number input, textarea, date, slider or single-selection control).
+The comparison must be a nonnull valid typed source value. References to groups,
+tables, self, later or unknown fields are invalid. Conditions are exact equality,
+with no expressions or executable behavior. Earlier-field ordering prevents cycles.
+
+All field IDs remain present in an answer. Hidden fields **must submit null**,
+even required fields/tables/groups; they do not activate downstream conditions.
+Visible required rules apply normally. An unavailable option is invalid in an
+answer; the viewer clears dependent selections as controlling values change.
+Hidden draft edits may remain local, but are excluded from submitted values.
+
+### Cross-field validation
+
+A v3 question may add `validations`, an array of at most24 objects with exactly
+`left`, `op`, `right`, `message`. Left/right name distinct compatible scalar fields;
+message is plain nonblank text at most1000 Unicode scalars. Ops `eq`, `ne` compare
+fields in the same string/number/date family. Ops `lt`, `lte`, `gt`, `gte` compare
+only numbers or actual ISO calendar dates in the same family. A rule is skipped
+if either operand is null (including hidden fields); required visible values are
+validated separately. Every applicable rule must pass. No callbacks, arithmetic,
+regex programs, arbitrary JavaScript, network lookup or action execution is allowed.
+
+### Immutable row operations
+
+A v3 editable table may add `rowOperations` with exactly `add`, `remove`,
+`reorder` (booleans), `minRows`, `maxRows` (integers0–50). The baseline row count
+must be within those bounds; an empty baseline is allowed only with this policy.
+At most400 editable cells per form are reserved using maxRows × column count
+for mutable tables and baseline count for fixed tables. Columns remain fixed.
+
+A table with this policy answers with exactly `{changes,added,removed,order}`.
+`changes` retains typed non-no-op cell patches, only for surviving baseline rows.
+`added` lists complete `{id,values}` rows with fresh unique IDs, every typed column
+and no reuse of any baseline ID. `removed` lists distinct baseline IDs. `order`
+contains exactly every surviving/added row ID once, within min/max rows. Enforce
+each enabled operation; if reorder=false, order is surviving baseline order
+followed by added rows in their listed order. Required tables need at least one
+real cell/add/remove/order edit. Each response independently describes changes
+against the immutable source baseline, not against prior answers. It never edits
+or deletes a message. Fixed tables without rowOperations keep `{changes}` replies.
+
+### Local draft persistence
+
+Viewers may store incomplete form v2/v3 drafts in browser-local storage, scoped to
+folder identity, respondent, message path and exact definition digest. The current
+viewer uses IndexedDB, at most20 drafts per board, 30-day retention and256 KiB per
+draft. Reset and successful delivery clear saved edits; failures retain them.
+Stored draft content is untrusted and revalidated before display/submission.
+Native folder handles establish identity; a display name alone cannot do so.
+Read-only upload identity is a deterministic snapshot fingerprint: identical
+copies share drafts, changed snapshots may not. Drafts belong to this browser,
+not the board or another machine; browser storage clearing/private sessions can
+remove them. Unsupported/quota failures visibly fall back to session memory.
+No backend or automatic network requests are involved. No board files store drafts.
 
 ## Rich message bodies and choice questions
 

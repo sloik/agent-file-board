@@ -13,7 +13,7 @@ ROOT=Path(boardctl.__file__).parent
 
 class FormTests(unittest.TestCase):
     def test_shared_form_contract_and_refusals(self):
-        cases=json.loads((ROOT/'tests/fixtures/form-metadata.json').read_text())
+        cases=json.loads((ROOT/'tests/fixtures/form-metadata.json').read_text())+json.loads((ROOT/'tests/fixtures/workflow-metadata.json').read_text())
         for case in cases:
             with self.subTest(case=case['name']):
                 if case['valid']:

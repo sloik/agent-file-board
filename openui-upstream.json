@@ -52,7 +52,7 @@
       "carousel",
       "modal"
     ],
-    "formQuestionVersion": 2,
+    "formQuestionVersion": 3,
     "implementedFormFields": [
       "input",
       "textarea",
@@ -65,6 +65,10 @@
       "slider",
       "switch-group",
       "editable-table"
+    ],
+    "formQuestionVersions": [
+      2,
+      3
     ]
   },
   "components": [
@@ -97,14 +101,14 @@
       "upstream": "Button",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "QUESTION.buttons[action=submit|reset]"
     },
     {
       "upstream": "Buttons",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "QUESTION.buttons"
     },
     {
@@ -132,28 +136,28 @@
       "upstream": "CheckBoxGroup",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "checkbox-group"
     },
     {
       "upstream": "CheckBoxItem",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "checkbox-group.options[]"
     },
     {
       "upstream": "ChipItem",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "chips.options[]"
     },
     {
       "upstream": "Chips",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "chips"
     },
     {
@@ -194,14 +198,14 @@
       "upstream": "DatePicker",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "date-picker"
     },
     {
       "upstream": "EditableTable",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "editable-table stable rows/columns, typed cell-change reply"
     },
     {
@@ -213,14 +217,14 @@
       "upstream": "Form",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "QUESTION version2 type=form"
     },
     {
       "upstream": "FormControl",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "QUESTION.fields[] required/help and validation"
     },
     {
@@ -239,7 +243,7 @@
       "upstream": "IconButton",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "QUESTION.buttons[].icon plus visible label"
     },
     {
@@ -293,14 +297,14 @@
       "upstream": "Input",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "input (text/number)"
     },
     {
       "upstream": "Label",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "QUESTION.fields[].label / table columns[].label"
     },
     {
@@ -346,14 +350,14 @@
       "upstream": "OptionCard",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "option-cards.options[]"
     },
     {
       "upstream": "OptionCards",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "option-cards"
     },
     {
@@ -394,14 +398,14 @@
       "upstream": "RadioGroup",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "radio-group"
     },
     {
       "upstream": "RadioItem",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "radio-group.options[]"
     },
     {
@@ -420,14 +424,14 @@
       "upstream": "Select",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "select"
     },
     {
       "upstream": "SelectItem",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "select.options[]"
     },
     {
@@ -456,7 +460,7 @@
       "upstream": "Slider",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "slider"
     },
     {
@@ -490,14 +494,14 @@
       "upstream": "SwitchGroup",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "switch-group"
     },
     {
       "upstream": "SwitchItem",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "switch-group.options[]"
     },
     {
@@ -535,7 +539,7 @@
       "upstream": "TextArea",
       "status": "adapted",
       "introducedInQuestion": 2,
-      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "constraints": "Bounded offline form v2/v3 contract; v3 adds conditional fields/options, cross-field comparisons and immutable row operations. Submit appends typed ANSWER. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
       "boardEquivalent": "textarea"
     },
     {
