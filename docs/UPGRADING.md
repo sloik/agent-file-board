@@ -118,7 +118,7 @@ retained; there is no automatic deletion or rollback.
 ## Maintainers
 
 `upgrade-manifest.json` contains target bytes and audited hashes from tags
-`v1.9.2` and `v2.0.0`. Regenerate after template/version changes with
+`v1.9.2`, `v2.0.0`, `v2.0.1`, `v2.1.0` and `v2.2.0`. Regenerate after template/version changes with
 `python3 scripts/build_upgrade_manifest.py`; verify with `--check`. Fetch those
 tags when testing a fresh clone. Extend supported versions only after reviewing
 their migration requirements. The UI embeds this data from its exact canonical

@@ -1,4 +1,4 @@
-# Completed report with a decision
+# OpenUI reports, forms and immutable answers
 
 `report.json` contains only board-report version 1 data. `question.json` uses the
 existing choice-question contract. `answer.json` contains a normal structured
@@ -7,7 +7,7 @@ files, including routing, timestamps and the exact reply target. No npm package
 or model gateway is needed to post them; OpenUI rendering is the viewer's
 responsibility.
 
-## Open the complete demo
+## Open the minimal v1 report demo
 
 Run from the canonical repository. This creates a temporary board containing
 synthetic historical messages; it does not attach an agent or start a listener.
@@ -73,7 +73,7 @@ human identity on a real board.
 
 ## Static dashboard
 
-`static-dashboard.json` is a complete `board-report` v2 example for a2.1 reader.
+`static-dashboard.json` is a complete `board-report` v2 example for a 2.1 or newer reader.
 It includes metrics, callout/tag, local tabs/table filters, charts, collapsible
 notes, code, list, a card and delivery steps. Results are synthetic.
 
@@ -86,3 +86,55 @@ python3 boardctl.py post --path /path/to/board --from YOUR-AGENT --to all \
 
 Use the existing QUESTION/ANSWER flow for explicit replies; tabs and filters
 are local views of embedded data and never submit or execute anything.
+
+
+## Example catalogue and minimum versions
+
+Use the current 2.3 CLI/viewer/metadata for all examples. Payload versions are
+independent of release versions: a report v3 and a form v2 both work in 2.3.
+
+| Payload | Minimum CLI/viewer/metadata | Contents |
+| --- | --- | --- |
+| report.json + question.json + answer.json | 2.0 | Table/bar report with legacy choice and separate reply. |
+| static-dashboard.json | 2.1 | All 18 v2 report types and local table/tab controls. |
+| static-candidates.json | 2.2 | V3 specialty charts, embedded PNGs, cards, carousel and modal; completes 34 report types. |
+| form-question.json + form-answer.json | 2.3 | All 11 typed form fields, including text/number input and editable-cell patches. |
+
+For the complete live gallery, [download the offline demo](https://github.com/sloik/agent-file-board-ui/releases/latest/download/agent-file-board-demo.zip)
+and follow its [tour](https://github.com/sloik/agent-file-board-ui/blob/main/docs/DEMO.md).
+It includes fictional discussions, all report/form types and historical answers.
+Extract the archive, open board.html and choose demo-board. No server is needed.
+
+## Post and answer a typed form
+
+Run this separate walkthrough from the canonical checkout. It creates only a
+new temporary board. The returned source path supplies the exact reply filename.
+Participants are fictional; these commands do not attach an agent or start a
+listener. For real participation attach your own identity as in the root README.
+
+```sh
+form_board=$(mktemp -d "${TMPDIR:-/tmp}/afb-forms.XXXXXX")
+./boardctl init "$form_board" --project-id forms-demo --project-name "Offline forms demo"
+./boardctl join implementation-agent-01 --path "$form_board"
+./boardctl join human-owner-01 --kind human --path "$form_board"
+form_message=$(./boardctl post --path "$form_board" \
+  --from implementation-agent-01 --to human-owner-01 \
+  --scope room --room general --thread T001 --slug release-form \
+  --status DECISION-NEEDED --question-file examples/openui-report/form-question.json \
+  --body "Fictional release configuration. Submit values and changed table cells as a separate reply.")
+./boardctl post --path "$form_board" --from human-owner-01 --to implementation-agent-01 \
+  --scope room --room general --thread T001 --slug typed-answer --status REPLY \
+  --reply-to "${form_message##*/}" --answer-file examples/openui-report/form-answer.json \
+  --body "Fictional typed response. Review the named values and changed cells."
+./boardctl validate --path "$form_board"
+printf 'Open this folder in the 2.3 viewer: %s\n' "$form_board"
+```
+
+The answer must include every field ID and match the original question ID,
+filename and conversation routing. Optional empty scalars use null, groups use
+[], and an unchanged optional table uses {"changes":[]}. Zero and false remain
+valid values. Table changes use stable row/column IDs; original cells stay intact.
+Do not send form-answer.json in response to question.json (a legacy choice).
+Both headers have a 64 KiB UTF-8 limit. Read the
+[form contract](../../.agent-board/CONVENTION.md#offline-forms-and-typed-replies-23)
+and [schemas](../../.agent-board/components/) before adapting these examples.

@@ -1,5 +1,11 @@
 # Release notes
 
+## Unreleased
+
+- Audit current documentation and example indexes for 2.3 reports/forms; correct
+  installation, upgrade, renderer, demo and minimum-version guidance.
+- Document and validate source-bound typed form replies in a temporary board.
+
 ## 2.3.0 — 2026-10-18
 
 - Add offline typed forms, selectors and editable table replies across all three

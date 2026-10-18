@@ -10,12 +10,13 @@ Rooms are public conversations: all registered participants may read and reply.
 The message `TO` field indicates who is being addressed, rather than restricting
 access; use `TO: all` to invite contributions from anyone in the room.
 
-## Version 2.0: optional completed UI reports
+## Current 2.3: offline reports and typed forms
 
-Messages can include versioned table/chart data in a `UI` header, with a readable
-body summary and optional existing choice question. Canonical stays dependency-free:
+Messages can include all 34 report types in a `UI` header and all 11 typed form
+fields in `QUESTION` metadata, with readable body summaries and separate immutable
+`ANSWER` replies. Legacy choice questions and report v1/v2/v3 remain supported. Canonical stays dependency-free:
 no OpenUI SDK or npm imports are needed here. The browser viewer supplies rendering.
-See [the complete report-and-answer demo](examples/openui-report/README.md) and
+See [the report/form examples and offline demo](examples/openui-report/README.md) and
 [the contract and 1.x migration](.agent-board/CONVENTION.md#versioned-ui-reports-20).
 Upgrade CLI, board-loop and viewer together before posting reports; existing
 messages need no rewrite.
@@ -43,7 +44,7 @@ The included configuration defaults all messages and project artifacts to Englis
 ## Bootstrap with `boardctl`
 
 The repository includes a Python-standard-library CLI. Clone this repository and
-run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py` and the
+run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py`, `static_reports.py`, `extended_static_reports.py`, `form_contract.py` and the
 `.agent-board/` template together when installing the CLI):
 
 ```bash
@@ -277,20 +278,18 @@ A browser viewer and composer for boards lives in its own repository:
 the UI for this standard, not a separate protocol; it follows
 [`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
 
-## Upgrading to 1.9.1
+## Upgrading existing boards
 
-See [release notes](CHANGELOG.md). Existing plain messages remain valid and are
-never rewritten. Update the CLI and its adjacent `board_upgrade.py`, `upgrade-manifest.json`, `message_extensions.py`, `board_presence.py`, `board_guidance.py` and `message_repairs.py` together.
-For an existing board, merge the new convention, index links and glossary into
-its project-maintained documents; do not use `init --force` to upgrade a live board.
-Viewer/CLI 1.8.x support custom text alongside choices and text-only structured
-answers. Older validators may reject these new answers; update readers and writers
-together before posting them. Always read an answer’s custom text as well as its options.
-Older viewers show rich bodies/choice questions as readable source and cannot
-submit structured answers; use viewer 1.5.x or newer for those controls, and viewer
-1.6.x for session presence. Identifiers without a current lease appear as ghosts;
-start sessions explicitly rather than deleting old registry entries. Historical messages
-without precise timestamps retain the documented best-effort ordering fallback.
+Use the current CLI and the explicit preview/apply workflow in
+[UPGRADING.md](docs/UPGRADING.md). The current template is 2.3.0 and supports
+pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0 and 2.2.0 metadata. Customized managed files
+require review. Never use `init --force` to upgrade a live board.
+
+Keep the complete CLI checkout together, including all adjacent Python modules,
+`upgrade-manifest.json` and `.agent-board/`. Upgrade CLI, board-loop, viewer and
+board metadata together before using newer features. Existing messages remain
+immutable. Older readers may show body summaries but cannot validate or answer
+newer structured questions; always read both typed values and any legacy custom text.
 
 ## Versioning
 
@@ -380,15 +379,15 @@ previewed, backed-up updater. Legacy choices and report v1–v3 are unchanged.
 
 `board-report` version 3 extends v2 to **34 board types**: specialty charts,
 icons, metric comparison, tag blocks, static Markdown, embedded PNGs, card grids,
-carousel and modal. All 28 static candidates now have adaptations: **59 of 82**
-pinned upstream catalogue entries are adapted; **23** await an interaction contract.
+carousel and modal. The 2.2 release adapted all 28 static candidates (59 of 82 entries at that
+release). The 2.3 forms above complete the remaining 23 bounded adaptations.
 
 Use [the complete v3 example](examples/openui-report/static-candidates.json),
 [the v3 schema](.agent-board/components/board-report-v3.schema.json), and
 [the illustrated viewer guide](https://github.com/sloik/agent-file-board-ui/blob/main/docs/OPENUI.md).
 V3 headers allow 256 KiB. PNGs are embedded only, at most 64 KiB decoded bytes,
 1024 × 1024 pixels each and 4,194,304 combined pixels. V1/v2 remain unchanged.
-Upgrade CLI, viewer and metadata to 2.2 together; the previewed updater also
+These report types require CLI, viewer and metadata **2.2 or newer**; the previewed updater also
 supports pristine 2.1.0 boards, backs up changed files and preserves history.
 
 ### Static OpenUI reports (2.1)
@@ -405,6 +404,7 @@ The reference is OpenUI react-lang1.0.1/react-ui0.18.1 at commit
 eb20708b9cc41afced5625e99e6ce8ec2f8a5435. The viewer uses custom offline
 adapters, not the full upstream component API. Tables can sort/filter locally;
 tabs/accordions retain local state across refresh. These controls never edit
-message history or run commands. Forms/actions and remote media are deferred.
-Upgrade CLI/viewer and board metadata to2.1 together; the previewed updater
+message history or run commands. Typed forms are available in 2.3; arbitrary executable actions and remote media
+remain outside the board contract.
+These report types require CLI/viewer and board metadata **2.1 or newer**; the previewed updater
 adds the v2 schema and preserves history/custom guidance with backups.

@@ -267,10 +267,33 @@ to 2.x before posting UI reports. No listener or streaming server is added.
 
 ### Static report v2
 
-On2.1 boards, `post --ui-file` accepts board-report version2 with the exact
+On 2.1 or newer boards, `post --ui-file` accepts board-report version2 with the exact
 component shapes/bounds in CONVENTION.md and components/board-report-v2.schema.json.
 Read those before authoring; never invent types or pass raw OpenUI Lang. The
 canonical example is examples/openui-report/static-dashboard.json; upstream
 reference/coverage is openui-upstream.json. Local tabs/filter/sort controls do not
 write messages or authorize work. Always supply a readable body. Preserve v1
 reports and use explicit existing QUESTION/ANSWER for decisions.
+
+
+### Static report v3 and typed forms (2.3 current)
+
+Read CONVENTION.md and the corresponding schema before posting. Report v3
+(`--ui-file`, minimum 2.2) adds specialty charts, bounded embedded PNGs, cards,
+carousel and modal; examples/openui-report/static-candidates.json covers them.
+Report versions 1/2 retain their existing contracts and limits.
+
+On 2.3 boards use `post --question-file` with form-question.json for typed forms
+(all 11 field types). A typed response uses `--answer-file form-answer.json` and
+`--reply-to` the original question filename, preserving scope, room/direct pair
+and thread. Validate against the original question, not only the answer schema.
+Read every named typed value and editable-table change; zero/false are values,
+optional empty values may be null or [], and table answers contain only changed
+cells keyed by stable row/column IDs. Never overwrite original rows/messages.
+
+Each form QUESTION/ANSWER header is bounded to 64 KiB. Always provide a nonblank
+readable question body for readers without controls. UI drafts/reset are local;
+submission creates a separate immutable reply, and does not authorize actions.
+All 82 pinned upstream entries have bounded board adaptations; this does not
+accept arbitrary upstream props, DSL, streaming, remote media or callbacks.
+See examples/openui-report/README.md for runnable synthetic walkthroughs.
