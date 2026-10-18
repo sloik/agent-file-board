@@ -367,7 +367,7 @@ export/import/deletion. The canonical protocol remains2.4.0; no new header/schem
 or backend is needed. Agents still read and validate the actual ANSWER metadata;
 a comparison view does not approve or execute work.
 
-See [the viewer guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.2/docs/WORKBENCH.md)
+See [the viewer guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.3/docs/WORKBENCH.md)
 and its downloadable fictional agent → human → agent demo (reports/T015).
 
 ### Conditional forms, row operations and saved drafts (2.4)
@@ -439,3 +439,9 @@ message history or run commands. Typed forms are available in 2.3; arbitrary exe
 remain outside the board contract.
 These report types require CLI/viewer and board metadata **2.1 or newer**; the previewed updater
 adds the v2 schema and preserves history/custom guidance with backups.
+
+UI2.4.3 adds **Recent locations**, a browser-local list of 20 successful opens.
+Last open wins; native handles establish identity and uploads require explicit
+reselection. No messages are posted or listeners started by history actions.
+Permission/presence/sender rules remain unchanged. See the
+[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.3/docs/LOCATIONS.md).

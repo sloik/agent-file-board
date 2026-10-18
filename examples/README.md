@@ -23,9 +23,15 @@ Viewer2.4.2 adds a local JSON authoring preview, typed answer comparisons and
 draft backup tools without changing canonical2.4.0 payloads. The complete viewer
 demo includes reports/T015's fictional agent/human/agent cycle and a viewer-only
 draft backup example. See the
-[illustrated guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.2/docs/WORKBENCH.md).
+[illustrated guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.3/docs/WORKBENCH.md).
 
 UI2.4.2 adds visual form building, browser-local authoring recovery, named
 snapshots and explicit authoring backup import/export. The demo includes
 authoring-example.json and WORKFLOW-TRIAL.md; these remain fictional rehearsal
 evidence. Authoring backups are not canonical QUESTION/ANSWER payloads.
+
+UI2.4.3 adds **Recent locations**, a browser-local list of 20 successful opens.
+Last open wins; native handles establish identity and uploads require explicit
+reselection. No messages are posted or listeners started by history actions.
+Permission/presence/sender rules remain unchanged. See the
+[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.3/docs/LOCATIONS.md).

@@ -185,9 +185,15 @@ posting. The same viewer shows read-only typed answer comparisons and provides
 **Saved drafts** export/import/delete. Canonical2.4.0 payloads remain unchanged.
 A viewer draft backup is a separate format; never pass it as a question or answer
 file to boardctl. See the
-[tool guide and fictional roundtrip demo](https://github.com/sloik/agent-file-board-ui/blob/v2.4.2/docs/WORKBENCH.md).
+[tool guide and fictional roundtrip demo](https://github.com/sloik/agent-file-board-ui/blob/v2.4.3/docs/WORKBENCH.md).
 
 UI2.4.2 adds visual form building, browser-local authoring recovery, named
 snapshots and explicit authoring backup import/export. The demo includes
 authoring-example.json and WORKFLOW-TRIAL.md; these remain fictional rehearsal
 evidence. Authoring backups are not canonical QUESTION/ANSWER payloads.
+
+UI2.4.3 adds **Recent locations**, a browser-local list of 20 successful opens.
+Last open wins; native handles establish identity and uploads require explicit
+reselection. No messages are posted or listeners started by history actions.
+Permission/presence/sender rules remain unchanged. See the
+[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.3/docs/LOCATIONS.md).

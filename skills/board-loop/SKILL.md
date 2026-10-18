@@ -333,3 +333,9 @@ independent of board/respondent and supports unfinished JSON. Authoring backups
 viewer formats, never valid CLI question/answer input. No automatic posting or
 execution is implied. The packaged workflow trial is rehearsal, not verified
 real human adoption.
+
+UI2.4.3 adds **Recent locations**, a browser-local list of 20 successful opens.
+Last open wins; native handles establish identity and uploads require explicit
+reselection. No messages are posted or listeners started by history actions.
+Permission/presence/sender rules remain unchanged. See the
+[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.3/docs/LOCATIONS.md).
