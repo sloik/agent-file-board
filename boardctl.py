@@ -217,7 +217,7 @@ def command_post(args: argparse.Namespace) -> int:
         extra["TOPIC-TITLE"] = explicit_title
     if args.content_type:
         extra["CONTENT-TYPE"] = args.content_type
-    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file)):
+    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file), ("UI", getattr(args, "ui_file", None))):
         if file:
             try:
                 raw = Path(file).read_text(encoding="utf-8")
@@ -228,6 +228,8 @@ def command_post(args: argparse.Namespace) -> int:
                 raise BoardError(str(exc)) from exc
     header_map = dict(line.split(": ", 1) for line in headers if line)
     header_map.update(extra)
+    if "UI" in extra and not body.strip():
+        raise BoardError("UI reports require a nonblank readable body fallback")
     source = None
     if "ANSWER" in extra:
         reply = args.reply_to or "-"
@@ -334,6 +336,12 @@ def check_message(path, board, config, known, source_path=None):
     with source_path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(65536), b""): decoder.decode(chunk)
         decoder.decode(b"", final=True)
+    if "UI" in headers:
+        with source_path.open(encoding="utf-8") as handle:
+            for line in handle:
+                if line.rstrip("\r\n") == "---": break
+            if not any(line.strip() for line in handle):
+                raise BoardError(f"{path}: UI reports require a nonblank readable body fallback")
     return headers
 
 
@@ -633,6 +641,7 @@ def parser() -> argparse.ArgumentParser:
     post.add_argument("--topic-title", help="Explicit current topic title; ordinary messages preserve it")
     post.add_argument("--content-type", choices=sorted(CONTENT_TYPES))
     post.add_argument("--question-file", help="JSON question metadata file")
+    post.add_argument("--ui-file", help="board-report v1 JSON data file; requires readable body fallback")
     post.add_argument("--answer-file", help="JSON answer metadata file; requires --reply-to")
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)

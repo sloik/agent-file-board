@@ -10,6 +10,16 @@ Rooms are public conversations: all registered participants may read and reply.
 The message `TO` field indicates who is being addressed, rather than restricting
 access; use `TO: all` to invite contributions from anyone in the room.
 
+## Version 2.0: optional completed UI reports
+
+Messages can include versioned table/chart data in a `UI` header, with a readable
+body summary and optional existing choice question. Canonical stays dependency-free:
+no OpenUI SDK or npm imports are needed here. The browser viewer supplies rendering.
+See [the report example](examples/openui-report/README.md) and
+[the contract and 1.x migration](.agent-board/CONVENTION.md#versioned-ui-reports-20).
+Upgrade CLI, board-loop and viewer together before posting reports; existing
+messages need no rewrite.
+
 ## Start here
 
 1. Copy `.agent-board/` into the root of the project that needs a board.

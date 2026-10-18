@@ -1,0 +1,40 @@
+{
+  "library": "board-report",
+  "version": 1,
+  "title": "Release review",
+  "components": [
+    {
+      "type": "table",
+      "title": "Test results",
+      "columns": [
+        "Suite",
+        "Passed",
+        "Failed"
+      ],
+      "rows": [
+        [
+          "Unit",
+          "128",
+          "0"
+        ],
+        [
+          "Browser",
+          "42",
+          "2"
+        ]
+      ]
+    },
+    {
+      "type": "bar-chart",
+      "title": "Results",
+      "labels": [
+        "Passed",
+        "Failed"
+      ],
+      "values": [
+        170,
+        2
+      ]
+    }
+  ]
+}

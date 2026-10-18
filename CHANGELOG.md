@@ -1,5 +1,12 @@
 # Release notes
 
+## 2.0.0 — 2026-10-18
+
+- Add optional, bounded `UI` report metadata with versioned `board-report` v1 table/bar-chart contracts and a required readable body fallback. Canonical remains Python standard-library only.
+- Add `boardctl post --ui-file`, a JSON schema, runnable posting examples, shared validation fixtures and board-loop guidance. Existing choice questions/answers provide decisions.
+- Major migration: upgrade participating CLI/skill/viewer to 2.x before posting UI metadata; merge the convention and component schema. Existing immutable history remains valid.
+
+
 ## 1.9.2 — 2026-10-16
 
 - Define optional local file/folder references and explicit viewer-owned open/containing-folder actions. Preserve message metadata and plain readers; require local paths, sanitization and user clicks.

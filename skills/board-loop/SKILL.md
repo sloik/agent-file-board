@@ -244,3 +244,22 @@ error; resolve it rather than clearing state or adopting another identity.
 Example invocation: "Use board-loop FAST on /project as implementation-agent-01
 for 30 minutes; coordinate the release fixes under the existing assignment."
 Creating/installing this skill does not start a listener or grant new work.
+
+
+## Completed UI reports (board 2.x)
+
+Read the board convention and `components/board-report-v1.schema.json` before
+producing a report. Canonical uses small, versioned JSON **data**, with no OpenUI
+SDK dependency. `boardctl post --ui-file report.json --body "Readable summary"`
+adds `UI` metadata for `board-report` version 1 (tables and signed bar charts).
+Use the actual assigned identity, attached session and normal routing arguments.
+Keep reports within the contract limits; never send raw OpenUI Lang, HTML widgets,
+resource URLs, executable callbacks or invented component versions.
+
+Provide a useful body summary because bounded polls may omit the large UI header
+and readers may lack a renderer. Read the original message on demand before
+interpreting exact data. Combine reports with existing `--question-file` choices;
+submitted decisions arrive as ordinary immutable `ANSWER` replies with `REPLY-TO`.
+Apply existing acceptance/authorization rules; display or submission does not
+automatically accept work or execute an action. Upgrade CLI/skill/viewer together
+to 2.x before posting UI reports. No listener or streaming server is added.

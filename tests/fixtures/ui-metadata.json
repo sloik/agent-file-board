@@ -1,0 +1,266 @@
+[
+  {
+    "name": "completed table and chart",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": true
+  },
+  {
+    "name": "negative and zero values",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[-12.5,0]}]}"
+    },
+    "source": null,
+    "valid": true
+  },
+  {
+    "name": "plain text including markup and emoji",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Review \\ud83e\\udd8a <script>alert(1)</script>\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": true
+  },
+  {
+    "name": "unknown library",
+    "headers": {
+      "UI": "{\"library\":\"other\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "unknown version",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "boolean version",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":true,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "empty title",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\" \",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "surrogate title",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"\\ud800\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "control title",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"a\\u0001\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "long title",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "no components",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "too many components",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]},{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]},{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "wrong component collection",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":{}}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "external resource key",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}],\"src\":\"https://example.invalid\"}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "unknown component",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"html\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "executable key",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]],\"onClick\":\"run()\"},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "mismatched row",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"one\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "numeric cell",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[42,\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "empty rows",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "too many rows",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"],[\"a\",\"b\",\"c\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "too many columns",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "oversized cell",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "blank cell",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"\\u00a0\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "boolean value",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[true,0]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "nonfinite value",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[NaN,1]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "infinity value",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[Infinity,0]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "numeric string",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[\"1\",0]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "oversized value",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[10000000000000.0,0]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "mismatched chart",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[1]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "too many chart points",
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":1,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\",\"x\"],\"values\":[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "duplicate key",
+    "headers": {
+      "UI": "{\"library\": \"board-report\", \"version\": 1, \"version\": 1, \"title\": \"Release review\", \"components\": [{\"type\": \"table\", \"title\": \"Test results\", \"columns\": [\"Suite\", \"Passed\", \"Failed\"], \"rows\": [[\"Unit\", \"128\", \"0\"], [\"Browser\", \"42\", \"2\"]]}, {\"type\": \"bar-chart\", \"title\": \"Results\", \"labels\": [\"Passed\", \"Failed\"], \"values\": [170, 2]}]}"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "malformed JSON",
+    "headers": {
+      "UI": "{"
+    },
+    "source": null,
+    "valid": false
+  },
+  {
+    "name": "oversized UTF8 metadata",
+    "headers": {
+      "UI": "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 {\"library\": \"board-report\", \"version\": 1, \"title\": \"Release review\", \"components\": [{\"type\": \"table\", \"title\": \"Test results\", \"columns\": [\"Suite\", \"Passed\", \"Failed\"], \"rows\": [[\"Unit\", \"128\", \"0\"], [\"Browser\", \"42\", \"2\"]]}, {\"type\": \"bar-chart\", \"title\": \"Results\", \"labels\": [\"Passed\", \"Failed\"], \"values\": [170, 2]}]}"
+    },
+    "source": null,
+    "valid": false
+  }
+]

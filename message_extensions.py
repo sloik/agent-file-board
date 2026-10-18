@@ -1,5 +1,6 @@
 """Optional rich bodies and immutable choice questions/replies; see CONVENTION.md."""
 import json
+import math
 import re
 import unicodedata
 from datetime import datetime
@@ -59,7 +60,56 @@ def topic_title(value):
     return value
 
 
+def ui_header(raw):
+    """Validate board-report v1 data without importing a renderer or SDK."""
+    if not isinstance(raw, str) or len(raw.encode("utf-8", errors="surrogatepass")) > 16384:
+        raise ValueError("UI: maximum 16384 UTF-8 bytes")
+    try:
+        ui = object_header(raw, "UI")
+    except RecursionError as exc:
+        raise ValueError("UI: JSON nesting is too deep") from exc
+
+    def text(value, limit):
+        return (isinstance(value, str) and 1 <= len(value) <= limit
+                and bool(value.strip(" \t\n\r\v\f\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"))
+                and not re.search(r"[\x00-\x1f\x7f\ud800-\udfff]", value))
+
+    if (set(ui) != {"library", "version", "title", "components"}
+            or ui["library"] != "board-report" or type(ui["version"]) not in {int, float} or ui["version"] != 1
+            or not text(ui["title"], 200) or not isinstance(ui["components"], list)
+            or not 1 <= len(ui["components"]) <= 4):
+        raise ValueError("UI: expected board-report version 1, title and 1–4 components")
+    for component in ui["components"]:
+        if not isinstance(component, dict) or not text(component.get("title"), 200):
+            raise ValueError("UI: component needs a title")
+        if component.get("type") == "table":
+            if set(component) != {"type", "title", "columns", "rows"}:
+                raise ValueError("UI: table keys must be type, title, columns, rows")
+            columns, rows = component["columns"], component["rows"]
+            if (not isinstance(columns, list) or not 1 <= len(columns) <= 8
+                    or any(not text(v, 200) for v in columns)
+                    or not isinstance(rows, list) or not 1 <= len(rows) <= 50
+                    or any(not isinstance(row, list) or len(row) != len(columns)
+                           or any(not text(v, 1000) for v in row) for row in rows)):
+                raise ValueError("UI: table requires 1–8 columns and 1–50 matching text rows")
+        elif component.get("type") == "bar-chart":
+            if set(component) != {"type", "title", "labels", "values"}:
+                raise ValueError("UI: bar-chart keys must be type, title, labels, values")
+            labels, values = component["labels"], component["values"]
+            if (not isinstance(labels, list) or not 1 <= len(labels) <= 50
+                    or any(not text(v, 200) for v in labels)
+                    or not isinstance(values, list) or len(values) != len(labels)
+                    or any(type(v) not in {int, float} or abs(v) > 1e12
+                           or not math.isfinite(v) for v in values)):
+                raise ValueError("UI: chart needs 1–50 matching labels and finite numbers within ±1e12")
+        else:
+            raise ValueError("UI: unknown component; version 1 supports table and bar-chart")
+    return ui
+
+
 def validate_extensions(headers, source=None):
+    if "UI" in headers:
+        ui_header(headers["UI"])
     if "TOPIC-TITLE" in headers:
         topic_title(headers["TOPIC-TITLE"])
 

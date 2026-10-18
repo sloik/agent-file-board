@@ -1,0 +1,15 @@
+{
+  "id": "release-review",
+  "type": "single",
+  "prompt": "What should happen next?",
+  "options": [
+    {
+      "id": "fix",
+      "label": "Fix failures"
+    },
+    {
+      "id": "postpone",
+      "label": "Postpone release"
+    }
+  ]
+}
