@@ -1,0 +1,245 @@
+{
+  "version": 2,
+  "id": "release-configuration",
+  "type": "form",
+  "prompt": "Configure a fictional release, then submit an immutable reply.",
+  "fields": [
+    {
+      "id": "owner",
+      "type": "input",
+      "label": "Release owner",
+      "required": true,
+      "dataType": "text",
+      "maxLength": 100,
+      "help": "Enter a fictional name."
+    },
+    {
+      "id": "budget",
+      "type": "input",
+      "label": "Budget",
+      "required": true,
+      "dataType": "number",
+      "min": 0,
+      "max": 100000,
+      "default": 0
+    },
+    {
+      "id": "notes",
+      "type": "textarea",
+      "label": "Review notes",
+      "required": false,
+      "maxLength": 4000
+    },
+    {
+      "id": "environment",
+      "type": "select",
+      "label": "Environment",
+      "required": true,
+      "options": [
+        {
+          "id": "staging",
+          "label": "Staging"
+        },
+        {
+          "id": "production",
+          "label": "Production"
+        }
+      ],
+      "default": "staging"
+    },
+    {
+      "id": "rollout",
+      "type": "radio-group",
+      "label": "Rollout",
+      "required": true,
+      "options": [
+        {
+          "id": "canary",
+          "label": "Canary"
+        },
+        {
+          "id": "full",
+          "label": "Full release"
+        }
+      ],
+      "default": "canary"
+    },
+    {
+      "id": "checks",
+      "type": "checkbox-group",
+      "label": "Required checks",
+      "required": true,
+      "options": [
+        {
+          "id": "unit",
+          "label": "Unit tests"
+        },
+        {
+          "id": "browser",
+          "label": "Browser tests"
+        }
+      ],
+      "default": [
+        "unit"
+      ]
+    },
+    {
+      "id": "labels",
+      "type": "chips",
+      "label": "Labels",
+      "required": false,
+      "multiple": true,
+      "options": [
+        {
+          "id": "offline",
+          "label": "Offline"
+        },
+        {
+          "id": "review",
+          "label": "Needs review"
+        }
+      ],
+      "default": [
+        "offline"
+      ]
+    },
+    {
+      "id": "plan",
+      "type": "option-cards",
+      "label": "Release plan",
+      "required": true,
+      "multiple": false,
+      "options": [
+        {
+          "id": "careful",
+          "label": "Careful",
+          "description": "Stage and review first."
+        },
+        {
+          "id": "quick",
+          "label": "Quick",
+          "description": "Fictional expedited path."
+        }
+      ],
+      "default": "careful"
+    },
+    {
+      "id": "due",
+      "type": "date-picker",
+      "label": "Target date",
+      "required": true,
+      "min": "2026-01-01",
+      "max": "2027-12-31",
+      "default": "2026-10-20"
+    },
+    {
+      "id": "percent",
+      "type": "slider",
+      "label": "Initial rollout percent",
+      "required": true,
+      "min": 0,
+      "max": 100,
+      "step": 5,
+      "default": 25
+    },
+    {
+      "id": "switches",
+      "type": "switch-group",
+      "label": "Preferences",
+      "required": false,
+      "options": [
+        {
+          "id": "notify",
+          "label": "Notify reviewers"
+        },
+        {
+          "id": "archive",
+          "label": "Archive after completion"
+        }
+      ],
+      "default": [
+        "notify"
+      ]
+    },
+    {
+      "id": "tasks",
+      "type": "editable-table",
+      "label": "Editable task estimates",
+      "required": false,
+      "help": "Edit cells; replies contain changes without rewriting the source table.",
+      "columns": [
+        {
+          "id": "task",
+          "type": "text",
+          "label": "Task",
+          "required": true,
+          "maxLength": 100
+        },
+        {
+          "id": "hours",
+          "type": "number",
+          "label": "Hours",
+          "required": true,
+          "min": 0,
+          "max": 100
+        },
+        {
+          "id": "state",
+          "type": "select",
+          "label": "State",
+          "required": true,
+          "options": [
+            {
+              "id": "pending",
+              "label": "Pending"
+            },
+            {
+              "id": "done",
+              "label": "Done"
+            }
+          ]
+        },
+        {
+          "id": "approved",
+          "type": "boolean",
+          "label": "Approved",
+          "required": true
+        }
+      ],
+      "rows": [
+        {
+          "id": "schema",
+          "values": {
+            "task": "Review schema",
+            "hours": 0,
+            "state": "pending",
+            "approved": false
+          }
+        },
+        {
+          "id": "viewer",
+          "values": {
+            "task": "Test viewer",
+            "hours": 2,
+            "state": "pending",
+            "approved": false
+          }
+        }
+      ]
+    }
+  ],
+  "buttons": [
+    {
+      "id": "send",
+      "label": "Send form answer",
+      "action": "submit",
+      "icon": "check"
+    },
+    {
+      "id": "reset",
+      "label": "Reset form",
+      "action": "reset",
+      "icon": "clock"
+    }
+  ]
+}

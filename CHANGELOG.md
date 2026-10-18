@@ -1,5 +1,17 @@
 # Release notes
 
+## 2.3.0 — 2026-10-18
+
+- Add offline typed forms, selectors and editable table replies across all three
+  planned batches: 11 field types and all 23 remaining upstream helper/control entries.
+  Pinned catalogue coverage is 82/82 bounded adaptations; 34 static report types remain.
+- Version QUESTION/ANSWER form metadata, typed required/default validation, calendar
+  dates, slider steps and stable row/column cell-change replies. Preserve legacy formats.
+- Keep drafts, focus and edits through polling/localization/navigation; append new
+  replies with existing sender guards or download them in read-only mode.
+- Add schemas, shared CLI/browser cases, safe 2.2.0 metadata upgrades, illustrated
+  examples and downloadable demo forms with a historical typed response.
+
 ## 2.2.0 — 2026-10-18
 
 - Complete pinned static OpenUI coverage with 16 additional board types (34 total):

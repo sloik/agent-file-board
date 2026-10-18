@@ -18,7 +18,7 @@ import message_repairs
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
-from message_extensions import CONTENT_TYPES, object_header, validate_extensions, topic_title, ui_header
+from message_extensions import question_header, CONTENT_TYPES, object_header, validate_extensions, topic_title, ui_header
 
 TEMPLATE = Path(__file__).with_name(".agent-board")
 ID_RE = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
@@ -229,7 +229,7 @@ def command_post(args: argparse.Namespace) -> int:
                 raise BoardError(str(exc)) from exc
     header_map = dict(line.split(": ", 1) for line in headers if line)
     header_map.update(extra)
-    if "UI" in extra and not body.strip():
+    if ("UI" in extra or ("QUESTION" in extra and object_header(extra["QUESTION"], "QUESTION").get("version") == 2)) and not body.strip():
         raise BoardError("UI reports require a nonblank readable body fallback")
     source = None
     if "ANSWER" in extra:
@@ -240,6 +240,8 @@ def command_post(args: argparse.Namespace) -> int:
         if not target.is_file():
             raise BoardError("ANSWER reply target does not exist")
         source = parse_message(target)
+        if "QUESTION" in source and question_header(source["QUESTION"]).get("version") == 2:
+            source = check_message(target, board, config, known)
         if source["FROM"] not in known or source["STATUS"] not in config["statuses"] or source["LANGUAGE"] not in allowed:
             raise BoardError("ANSWER reply target has invalid author/status/language")
     try:
@@ -337,7 +339,7 @@ def check_message(path, board, config, known, source_path=None):
     with source_path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(65536), b""): decoder.decode(chunk)
         decoder.decode(b"", final=True)
-    if "UI" in headers:
+    if "UI" in headers or ("QUESTION" in headers and object_header(headers["QUESTION"], "QUESTION").get("version") == 2):
         with source_path.open(encoding="utf-8") as handle:
             for line in handle:
                 if line.rstrip("\r\n") == "---": break
@@ -641,9 +643,9 @@ def parser() -> argparse.ArgumentParser:
     post = commands.add_parser("post"); post.add_argument("--path", default="."); post.add_argument("--from", dest="sender", required=True); post.add_argument("--to", dest="recipient", required=True); post.add_argument("--scope", choices=("room", "direct"), required=True); post.add_argument("--room"); post.add_argument("--thread", required=True); post.add_argument("--slug", required=True); post.add_argument("--status", default="INFO"); post.add_argument("--language"); post.add_argument("--body", default=""); post.add_argument("--body-file"); post.add_argument("--reply-to"); post.add_argument("--runtime"); post.add_argument("--at"); post.set_defaults(func=command_post)
     post.add_argument("--topic-title", help="Explicit current topic title; ordinary messages preserve it")
     post.add_argument("--content-type", choices=sorted(CONTENT_TYPES))
-    post.add_argument("--question-file", help="JSON question metadata file")
-    post.add_argument("--ui-file", help="board-report v1 JSON data file; requires readable body fallback")
-    post.add_argument("--answer-file", help="JSON answer metadata file; requires --reply-to")
+    post.add_argument("--question-file", help="JSON legacy choice or version2 form question file")
+    post.add_argument("--ui-file", help="board-report JSON data file; requires readable body fallback")
+    post.add_argument("--answer-file", help="JSON legacy choice or version2 typed answer file; requires --reply-to")
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
     repair = commands.add_parser("repair"); repair.add_argument("--path", default="."); repair.add_argument("--message", required=True); repair.add_argument("--by", dest="actor", required=True); repair.add_argument("--reason", required=True); repair.add_argument("--replacement-file"); repair.set_defaults(func=command_repair)

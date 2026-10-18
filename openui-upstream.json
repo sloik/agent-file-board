@@ -51,6 +51,20 @@
       "card-grid",
       "carousel",
       "modal"
+    ],
+    "formQuestionVersion": 2,
+    "implementedFormFields": [
+      "input",
+      "textarea",
+      "select",
+      "radio-group",
+      "checkbox-group",
+      "chips",
+      "option-cards",
+      "date-picker",
+      "slider",
+      "switch-group",
+      "editable-table"
     ]
   },
   "components": [
@@ -81,11 +95,17 @@
     },
     {
       "upstream": "Button",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "QUESTION.buttons[action=submit|reset]"
     },
     {
       "upstream": "Buttons",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "QUESTION.buttons"
     },
     {
       "upstream": "Callout",
@@ -110,19 +130,31 @@
     },
     {
       "upstream": "CheckBoxGroup",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "checkbox-group"
     },
     {
       "upstream": "CheckBoxItem",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "checkbox-group.options[]"
     },
     {
       "upstream": "ChipItem",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "chips.options[]"
     },
     {
       "upstream": "Chips",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "chips"
     },
     {
       "upstream": "CodeBlock",
@@ -160,11 +192,17 @@
     },
     {
       "upstream": "DatePicker",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "date-picker"
     },
     {
       "upstream": "EditableTable",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "editable-table stable rows/columns, typed cell-change reply"
     },
     {
       "upstream": "EntityList",
@@ -173,11 +211,17 @@
     },
     {
       "upstream": "Form",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "QUESTION version2 type=form"
     },
     {
       "upstream": "FormControl",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "QUESTION.fields[] required/help and validation"
     },
     {
       "upstream": "HorizontalBarChart",
@@ -193,7 +237,10 @@
     },
     {
       "upstream": "IconButton",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "QUESTION.buttons[].icon plus visible label"
     },
     {
       "upstream": "IconText",
@@ -244,11 +291,17 @@
     },
     {
       "upstream": "Input",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "input (text/number)"
     },
     {
       "upstream": "Label",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "QUESTION.fields[].label / table columns[].label"
     },
     {
       "upstream": "LineChart",
@@ -291,11 +344,17 @@
     },
     {
       "upstream": "OptionCard",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "option-cards.options[]"
     },
     {
       "upstream": "OptionCards",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "option-cards"
     },
     {
       "upstream": "OverviewCardBlock",
@@ -333,11 +392,17 @@
     },
     {
       "upstream": "RadioGroup",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "radio-group"
     },
     {
       "upstream": "RadioItem",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "radio-group.options[]"
     },
     {
       "upstream": "ScatterChart",
@@ -353,11 +418,17 @@
     },
     {
       "upstream": "Select",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "select"
     },
     {
       "upstream": "SelectItem",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "select.options[]"
     },
     {
       "upstream": "Separator",
@@ -383,7 +454,10 @@
     },
     {
       "upstream": "Slider",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "slider"
     },
     {
       "upstream": "SnippetCardBlock",
@@ -414,11 +488,17 @@
     },
     {
       "upstream": "SwitchGroup",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "switch-group"
     },
     {
       "upstream": "SwitchItem",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "switch-group.options[]"
     },
     {
       "upstream": "TabItem",
@@ -453,7 +533,10 @@
     },
     {
       "upstream": "TextArea",
-      "status": "interaction-contract-needed"
+      "status": "adapted",
+      "introducedInQuestion": 2,
+      "constraints": "Bounded offline form contract; explicit submit appends typed ANSWER reply. No arbitrary actions, external tools or upstream prop/DSL compatibility.",
+      "boardEquivalent": "textarea"
     },
     {
       "upstream": "TextCallout",

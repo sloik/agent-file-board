@@ -5,6 +5,7 @@ import re
 import unicodedata
 from static_reports import validate_report
 from extended_static_reports import extension_validator
+from form_contract import validate_form, validate_answer
 from datetime import datetime
 
 CONTENT_TYPES = {"text/plain", "text/markdown", "text/html"}
@@ -23,7 +24,7 @@ def unique_object(pairs):
 def object_header(raw, name):
     try:
         value = json.loads(raw, object_pairs_hook=unique_object)
-    except (ValueError, TypeError) as exc:
+    except (ValueError, TypeError, RecursionError) as exc:
         raise ValueError(f"{name}: invalid JSON ({exc})") from exc
     if not isinstance(value, dict):
         raise ValueError(f"{name}: expected an object")
@@ -36,6 +37,10 @@ def identifier(value):
 
 def question_header(raw):
     q = object_header(raw, "QUESTION")
+    if q.get("version") == 2:
+        if len(raw.encode("utf-8", errors="surrogatepass")) > 65536:
+            raise ValueError("QUESTION form: maximum 65536 UTF-8 bytes")
+        return validate_form(q)
     if set(q) != {"id", "type", "prompt", "options"} or not identifier(q.get("id")) or (not isinstance(q.get("type"), str) or q["type"] not in {"single", "multiple"}):
         raise ValueError("QUESTION: expected id, type (single/multiple), prompt and options")
     if not isinstance(q["prompt"], str) or not q["prompt"].strip() or any(0xD800 <= ord(c) <= 0xDFFF for c in q["prompt"]) or len(q["prompt"]) > 5000:
@@ -139,15 +144,6 @@ def validate_extensions(headers, source=None):
         question_header(headers["QUESTION"])
     if "ANSWER" in headers:
         a = object_header(headers["ANSWER"], "ANSWER")
-        if set(a) not in ({"question", "selected"}, {"question", "selected", "text"}) or not identifier(a.get("question")) or not isinstance(a.get("selected"), list):
-            raise ValueError("ANSWER: expected question ID and selected option IDs")
-        selected = a["selected"]
-        # Match ECMAScript String.trim rather than Python's broader str.strip.
-        text = a.get("text")
-        if "text" in a and (not isinstance(text, str) or not text.strip(" \t\n\r\v\f\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff") or len(text) > 10000 or any(0xD800 <= ord(c) <= 0xDFFF for c in text)):
-            raise ValueError("ANSWER: text must be nonblank Unicode text of at most 10000 characters")
-        if (not selected and text is None) or any(not identifier(s) for s in selected) or len(set(selected)) != len(selected):
-            raise ValueError("ANSWER: selected IDs must be unique; provide a selection or custom text")
         reply = headers.get("REPLY-TO", "-")
         if reply in {"-", ".", ".."} or "/" in reply or "\\" in reply or not reply.endswith(".txt"):
             raise ValueError("ANSWER: REPLY-TO must name the original question file in the same directory")
@@ -155,10 +151,25 @@ def validate_extensions(headers, source=None):
             raise ValueError("ANSWER: reply target must contain a valid QUESTION")
         validate_extensions(source)
         q = question_header(source["QUESTION"])
-        if a["question"] != q["id"] or not set(selected) <= {o["id"] for o in q["options"]}:
-            raise ValueError("ANSWER: question/option IDs do not match reply target")
-        if q["type"] == "single" and len(selected) > 1:
-            raise ValueError("ANSWER: single-choice questions allow at most one selection")
+        if a.get("version") == 2:
+            if len(headers["ANSWER"].encode("utf-8", errors="surrogatepass")) > 65536:
+                raise ValueError("ANSWER form: maximum 65536 UTF-8 bytes")
+            validate_answer(a, q)
+        else:
+            if q.get("version") == 2:
+                raise ValueError("ANSWER: typed form requires version2 answer")
+            if set(a) not in ({"question", "selected"}, {"question", "selected", "text"}) or not identifier(a.get("question")) or not isinstance(a.get("selected"), list):
+                raise ValueError("ANSWER: expected question ID and selected option IDs")
+            selected = a["selected"]
+            text = a.get("text")
+            if "text" in a and (not isinstance(text, str) or not text.strip(" \t\n\r\v\f\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff") or len(text) > 10000 or any(0xD800 <= ord(c) <= 0xDFFF for c in text)):
+                raise ValueError("ANSWER: text must be nonblank Unicode text of at most 10000 characters")
+            if (not selected and text is None) or any(not identifier(v) for v in selected) or len(set(selected)) != len(selected):
+                raise ValueError("ANSWER: selected IDs must be unique; provide a selection or custom text")
+            if a["question"] != q["id"] or not set(selected) <= {o["id"] for o in q["options"]}:
+                raise ValueError("ANSWER: question/option IDs do not match reply target")
+            if q["type"] == "single" and len(selected) > 1:
+                raise ValueError("ANSWER: single-choice questions allow at most one selection")
         if headers.get("SCOPE") != source.get("SCOPE") or headers.get("THREAD", "").split("-", 1)[0] != source.get("THREAD", "").split("-", 1)[0]:
             raise ValueError("ANSWER: reply must stay in the question's scope and thread")
         for key in ("ROOM", "DIRECT-PARTICIPANTS"):

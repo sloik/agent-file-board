@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.2.0
+Version: 2.3.0
 
 ## Purpose and authority
 
@@ -223,6 +223,70 @@ There is no message rewrite/migration: existing 1.x messages remain valid.
 The major bump marks the new metadata interpretation: 1.x tools may ignore the
 header instead of validating it, so their success is not proof of a valid report.
 Use a 2.x reader/validator for reports. Body summaries remain readable as text.
+
+## Offline forms and typed replies (2.3)
+
+Legacy QUESTION/ANSWER and reports v1–v3 remain unchanged. Forms use QUESTION
+version2 with exactly `version`, `id`, `type: "form"`, `prompt`, `fields`,
+`buttons`. Their ANSWER version2 has exactly `version`, `question`, `values`.
+Each serialized header is limited to 65536 UTF-8 bytes. Form questions require a
+readable nonblank body even without UI reports. Exact structural schemas are
+`components/form-question-v2.schema.json` and `components/form-answer-v2.schema.json`;
+`form_contract.py` also enforces the semantic rules below. JSON has unique keys.
+
+1–24 fields require unique lowercase IDs, plain `label` (200), boolean `required`,
+optional `help` (1000), and type-specific fields. Non-table fields allow a typed
+`default`, which must already satisfy the field rules. `prompt` allows 5000
+characters with LF/tab. No authored code, resource URLs or arbitrary action type.
+
+| Field type | Required extra definition properties | Typed answer value |
+| --- | --- | --- |
+| input | dataType:text + maxLength 1–4000, or dataType:number + min/max | nonblank string or finite number in bounds |
+| textarea | maxLength 1–4000 | nonblank string, LF/tab allowed |
+| select, radio-group | options | one option ID |
+| checkbox-group, switch-group | options | unique selected option IDs |
+| chips, option-cards | options, multiple:boolean | one option ID or selected IDs, according to multiple |
+| date-picker | optional min/max date strings | actual YYYY-MM-DD calendar date, years 0001–9999, within bounds |
+| slider | min<max, step > 0 | finite number on the declared grid |
+| editable-table | columns, rows | {changes:[{row,column,value}]} |
+
+Numbers are within ±1e9; booleans are never numbers. Sliders have 1–10000 integral
+steps across their range; grid comparison uses absolute tolerance 1e-7 in step
+coordinates. Option arrays contain 1–32 unique IDs with label (200) and optional
+description (1000). IDs match `[a-z][a-z0-9-]{0,63}`. Text has no controls except
+LF/tab in textarea/prompt, no DEL or surrogates; bounds count Unicode scalars.
+Optional empty scalar fields submit null. Required scalars cannot be null;
+required selection groups need at least one ID. Optional groups can submit [].
+A slider always submits a number (initially its default or minimum).
+
+Tables have 1–8 typed columns and1–50 fixed rows; total editable cells per form
+is at most 400. Columns require id/type/label/required, optional help, and type
+text(maxLength), number(min/max), select(options) or boolean. Each row has exactly
+id and values with every column ID and valid baseline values. A response contains
+only changed cells: valid stable row/column IDs, no duplicates, no unchanged
+values, no row/column additions/deletions/reordering. Each changed value satisfies
+its column constraints. Required table means at least one change; optional
+unchanged table submits {changes:[]}. Never rewrite the original message/table.
+
+Buttons have id,label,action (submit/reset) and optional fixed icon (the same 12
+names as report v3). Exactly one submit and at most one reset. Reset only restores
+local defaults. Labels remain visible even for icon buttons. Controls preserve
+drafts by board/respondent/message/definition across polling, locale changes and
+navigation. Submission rechecks the source and existing sender/write guards.
+
+An answer contains exactly every field ID. Bind it to the source QUESTION ID and
+its immutable filename using REPLY-TO; scope, topic and room/direct routing must
+match. Legacy replies cannot answer forms and typed replies cannot answer legacy
+choices. Typed values are validated against the source definition and baseline.
+Append a normal REPLY with a useful plaintext value/change summary. Read-only
+viewers download that same reply. No backend, command execution or automatic
+network requests. See examples/openui-report/form-question.json and
+form-answer.json. Upgrade CLI, viewer and metadata to 2.3 together.
+
+All 82 pinned upstream catalogue entries now have bounded board adaptations
+(34 static report types plus 11 form field types and their button/label helpers).
+This is capability coverage, not arbitrary upstream props, Lang programs,
+streaming or external tool/action compatibility.
 
 ## Rich message bodies and choice questions
 

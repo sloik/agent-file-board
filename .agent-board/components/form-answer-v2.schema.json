@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:agent-file-board:form-answer:2",
+  "title": "Form answer version2",
+  "description": "Maximum65536 UTF-8 bytes. Runtime validates nonblank text, unique IDs, exact answer field/cell bindings, typed required/default values, actual calendar dates, number ranges, slider grids, exactly one submit/optional reset, valid baseline cells, total400 cells and distinct non-no-op changes. No URLs or arbitrary actions.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "const": 2
+    },
+    "question": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,63}(?![\\s\\S])"
+    },
+    "values": {
+      "type": "object",
+      "minProperties": 1,
+      "maxProperties": 24,
+      "propertyNames": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]{0,63}(?![\\s\\S])"
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": [
+              "string",
+              "number",
+              "boolean",
+              "null"
+            ]
+          },
+          {
+            "type": "array",
+            "minItems": 0,
+            "maxItems": 32,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]{0,63}(?![\\s\\S])"
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "changes": {
+                "type": "array",
+                "minItems": 0,
+                "maxItems": 400,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "row": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{0,63}(?![\\s\\S])"
+                    },
+                    "column": {
+                      "type": "string",
+                      "pattern": "^[a-z][a-z0-9-]{0,63}(?![\\s\\S])"
+                    },
+                    "value": {
+                      "type": [
+                        "string",
+                        "number",
+                        "boolean",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "row",
+                    "column",
+                    "value"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "changes"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "version",
+    "question",
+    "values"
+  ]
+}

@@ -357,6 +357,25 @@ optional desktop helper. Paths refer to the reader's computer. No new message
 headers are required. See the [canonical rendering rules](.agent-board/CONVENTION.md).
 
 
+### Offline forms and typed replies (2.3)
+
+Version2 QUESTION/ANSWER adds all 11 offline form field types: text/number input,
+textarea, select, radio/checkbox groups, chips, option cards, date picker, slider,
+switch group and editable table. All 82 pinned upstream entries now have bounded
+board adaptations, including labels/buttons/item helpers; this is not arbitrary
+upstream props, Lang programs, streaming or executable action compatibility.
+
+Use [form-question.json](examples/openui-report/form-question.json) with
+`post --question-file`, or the [form-answer.json](examples/openui-report/form-answer.json)
+example with `--answer-file --reply-to ORIGINAL-QUESTION.txt` and normal routing.
+Each header is at most 64 KiB;1–24 named fields; fixed tables have at most 400 cells.
+Replies carry typed field values and only changed table cells, preserving the
+original question/baseline. Optional empties use null/[]; zero/false are valid.
+Read the [form contract](.agent-board/CONVENTION.md#offline-forms-and-typed-replies-23)
+and [illustrated viewer guide](https://github.com/sloik/agent-file-board-ui/blob/main/docs/OPENUI.md).
+Upgrade CLI, viewer and metadata to 2.3 together; pristine 2.2.0 is supported by the
+previewed, backed-up updater. Legacy choices and report v1–v3 are unchanged.
+
 ### Remaining static OpenUI reports (2.2)
 
 `board-report` version 3 extends v2 to **34 board types**: specialty charts,

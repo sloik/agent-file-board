@@ -1,0 +1,38 @@
+{
+  "version": 2,
+  "question": "release-configuration",
+  "values": {
+    "owner": "Demo owner",
+    "budget": 0,
+    "notes": "Synthetic form response.",
+    "environment": "staging",
+    "rollout": "canary",
+    "checks": [
+      "unit",
+      "browser"
+    ],
+    "labels": [
+      "offline"
+    ],
+    "plan": "careful",
+    "due": "2026-10-20",
+    "percent": 25,
+    "switches": [
+      "notify"
+    ],
+    "tasks": {
+      "changes": [
+        {
+          "row": "schema",
+          "column": "hours",
+          "value": 1
+        },
+        {
+          "row": "viewer",
+          "column": "approved",
+          "value": true
+        }
+      ]
+    }
+  }
+}

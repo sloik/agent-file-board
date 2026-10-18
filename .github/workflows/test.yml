@@ -29,6 +29,8 @@ jobs:
         run: python -m py_compile boardctl.py
       - name: Run unit tests
         run: python -m unittest discover -s tests -v
+      - name: Verify form schemas
+        run: python scripts/build_form_schemas.py --check
       - name: Verify upgrade manifest
         run: python scripts/build_upgrade_manifest.py --check
       - name: Check CONVENTION.md version format
