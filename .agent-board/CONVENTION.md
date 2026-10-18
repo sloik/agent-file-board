@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.0.1
+Version: 2.1.0
 
 ## Purpose and authority
 
@@ -130,6 +130,52 @@ executes a task or grants new authorization by itself. General forms and arbitra
 OpenUI Lang are outside this library version. Completed payloads need no server
 or streaming transport. A renderer may adapt the data to its own library, such as
 OpenUI; that dependency belongs in the viewer, not in this board or its agents.
+
+### Static reports, library version 2 (2.1)
+
+Version 1 above is unchanged. Version 2 uses the same report envelope and a
+16KiB single-line JSON header. It allows 1–16 children per container, 64 total
+component nodes and nesting depth 4 (top-level components are depth 1).
+Its contract is `components/board-report-v2.schema.json`; Python/browser must
+also enforce matching dimensions, nonblank text and unique IDs/series names.
+
+Pinned upstream reference: thesysdev/openui commit
+`eb20708b9cc41afced5625e99e6ce8ec2f8a5435`, `@openuidev/react-lang` 1.0.1 and
+`@openuidev/react-ui` 0.18.1. These packages have independent version numbers.
+The canonical repository's `openui-upstream.json` records catalogue coverage.
+Board components are offline adapters, not upstream props or DSL compatibility.
+
+Every component requires `type` and `title`. Exact additional fields:
+
+| Type | Fields and bounds |
+| --- | --- |
+| `table`, `bar-chart` | Same data as v1; v2 tables may sort/filter locally. |
+| `metric` | `value` (text,200), optional `detail` (text,1000). |
+| `tag` | `tone`: info/success/warning/danger. |
+| `callout` | `text` (4000), `tone` as above. |
+| `text` | `text` (4000), literal plain text. |
+| `code-block` | `code` (4000); LF and tab allowed, other v1 forbidden controls remain forbidden. |
+| `list` | `items`: 1–50 plain strings,1000 each. |
+| `separator` | No additional fields. |
+| `card` | `children`: component array. |
+| `stack` | `direction`: row/column, `children`: component array. |
+| `tabs`, `accordion` | `items`: 1–8 objects with `id` (unique lowercase identifier,64), `title` and `children`. |
+| `steps` | `items`: 1–16 objects with `title`, `text` (1000), `state`: pending/current/complete. |
+| `line-chart`, `area-chart`, `grouped-bar-chart`, `stacked-bar-chart` | `labels`: 1–50 strings; `series`: 1–6 objects with unique `name` and matching numeric `values`. |
+
+Default text bound is200 Unicode scalars. Chart numbers retain the finite
+±1e12 bound; booleans and numeric strings are invalid. Series charts support
+signed and zero values; stacked positive/negative totals use separate baselines.
+Plain text values are never interpreted as resource URLs, HTML or OpenUI Lang.
+
+Tabs, accordions and table controls operate only on embedded data; refresh must
+retain mounted local state. They do not edit a message, fetch data, execute
+commands or submit a form. Existing explicit QUESTION/ANSWER replies still work.
+Remote images/media, general forms, editable tables and arbitrary tools/actions
+are outside v2. Every report retains a readable body fallback as required above.
+Use `examples/openui-report/static-dashboard.json` from the repository with
+`boardctl post --ui-file` after upgrading CLI, viewer and metadata to2.1 together.
+Old v1 messages remain valid; older readers may reject v2 without rewriting it.
 
 ### Migrating from 1.x
 

@@ -34,7 +34,7 @@
   {
     "name": "unknown version",
     "headers": {
-      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Release review\",\"components\":[{\"type\":\"table\",\"title\":\"Test results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"]]},{\"type\":\"bar-chart\",\"title\":\"Results\",\"labels\":[\"Passed\",\"Failed\"],\"values\":[170,2]}]}"
+      "UI": "{\"library\": \"board-report\", \"version\": 3, \"title\": \"Release review\", \"components\": [{\"type\": \"table\", \"title\": \"Test results\", \"columns\": [\"Suite\", \"Passed\", \"Failed\"], \"rows\": [[\"Unit\", \"128\", \"0\"], [\"Browser\", \"42\", \"2\"]]}, {\"type\": \"bar-chart\", \"title\": \"Results\", \"labels\": [\"Passed\", \"Failed\"], \"values\": [170, 2]}]}"
     },
     "source": null,
     "valid": false
@@ -262,5 +262,418 @@
     },
     "source": null,
     "valid": false
+  },
+  {
+    "name": "v2-all-static-types",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stack\",\"title\":\"At a glance\",\"direction\":\"row\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Bundle size\",\"value\":\"1.0 MB\"},{\"type\":\"tag\",\"title\":\"Review needed\",\"tone\":\"warning\"}]},{\"type\":\"callout\",\"title\":\"Release held\",\"text\":\"Fix the two failing checks before publishing. These are synthetic results.\",\"tone\":\"warning\"},{\"type\":\"tabs\",\"title\":\"Evidence\",\"items\":[{\"id\":\"trend\",\"title\":\"Trends\",\"children\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]},{\"type\":\"area-chart\",\"title\":\"Coverage over time\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Covered\",\"values\":[60,72,85]}]}]},{\"id\":\"results\",\"title\":\"Results\",\"children\":[{\"type\":\"table\",\"title\":\"Suite results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"Integration\",\"10\",\"0\"]]},{\"type\":\"grouped-bar-chart\",\"title\":\"Planned versus actual\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"series\":[{\"name\":\"Planned\",\"values\":[3,8,2]},{\"name\":\"Actual\",\"values\":[4,6,0]}]}]}]},{\"type\":\"accordion\",\"title\":\"Details\",\"items\":[{\"id\":\"notes\",\"title\":\"Review notes\",\"children\":[{\"type\":\"card\",\"title\":\"What changed\",\"children\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"},{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}]}]},{\"id\":\"commands\",\"title\":\"Commands and signed data\",\"children\":[{\"type\":\"code-block\",\"title\":\"Reproduce\",\"code\":\"npm test\\npython3 -m unittest discover -s tests\"},{\"type\":\"stacked-bar-chart\",\"title\":\"Signed changes\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Added\",\"values\":[3,-2,0]},{\"name\":\"Changed\",\"values\":[2,-4,1]}]},{\"type\":\"bar-chart\",\"title\":\"Versus plan\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"values\":[3,-2,0]}]}]},{\"type\":\"separator\",\"title\":\"Delivery plan\"},{\"type\":\"steps\",\"title\":\"Next steps\",\"items\":[{\"title\":\"Validate\",\"text\":\"Run the regression suite.\",\"state\":\"complete\"},{\"title\":\"Review\",\"text\":\"Resolve the two failures.\",\"state\":\"current\"},{\"title\":\"Publish\",\"text\":\"Make an explicit release decision.\",\"state\":\"pending\"}]}]}"
+    }
+  },
+  {
+    "name": "v2-type-table",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"table\",\"title\":\"Suite results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"Integration\",\"10\",\"0\"]]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-table",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"table\",\"title\":\"Suite results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"Integration\",\"10\",\"0\"]],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-bar-chart",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"bar-chart\",\"title\":\"Versus plan\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"values\":[3,-2,0]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-bar-chart",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"bar-chart\",\"title\":\"Versus plan\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"values\":[3,-2,0],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-metric",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-metric",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\",\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-callout",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"callout\",\"title\":\"Release held\",\"text\":\"Fix the two failing checks before publishing. These are synthetic results.\",\"tone\":\"warning\"}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-callout",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"callout\",\"title\":\"Release held\",\"text\":\"Fix the two failing checks before publishing. These are synthetic results.\",\"tone\":\"warning\",\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-tag",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"tag\",\"title\":\"Review needed\",\"tone\":\"warning\"}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-tag",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"tag\",\"title\":\"Review needed\",\"tone\":\"warning\",\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-text",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-text",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\",\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-code-block",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"code-block\",\"title\":\"Reproduce\",\"code\":\"npm test\\npython3 -m unittest discover -s tests\"}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-code-block",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"code-block\",\"title\":\"Reproduce\",\"code\":\"npm test\\npython3 -m unittest discover -s tests\",\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-list",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-list",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-separator",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"separator\",\"title\":\"Delivery plan\"}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-separator",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"separator\",\"title\":\"Delivery plan\",\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-card",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"card\",\"title\":\"What changed\",\"children\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"},{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-card",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"card\",\"title\":\"What changed\",\"children\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"},{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-stack",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stack\",\"title\":\"At a glance\",\"direction\":\"row\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Bundle size\",\"value\":\"1.0 MB\"},{\"type\":\"tag\",\"title\":\"Review needed\",\"tone\":\"warning\"}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-stack",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stack\",\"title\":\"At a glance\",\"direction\":\"row\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Bundle size\",\"value\":\"1.0 MB\"},{\"type\":\"tag\",\"title\":\"Review needed\",\"tone\":\"warning\"}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-tabs",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"tabs\",\"title\":\"Evidence\",\"items\":[{\"id\":\"trend\",\"title\":\"Trends\",\"children\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]},{\"type\":\"area-chart\",\"title\":\"Coverage over time\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Covered\",\"values\":[60,72,85]}]}]},{\"id\":\"results\",\"title\":\"Results\",\"children\":[{\"type\":\"table\",\"title\":\"Suite results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"Integration\",\"10\",\"0\"]]},{\"type\":\"grouped-bar-chart\",\"title\":\"Planned versus actual\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"series\":[{\"name\":\"Planned\",\"values\":[3,8,2]},{\"name\":\"Actual\",\"values\":[4,6,0]}]}]}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-tabs",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"tabs\",\"title\":\"Evidence\",\"items\":[{\"id\":\"trend\",\"title\":\"Trends\",\"children\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]},{\"type\":\"area-chart\",\"title\":\"Coverage over time\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Covered\",\"values\":[60,72,85]}]}]},{\"id\":\"results\",\"title\":\"Results\",\"children\":[{\"type\":\"table\",\"title\":\"Suite results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"Integration\",\"10\",\"0\"]]},{\"type\":\"grouped-bar-chart\",\"title\":\"Planned versus actual\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"series\":[{\"name\":\"Planned\",\"values\":[3,8,2]},{\"name\":\"Actual\",\"values\":[4,6,0]}]}]}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-accordion",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"accordion\",\"title\":\"Details\",\"items\":[{\"id\":\"notes\",\"title\":\"Review notes\",\"children\":[{\"type\":\"card\",\"title\":\"What changed\",\"children\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"},{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}]}]},{\"id\":\"commands\",\"title\":\"Commands and signed data\",\"children\":[{\"type\":\"code-block\",\"title\":\"Reproduce\",\"code\":\"npm test\\npython3 -m unittest discover -s tests\"},{\"type\":\"stacked-bar-chart\",\"title\":\"Signed changes\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Added\",\"values\":[3,-2,0]},{\"name\":\"Changed\",\"values\":[2,-4,1]}]},{\"type\":\"bar-chart\",\"title\":\"Versus plan\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"values\":[3,-2,0]}]}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-accordion",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"accordion\",\"title\":\"Details\",\"items\":[{\"id\":\"notes\",\"title\":\"Review notes\",\"children\":[{\"type\":\"card\",\"title\":\"What changed\",\"children\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"},{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}]}]},{\"id\":\"commands\",\"title\":\"Commands and signed data\",\"children\":[{\"type\":\"code-block\",\"title\":\"Reproduce\",\"code\":\"npm test\\npython3 -m unittest discover -s tests\"},{\"type\":\"stacked-bar-chart\",\"title\":\"Signed changes\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Added\",\"values\":[3,-2,0]},{\"name\":\"Changed\",\"values\":[2,-4,1]}]},{\"type\":\"bar-chart\",\"title\":\"Versus plan\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"values\":[3,-2,0]}]}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-steps",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"steps\",\"title\":\"Next steps\",\"items\":[{\"title\":\"Validate\",\"text\":\"Run the regression suite.\",\"state\":\"complete\"},{\"title\":\"Review\",\"text\":\"Resolve the two failures.\",\"state\":\"current\"},{\"title\":\"Publish\",\"text\":\"Make an explicit release decision.\",\"state\":\"pending\"}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-steps",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"steps\",\"title\":\"Next steps\",\"items\":[{\"title\":\"Validate\",\"text\":\"Run the regression suite.\",\"state\":\"complete\"},{\"title\":\"Review\",\"text\":\"Resolve the two failures.\",\"state\":\"current\"},{\"title\":\"Publish\",\"text\":\"Make an explicit release decision.\",\"state\":\"pending\"}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-line-chart",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-line-chart",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-area-chart",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"area-chart\",\"title\":\"Coverage over time\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Covered\",\"values\":[60,72,85]}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-area-chart",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"area-chart\",\"title\":\"Coverage over time\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Covered\",\"values\":[60,72,85]}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-grouped-bar-chart",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"grouped-bar-chart\",\"title\":\"Planned versus actual\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"series\":[{\"name\":\"Planned\",\"values\":[3,8,2]},{\"name\":\"Actual\",\"values\":[4,6,0]}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-grouped-bar-chart",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"grouped-bar-chart\",\"title\":\"Planned versus actual\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"series\":[{\"name\":\"Planned\",\"values\":[3,8,2]},{\"name\":\"Actual\",\"values\":[4,6,0]}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-type-stacked-bar-chart",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stacked-bar-chart\",\"title\":\"Signed changes\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Added\",\"values\":[3,-2,0]},{\"name\":\"Changed\",\"values\":[2,-4,1]}]}]}"
+    }
+  },
+  {
+    "name": "v2-extra-field-stacked-bar-chart",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stacked-bar-chart\",\"title\":\"Signed changes\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Added\",\"values\":[3,-2,0]},{\"name\":\"Changed\",\"values\":[2,-4,1]}],\"action\":\"run\"}]}"
+    }
+  },
+  {
+    "name": "v2-bad-tone",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"tag\",\"title\":\"x\",\"tone\":\"red\"}]}"
+    }
+  },
+  {
+    "name": "v2-bad-direction",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stack\",\"title\":\"x\",\"direction\":\"grid\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}]}"
+    }
+  },
+  {
+    "name": "v2-script",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"html\",\"title\":\"x\",\"html\":\"<script>bad</script>\"}]}"
+    }
+  },
+  {
+    "name": "v2-empty-code",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"code-block\",\"title\":\"x\",\"code\":\"  \"}]}"
+    }
+  },
+  {
+    "name": "v2-series-length",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[1]},{\"name\":\"Failed\",\"values\":[5,0,2]}]}]}"
+    }
+  },
+  {
+    "name": "v2-bool-number",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[true,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]}]}"
+    }
+  },
+  {
+    "name": "v2-oversize-number",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[10000000000000.0,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]}]}"
+    }
+  },
+  {
+    "name": "v2-duplicate-series",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Passed\",\"values\":[5,0,2]}]}]}"
+    }
+  },
+  {
+    "name": "v2-depth-4",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"card\",\"title\":\"Nested\",\"children\":[{\"type\":\"card\",\"title\":\"Nested\",\"children\":[{\"type\":\"card\",\"title\":\"Nested\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}]}]}]}"
+    }
+  },
+  {
+    "name": "v2-depth-5",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"card\",\"title\":\"Nested\",\"children\":[{\"type\":\"card\",\"title\":\"Nested\",\"children\":[{\"type\":\"card\",\"title\":\"Nested\",\"children\":[{\"type\":\"card\",\"title\":\"Nested\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}]}]}]}]}"
+    }
+  },
+  {
+    "name": "v2-nodes-64",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}]}"
+    }
+  },
+  {
+    "name": "v2-nodes-65",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"type\":\"card\",\"title\":\"Group\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}"
+    }
+  },
+  {
+    "name": "v2-invalid-version",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":3,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stack\",\"title\":\"At a glance\",\"direction\":\"row\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Bundle size\",\"value\":\"1.0 MB\"},{\"type\":\"tag\",\"title\":\"Review needed\",\"tone\":\"warning\"}]},{\"type\":\"callout\",\"title\":\"Release held\",\"text\":\"Fix the two failing checks before publishing. These are synthetic results.\",\"tone\":\"warning\"},{\"type\":\"tabs\",\"title\":\"Evidence\",\"items\":[{\"id\":\"trend\",\"title\":\"Trends\",\"children\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]},{\"type\":\"area-chart\",\"title\":\"Coverage over time\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Covered\",\"values\":[60,72,85]}]}]},{\"id\":\"results\",\"title\":\"Results\",\"children\":[{\"type\":\"table\",\"title\":\"Suite results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"Integration\",\"10\",\"0\"]]},{\"type\":\"grouped-bar-chart\",\"title\":\"Planned versus actual\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"series\":[{\"name\":\"Planned\",\"values\":[3,8,2]},{\"name\":\"Actual\",\"values\":[4,6,0]}]}]}]},{\"type\":\"accordion\",\"title\":\"Details\",\"items\":[{\"id\":\"notes\",\"title\":\"Review notes\",\"children\":[{\"type\":\"card\",\"title\":\"What changed\",\"children\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"},{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}]}]},{\"id\":\"commands\",\"title\":\"Commands and signed data\",\"children\":[{\"type\":\"code-block\",\"title\":\"Reproduce\",\"code\":\"npm test\\npython3 -m unittest discover -s tests\"},{\"type\":\"stacked-bar-chart\",\"title\":\"Signed changes\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Added\",\"values\":[3,-2,0]},{\"name\":\"Changed\",\"values\":[2,-4,1]}]},{\"type\":\"bar-chart\",\"title\":\"Versus plan\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"values\":[3,-2,0]}]}]},{\"type\":\"separator\",\"title\":\"Delivery plan\"},{\"type\":\"steps\",\"title\":\"Next steps\",\"items\":[{\"title\":\"Validate\",\"text\":\"Run the regression suite.\",\"state\":\"complete\"},{\"title\":\"Review\",\"text\":\"Resolve the two failures.\",\"state\":\"current\"},{\"title\":\"Publish\",\"text\":\"Make an explicit release decision.\",\"state\":\"pending\"}]}]}"
+    }
+  },
+  {
+    "name": "v2-bool-version",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":true,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"stack\",\"title\":\"At a glance\",\"direction\":\"row\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"},{\"type\":\"metric\",\"title\":\"Bundle size\",\"value\":\"1.0 MB\"},{\"type\":\"tag\",\"title\":\"Review needed\",\"tone\":\"warning\"}]},{\"type\":\"callout\",\"title\":\"Release held\",\"text\":\"Fix the two failing checks before publishing. These are synthetic results.\",\"tone\":\"warning\"},{\"type\":\"tabs\",\"title\":\"Evidence\",\"items\":[{\"id\":\"trend\",\"title\":\"Trends\",\"children\":[{\"type\":\"line-chart\",\"title\":\"Test trend\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Passed\",\"values\":[128,152,170]},{\"name\":\"Failed\",\"values\":[5,0,2]}]},{\"type\":\"area-chart\",\"title\":\"Coverage over time\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Covered\",\"values\":[60,72,85]}]}]},{\"id\":\"results\",\"title\":\"Results\",\"children\":[{\"type\":\"table\",\"title\":\"Suite results\",\"columns\":[\"Suite\",\"Passed\",\"Failed\"],\"rows\":[[\"Unit\",\"128\",\"0\"],[\"Browser\",\"42\",\"2\"],[\"Integration\",\"10\",\"0\"]]},{\"type\":\"grouped-bar-chart\",\"title\":\"Planned versus actual\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"series\":[{\"name\":\"Planned\",\"values\":[3,8,2]},{\"name\":\"Actual\",\"values\":[4,6,0]}]}]}]},{\"type\":\"accordion\",\"title\":\"Details\",\"items\":[{\"id\":\"notes\",\"title\":\"Review notes\",\"children\":[{\"type\":\"card\",\"title\":\"What changed\",\"children\":[{\"type\":\"text\",\"title\":\"Summary\",\"text\":\"All content is embedded in this immutable message.\"},{\"type\":\"list\",\"title\":\"Next actions\",\"items\":[\"Fix failures\",\"Retest\",\"Review the release\"]}]}]},{\"id\":\"commands\",\"title\":\"Commands and signed data\",\"children\":[{\"type\":\"code-block\",\"title\":\"Reproduce\",\"code\":\"npm test\\npython3 -m unittest discover -s tests\"},{\"type\":\"stacked-bar-chart\",\"title\":\"Signed changes\",\"labels\":[\"Mon\",\"Tue\",\"Wed\"],\"series\":[{\"name\":\"Added\",\"values\":[3,-2,0]},{\"name\":\"Changed\",\"values\":[2,-4,1]}]},{\"type\":\"bar-chart\",\"title\":\"Versus plan\",\"labels\":[\"Design\",\"Build\",\"Review\"],\"values\":[3,-2,0]}]}]},{\"type\":\"separator\",\"title\":\"Delivery plan\"},{\"type\":\"steps\",\"title\":\"Next steps\",\"items\":[{\"title\":\"Validate\",\"text\":\"Run the regression suite.\",\"state\":\"complete\"},{\"title\":\"Review\",\"text\":\"Resolve the two failures.\",\"state\":\"current\"},{\"title\":\"Publish\",\"text\":\"Make an explicit release decision.\",\"state\":\"pending\"}]}]}"
+    }
+  },
+  {
+    "name": "v2-duplicate-tab-id",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"tabs\",\"title\":\"x\",\"items\":[{\"id\":\"same\",\"title\":\"x\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]},{\"id\":\"same\",\"title\":\"x\",\"children\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}]}]}"
+    }
+  },
+  {
+    "name": "v2-code-newlines-tabs",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"code-block\",\"title\":\"Code\",\"code\":\"line1\\n\\tline2\"}]}"
+    }
+  },
+  {
+    "name": "v2-invalid-string-86",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"metric\",\"title\":\"\\ud800\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}"
+    }
+  },
+  {
+    "name": "v2-invalid-string-87",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"metric\",\"title\":\"\\u0000\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}"
+    }
+  },
+  {
+    "name": "v2-invalid-string-88",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"metric\",\"title\":\"Tests passed\",\"value\":\"\\u00a0\",\"detail\":\"2 failures need review\"}]}"
+    }
+  },
+  {
+    "name": "v2-invalid-string-89",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"metric\",\"title\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",\"value\":\"170\",\"detail\":\"2 failures need review\"}]}"
+    }
+  },
+  {
+    "name": "v2-literal-injection",
+    "valid": true,
+    "headers": {
+      "UI": "{\"library\":\"board-report\",\"version\":2,\"title\":\"Static release dashboard\",\"components\":[{\"type\":\"text\",\"title\":\"</script><img src=x>\",\"text\":\"\\\"), Query(\\\"run\\\", {}); root = Html(\\\"x\\\")\"}]}"
+    }
+  },
+  {
+    "name": "v2-huge-integer-refused-without-overflow",
+    "valid": false,
+    "headers": {
+      "UI": "{\"library\": \"board-report\", \"version\": 2, \"title\": \"Static release dashboard\", \"components\": [{\"type\": \"line-chart\", \"title\": \"Huge integer\", \"labels\": [\"x\"], \"series\": [{\"name\": \"x\", \"values\": [10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000]}]}]}"
+    }
   }
 ]

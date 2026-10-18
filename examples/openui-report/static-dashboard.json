@@ -1,0 +1,262 @@
+{
+  "library": "board-report",
+  "version": 2,
+  "title": "Static release dashboard",
+  "components": [
+    {
+      "type": "stack",
+      "title": "At a glance",
+      "direction": "row",
+      "children": [
+        {
+          "type": "metric",
+          "title": "Tests passed",
+          "value": "170",
+          "detail": "2 failures need review"
+        },
+        {
+          "type": "metric",
+          "title": "Bundle size",
+          "value": "1.0 MB"
+        },
+        {
+          "type": "tag",
+          "title": "Review needed",
+          "tone": "warning"
+        }
+      ]
+    },
+    {
+      "type": "callout",
+      "title": "Release held",
+      "text": "Fix the two failing checks before publishing. These are synthetic results.",
+      "tone": "warning"
+    },
+    {
+      "type": "tabs",
+      "title": "Evidence",
+      "items": [
+        {
+          "id": "trend",
+          "title": "Trends",
+          "children": [
+            {
+              "type": "line-chart",
+              "title": "Test trend",
+              "labels": [
+                "Mon",
+                "Tue",
+                "Wed"
+              ],
+              "series": [
+                {
+                  "name": "Passed",
+                  "values": [
+                    128,
+                    152,
+                    170
+                  ]
+                },
+                {
+                  "name": "Failed",
+                  "values": [
+                    5,
+                    0,
+                    2
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "area-chart",
+              "title": "Coverage over time",
+              "labels": [
+                "Mon",
+                "Tue",
+                "Wed"
+              ],
+              "series": [
+                {
+                  "name": "Covered",
+                  "values": [
+                    60,
+                    72,
+                    85
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "results",
+          "title": "Results",
+          "children": [
+            {
+              "type": "table",
+              "title": "Suite results",
+              "columns": [
+                "Suite",
+                "Passed",
+                "Failed"
+              ],
+              "rows": [
+                [
+                  "Unit",
+                  "128",
+                  "0"
+                ],
+                [
+                  "Browser",
+                  "42",
+                  "2"
+                ],
+                [
+                  "Integration",
+                  "10",
+                  "0"
+                ]
+              ]
+            },
+            {
+              "type": "grouped-bar-chart",
+              "title": "Planned versus actual",
+              "labels": [
+                "Design",
+                "Build",
+                "Review"
+              ],
+              "series": [
+                {
+                  "name": "Planned",
+                  "values": [
+                    3,
+                    8,
+                    2
+                  ]
+                },
+                {
+                  "name": "Actual",
+                  "values": [
+                    4,
+                    6,
+                    0
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "accordion",
+      "title": "Details",
+      "items": [
+        {
+          "id": "notes",
+          "title": "Review notes",
+          "children": [
+            {
+              "type": "card",
+              "title": "What changed",
+              "children": [
+                {
+                  "type": "text",
+                  "title": "Summary",
+                  "text": "All content is embedded in this immutable message."
+                },
+                {
+                  "type": "list",
+                  "title": "Next actions",
+                  "items": [
+                    "Fix failures",
+                    "Retest",
+                    "Review the release"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "commands",
+          "title": "Commands and signed data",
+          "children": [
+            {
+              "type": "code-block",
+              "title": "Reproduce",
+              "code": "npm test\npython3 -m unittest discover -s tests"
+            },
+            {
+              "type": "stacked-bar-chart",
+              "title": "Signed changes",
+              "labels": [
+                "Mon",
+                "Tue",
+                "Wed"
+              ],
+              "series": [
+                {
+                  "name": "Added",
+                  "values": [
+                    3,
+                    -2,
+                    0
+                  ]
+                },
+                {
+                  "name": "Changed",
+                  "values": [
+                    2,
+                    -4,
+                    1
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "bar-chart",
+              "title": "Versus plan",
+              "labels": [
+                "Design",
+                "Build",
+                "Review"
+              ],
+              "values": [
+                3,
+                -2,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "separator",
+      "title": "Delivery plan"
+    },
+    {
+      "type": "steps",
+      "title": "Next steps",
+      "items": [
+        {
+          "title": "Validate",
+          "text": "Run the regression suite.",
+          "state": "complete"
+        },
+        {
+          "title": "Review",
+          "text": "Resolve the two failures.",
+          "state": "current"
+        },
+        {
+          "title": "Publish",
+          "text": "Make an explicit release decision.",
+          "state": "pending"
+        }
+      ]
+    }
+  ]
+}

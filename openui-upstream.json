@@ -1,0 +1,400 @@
+{
+  "upstream": {
+    "repository": "https://github.com/thesysdev/openui",
+    "commit": "eb20708b9cc41afced5625e99e6ce8ec2f8a5435",
+    "catalogue": "packages/react-ui/src/genui-lib/openuiLibrary.tsx",
+    "packages": {
+      "@openuidev/react-lang": "1.0.1",
+      "@openuidev/react-ui": "0.18.1"
+    },
+    "note": "Reference catalogue only. Board adapters use react-lang; react-ui is not installed. Coverage means adapted capability, not upstream props/DSL compatibility."
+  },
+  "boardLibrary": {
+    "name": "board-report",
+    "versions": [
+      1,
+      2
+    ],
+    "implementedTypes": [
+      "table",
+      "bar-chart",
+      "metric",
+      "callout",
+      "tag",
+      "text",
+      "code-block",
+      "list",
+      "separator",
+      "card",
+      "stack",
+      "tabs",
+      "accordion",
+      "steps",
+      "line-chart",
+      "area-chart",
+      "grouped-bar-chart",
+      "stacked-bar-chart"
+    ]
+  },
+  "components": [
+    {
+      "upstream": "Accordion",
+      "status": "adapted",
+      "boardEquivalent": "accordion"
+    },
+    {
+      "upstream": "AccordionItem",
+      "status": "adapted",
+      "boardEquivalent": "accordion items"
+    },
+    {
+      "upstream": "AreaChart",
+      "status": "adapted",
+      "boardEquivalent": "area-chart"
+    },
+    {
+      "upstream": "BarChart",
+      "status": "adapted",
+      "boardEquivalent": "bar-chart / grouped-bar-chart / stacked-bar-chart"
+    },
+    {
+      "upstream": "BoldText",
+      "status": "adapted",
+      "boardEquivalent": "metric value"
+    },
+    {
+      "upstream": "Button",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "Buttons",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "Callout",
+      "status": "adapted",
+      "boardEquivalent": "callout"
+    },
+    {
+      "upstream": "Card",
+      "status": "adapted",
+      "boardEquivalent": "card"
+    },
+    {
+      "upstream": "CardHeader",
+      "status": "adapted",
+      "boardEquivalent": "title field"
+    },
+    {
+      "upstream": "Carousel",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "CheckBoxGroup",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "CheckBoxItem",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "ChipItem",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "Chips",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "CodeBlock",
+      "status": "adapted",
+      "boardEquivalent": "code-block"
+    },
+    {
+      "upstream": "Col",
+      "status": "adapted",
+      "boardEquivalent": "table columns"
+    },
+    {
+      "upstream": "CompositeCardBlock",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "CompositeCardItem",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "ContextCardBlock",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "ContextCardItem",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "DatePicker",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "EditableTable",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "EntityList",
+      "status": "adapted",
+      "boardEquivalent": "table"
+    },
+    {
+      "upstream": "Form",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "FormControl",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "HorizontalBarChart",
+      "status": "adapted",
+      "boardEquivalent": "bar-chart"
+    },
+    {
+      "upstream": "Icon",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "IconButton",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "IconText",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Image",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "ImageBlock",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "ImageGallery",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "ImageText",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "ImageTextLarge",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "InlineHeader",
+      "status": "adapted",
+      "boardEquivalent": "title field"
+    },
+    {
+      "upstream": "Input",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "Label",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "LineChart",
+      "status": "adapted",
+      "boardEquivalent": "line-chart"
+    },
+    {
+      "upstream": "ListBlock",
+      "status": "adapted",
+      "boardEquivalent": "list"
+    },
+    {
+      "upstream": "ListItem",
+      "status": "adapted",
+      "boardEquivalent": "list items"
+    },
+    {
+      "upstream": "MarkDownRenderer",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "MetricIndicatorInline",
+      "status": "adapted",
+      "boardEquivalent": "metric"
+    },
+    {
+      "upstream": "MetricIndicatorWithStrikethrough",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Modal",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "OptionCard",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "OptionCards",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "OverviewCardBlock",
+      "status": "adapted",
+      "boardEquivalent": "stack + metric"
+    },
+    {
+      "upstream": "OverviewCardItem",
+      "status": "adapted",
+      "boardEquivalent": "metric"
+    },
+    {
+      "upstream": "PieChart",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Point",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "RadarChart",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "RadialChart",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "RadioGroup",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "RadioItem",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "ScatterChart",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "ScatterSeries",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Select",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "SelectItem",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "Separator",
+      "status": "adapted",
+      "boardEquivalent": "separator"
+    },
+    {
+      "upstream": "Series",
+      "status": "adapted",
+      "boardEquivalent": "series field"
+    },
+    {
+      "upstream": "SingleStackedBarChart",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Slice",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Slider",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "SnippetCardBlock",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "SnippetCardItem",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Stack",
+      "status": "adapted",
+      "boardEquivalent": "stack"
+    },
+    {
+      "upstream": "Steps",
+      "status": "adapted",
+      "boardEquivalent": "steps"
+    },
+    {
+      "upstream": "StepsItem",
+      "status": "adapted",
+      "boardEquivalent": "step items"
+    },
+    {
+      "upstream": "SwitchGroup",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "SwitchItem",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "TabItem",
+      "status": "adapted",
+      "boardEquivalent": "tab items"
+    },
+    {
+      "upstream": "Table",
+      "status": "adapted",
+      "boardEquivalent": "table"
+    },
+    {
+      "upstream": "Tabs",
+      "status": "adapted",
+      "boardEquivalent": "tabs"
+    },
+    {
+      "upstream": "Tag",
+      "status": "adapted",
+      "boardEquivalent": "tag"
+    },
+    {
+      "upstream": "TagBlock",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "Text",
+      "status": "adapted",
+      "boardEquivalent": "text"
+    },
+    {
+      "upstream": "TextArea",
+      "status": "interaction-contract-needed"
+    },
+    {
+      "upstream": "TextCallout",
+      "status": "adapted",
+      "boardEquivalent": "callout"
+    },
+    {
+      "upstream": "TextContent",
+      "status": "adapted",
+      "boardEquivalent": "text"
+    },
+    {
+      "upstream": "VisualCardBlock",
+      "status": "later-static-candidate"
+    },
+    {
+      "upstream": "VisualCardItem",
+      "status": "later-static-candidate"
+    }
+  ]
+}

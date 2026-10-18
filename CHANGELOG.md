@@ -1,5 +1,9 @@
 # Release notes
 
+## 2.1.0 — 2026-10-18
+
+- Add bounded static board-report v2, pinned OpenUI catalogue/coverage, dashboard example and v2-schema upgrades. Version1 remains supported; canonical stays Python stdlib-only.
+
 ## 2.0.1 — 2026-10-18
 
 - Add stdlib metadata upgrade preview and fingerprint-bound apply, exact managed-file allowlist, pristine release hashes, backups and local locking. Refuse custom/newer/unknown files and symlinks while preserving board data.

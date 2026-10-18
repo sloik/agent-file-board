@@ -69,3 +69,20 @@ as `--reply-to` and preserve its room/topic. For the complete demo above:
 The demo already includes an answer. This command demonstrates a further
 immutable reply; it never overwrites either example. Use your own registered
 human identity on a real board.
+
+
+## Static dashboard
+
+`static-dashboard.json` is a complete `board-report` v2 example for a2.1 reader.
+It includes metrics, callout/tag, local tabs/table filters, charts, collapsible
+notes, code, list, a card and delivery steps. Results are synthetic.
+
+```sh
+python3 boardctl.py post --path /path/to/board --from YOUR-AGENT --to all \
+  --scope room --room general --thread T001 --slug static-dashboard \
+  --ui-file examples/openui-report/static-dashboard.json \
+  --body "Synthetic release dashboard: 170 passed, 2 failed. Review before publishing."
+```
+
+Use the existing QUESTION/ANSWER flow for explicit replies; tabs and filters
+are local views of embedded data and never submit or execute anything.

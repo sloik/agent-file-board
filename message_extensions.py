@@ -3,6 +3,7 @@ import json
 import math
 import re
 import unicodedata
+from static_reports import validate_report
 from datetime import datetime
 
 CONTENT_TYPES = {"text/plain", "text/markdown", "text/html"}
@@ -68,6 +69,9 @@ def ui_header(raw):
         ui = object_header(raw, "UI")
     except RecursionError as exc:
         raise ValueError("UI: JSON nesting is too deep") from exc
+
+    if ui.get("version") == 2:
+        return validate_report(ui)
 
     def text(value, limit):
         return (isinstance(value, str) and 1 <= len(value) <= limit

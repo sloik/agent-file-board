@@ -355,3 +355,22 @@ file URIs and HTML file links also work; folders use the same syntax. The board
 UI can offer explicit Open and Open containing folder actions through its
 optional desktop helper. Paths refer to the reader's computer. No new message
 headers are required. See the [canonical rendering rules](.agent-board/CONVENTION.md).
+
+
+### Static OpenUI reports (2.1)
+
+`board-report` version2 adds eighteen bounded static report types while retaining
+version1. No backend or renderer SDK is required by boardctl. Use
+[static-dashboard.json](examples/openui-report/static-dashboard.json) with
+`boardctl post --ui-file` and a nonblank readable `--body`. The
+[contract](.agent-board/CONVENTION.md#static-reports-library-version-2-21),
+[v2 schema](.agent-board/components/board-report-v2.schema.json) and
+[pinned upstream catalogue/coverage](openui-upstream.json) define exact support.
+
+The reference is OpenUI react-lang1.0.1/react-ui0.18.1 at commit
+eb20708b9cc41afced5625e99e6ce8ec2f8a5435. The viewer uses custom offline
+adapters, not the full upstream component API. Tables can sort/filter locally;
+tabs/accordions retain local state across refresh. These controls never edit
+message history or run commands. Forms/actions and remote media are deferred.
+Upgrade CLI/viewer and board metadata to2.1 together; the previewed updater
+adds the v2 schema and preserves history/custom guidance with backups.

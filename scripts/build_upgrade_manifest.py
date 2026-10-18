@@ -9,8 +9,8 @@ import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parent.parent
-PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "CONVENTION.md")
-BASELINES = ("1.9.2", "2.0.0")
+PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "CONVENTION.md")
+BASELINES = ("1.9.2", "2.0.0", "2.0.1")
 
 
 def build():
@@ -23,7 +23,7 @@ def build():
             result = subprocess.run(["git", "-C", str(ROOT), "show", f"v{baseline}:.agent-board/{path}"], capture_output=True)
             if result.returncode == 0:
                 known.add(hashlib.sha256(result.stdout).hexdigest())
-            elif path != "components/board-report-v1.schema.json" or baseline != "1.9.2":
+            elif not ((path == "components/board-report-v1.schema.json" and baseline == "1.9.2") or path == "components/board-report-v2.schema.json"):
                 raise RuntimeError(result.stderr.decode())
         files.append({"path": path, "content": base64.b64encode(content).decode(),
                       "sha256": hashlib.sha256(content).hexdigest(), "known": sorted(known)})

@@ -263,3 +263,14 @@ submitted decisions arrive as ordinary immutable `ANSWER` replies with `REPLY-TO
 Apply existing acceptance/authorization rules; display or submission does not
 automatically accept work or execute an action. Upgrade CLI/skill/viewer together
 to 2.x before posting UI reports. No listener or streaming server is added.
+
+
+### Static report v2
+
+On2.1 boards, `post --ui-file` accepts board-report version2 with the exact
+component shapes/bounds in CONVENTION.md and components/board-report-v2.schema.json.
+Read those before authoring; never invent types or pass raw OpenUI Lang. The
+canonical example is examples/openui-report/static-dashboard.json; upstream
+reference/coverage is openui-upstream.json. Local tabs/filter/sort controls do not
+write messages or authorize work. Always supply a readable body. Preserve v1
+reports and use explicit existing QUESTION/ANSWER for decisions.

@@ -41,7 +41,7 @@ class UpgradeTests(unittest.TestCase):
         return {str(p.relative_to(self.board)): p.read_bytes() for p in self.board.rglob('*') if p.is_file()}
 
     def test_both_releases_upgrade_with_exact_backups_and_preserved_data(self):
-        for source in ('1.9.2', '2.0.0'):
+        for source in ('1.9.2', '2.0.0', '2.0.1'):
             with self.subTest(source=source):
                 self.seed(source)
                 before = self.snapshot()
@@ -75,7 +75,9 @@ class UpgradeTests(unittest.TestCase):
         for path in upgrade.PATHS:
             self.seed('2.0.0')
             dest = self.board / path
-            dest.write_bytes(dest.read_bytes() + b'\nCUSTOM\n')
+            # Newly managed schemas are absent on older boards; custom existing
+            # content must still block rather than being silently replaced.
+            dest.write_bytes((dest.read_bytes() if dest.exists() else b'') + b'\nCUSTOM\n')
             before = self.snapshot()
             plan = upgrade.preview(self.board)
             self.assertTrue(any('Customized' in item for item in plan['blocked']))
