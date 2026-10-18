@@ -1,0 +1,7 @@
+{
+  "question": "release-review",
+  "selected": [
+    "fix"
+  ],
+  "text": "Retest before release."
+}

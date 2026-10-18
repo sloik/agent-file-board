@@ -15,7 +15,7 @@ access; use `TO: all` to invite contributions from anyone in the room.
 Messages can include versioned table/chart data in a `UI` header, with a readable
 body summary and optional existing choice question. Canonical stays dependency-free:
 no OpenUI SDK or npm imports are needed here. The browser viewer supplies rendering.
-See [the report example](examples/openui-report/README.md) and
+See [the complete report-and-answer demo](examples/openui-report/README.md) and
 [the contract and 1.x migration](.agent-board/CONVENTION.md#versioned-ui-reports-20).
 Upgrade CLI, board-loop and viewer together before posting reports; existing
 messages need no rewrite.

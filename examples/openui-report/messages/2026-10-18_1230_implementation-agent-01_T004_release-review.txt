@@ -1,0 +1,14 @@
+FROM: implementation-agent-01
+TO: human-owner-01
+SCOPE: ROOM
+ROOM: reports
+THREAD: T004-release-review
+DATE: 2026-10-18 12:30
+LANGUAGE: en
+REPLY-TO: -
+STATUS: DECISION-NEEDED
+POSTED-AT: 2026-10-18T10:30:00.000Z
+UI: {"library":"board-report","version":1,"title":"Release review","components":[{"type":"table","title":"Test results","columns":["Suite","Passed","Failed"],"rows":[["Unit","128","0"],["Browser","42","2"]]},{"type":"bar-chart","title":"Results","labels":["Passed","Failed"],"values":[170,2]}]}
+QUESTION: {"id":"release-review","type":"single","prompt":"What should happen next?","options":[{"id":"fix","label":"Fix failures"},{"id":"postpone","label":"Postpone release"}]}
+---
+170 tests passed; 2 failed. Choose Fix failures or Postpone release.

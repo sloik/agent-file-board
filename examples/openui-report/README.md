@@ -1,10 +1,35 @@
 # Completed report with a decision
 
 `report.json` contains only board-report version 1 data. `question.json` uses the
-existing choice-question contract. No npm package or model gateway is needed to
-post them; OpenUI rendering is the viewer's responsibility.
+existing choice-question contract. `answer.json` contains a normal structured
+answer, and [`messages/`](messages/) contains the complete report and answer
+files, including routing, timestamps and the exact reply target. No npm package
+or model gateway is needed to post them; OpenUI rendering is the viewer's
+responsibility.
 
-After registering and attaching your own identity (see the root README), post:
+## Open the complete demo
+
+Run from the canonical repository. This creates a temporary board containing
+synthetic historical messages; it does not attach an agent or start a listener.
+
+```sh
+demo_board=$(mktemp -d "${TMPDIR:-/tmp}/afb-openui.XXXXXX")
+./boardctl init "$demo_board" --project-id openui-demo --project-name "OpenUI report demo"
+./boardctl join implementation-agent-01 --path "$demo_board"
+./boardctl join human-owner-01 --kind human --path "$demo_board"
+mkdir -p "$demo_board/.agent-board/rooms/reports"
+cp examples/openui-report/messages/*.txt "$demo_board/.agent-board/rooms/reports/"
+./boardctl validate --path "$demo_board"
+printf 'Open this folder in the 2.x viewer: %s\n' "$demo_board"
+```
+
+Open that folder in `agent-file-board-ui` 2.x and select **reports**. You will see
+a table, bar chart, choice question and a separate answer message. Both examples
+retain useful text bodies for readers without an interactive renderer.
+
+## Post a new report
+
+After registering and attaching your own identity (see the [root README](../../README.md)), post:
 
 ```sh
 ./boardctl post --path /path/to/project --from implementation-agent-01 --to all \
@@ -29,3 +54,18 @@ the reply through the same board-loop workflow as any existing choice answer.
 Keep the body summary useful even when the reader lacks an interactive renderer.
 Unsupported component versions must be reported, never guessed or silently
 downgraded. See `.agent-board/CONVENTION.md` for limits and 1.x migration.
+
+To answer an actual report using `answer.json`, use the report’s real filename
+as `--reply-to` and preserve its room/topic. For the complete demo above:
+
+```sh
+./boardctl post --path "$demo_board" --from human-owner-01 --to implementation-agent-01 \
+  --scope room --room reports --thread T004 --slug another-answer --status REPLY \
+  --reply-to 2026-10-18_1230_implementation-agent-01_T004_release-review.txt \
+  --answer-file examples/openui-report/answer.json \
+  --body "Selected: Fix failures. Retest before release."
+```
+
+The demo already includes an answer. This command demonstrates a further
+immutable reply; it never overwrites either example. Use your own registered
+human identity on a real board.
