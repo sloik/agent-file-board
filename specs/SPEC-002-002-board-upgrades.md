@@ -3,7 +3,7 @@ id: SPEC-002-002
 title: Explain version mismatches and safely upgrade board metadata
 parent: SPEC-002
 type: feature
-status: in_progress
+status: done
 created: 2026-10-18
 ---
 
@@ -43,15 +43,26 @@ Use a patch release, 2.0.1: no message-format changes.
 
 ## Acceptance criteria
 
-- [ ] CLI upgrades pristine 1.9.2 and 2.0.0 fixtures, validates afterward, creates
+- [x] CLI upgrades pristine 1.9.2 and 2.0.0 fixtures, validates afterward, creates
   exact backups, and is a no-op on target. Preview and online check never write.
-- [ ] CLI blocks custom/newer/unknown metadata, symlinks and stale fingerprints;
+- [x] CLI blocks custom/newer/unknown metadata, symlinks and stale fingerprints;
   interruption and local lock tests prove safe failure and recoverable backups.
-- [ ] Browser preview/update upgrades a native fixture, refreshes version display
+- [x] Browser preview/update upgrades a native fixture, refreshes version display
   and preserves messages/settings/guidance byte for byte. Uploaded boards explain
   read-only/CLI fallback. Browser performs zero network requests.
-- [ ] Browser tests cover stale metadata, board switch, denied permission,
+- [x] Browser tests cover stale metadata, board switch, denied permission,
   repeated apply, write failure, custom files and newer versions; fixed allowlist
   excludes messages/config/identities, and backup recovery is documented.
-- [ ] Existing suites, i18n, embed consistency and release checks pass; docs and
+- [x] Existing suites, i18n, embed consistency and release checks pass; docs and
   screenshots show the feature without modifying a live user board.
+
+## Verification — 2026-10-18
+
+Canonical: 108 Python tests pass, including ten upgrade cases; reproducible
+manifest and canonical 2.0.1 release checks pass. UI: all 167 regression tests
+pass, with nine browser upgrade scenarios and an additional fixed-path guard
+case checked separately. The real viewer desktop/375px phone preview was
+captured and visually inspected; screenshot round-trip validates with canonical
+and preserves original messages with no network. Exact pin/tag consistency and
+UI Python release tests are checked at release after creating the canonical tag.
+No live user board was modified.
