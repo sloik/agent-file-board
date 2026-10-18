@@ -12,6 +12,7 @@ import shlex
 import sys
 import uuid
 import board_presence
+import board_upgrade
 import board_guidance
 import message_repairs
 from datetime import datetime, timezone, timedelta
@@ -646,6 +647,10 @@ def parser() -> argparse.ArgumentParser:
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
     repair = commands.add_parser("repair"); repair.add_argument("--path", default="."); repair.add_argument("--message", required=True); repair.add_argument("--by", dest="actor", required=True); repair.add_argument("--reason", required=True); repair.add_argument("--replacement-file"); repair.set_defaults(func=command_repair)
+    upgrade = commands.add_parser("upgrade", help="Preview a safe metadata upgrade; explicit apply requires the preview fingerprint")
+    upgrade.add_argument("--path", default="."); upgrade.add_argument("--expect")
+    upgrade_mode = upgrade.add_mutually_exclusive_group()
+    upgrade_mode.add_argument("--apply", action="store_true"); upgrade_mode.add_argument("--check-latest", action="store_true", help="Opt-in GitHub stable-tag check; never downloads code"); upgrade.set_defaults(func=board_upgrade.command)
     valid = commands.add_parser("validate"); valid.add_argument("--path", default="."); valid.set_defaults(func=command_validate)
     session = commands.add_parser("session")
     actions = session.add_subparsers(dest="session_action", required=True)

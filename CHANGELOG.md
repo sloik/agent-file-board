@@ -1,5 +1,11 @@
 # Release notes
 
+## 2.0.1 — 2026-10-18
+
+- Add stdlib metadata upgrade preview and fingerprint-bound apply, exact managed-file allowlist, pristine release hashes, backups and local locking. Refuse custom/newer/unknown files and symlinks while preserving board data.
+- Add opt-in `--check-latest` for stable GitHub version tags, without code downloads or execution. Ship trusted upgrade data for the standalone browser viewer.
+- Document direct browser updates, CLI examples and partial-failure recovery. No message-format change.
+
 ## 2.0.0 — 2026-10-18
 
 - Add optional, bounded `UI` report metadata with versioned `board-report` v1 table/bar-chart contracts and a required readable body fallback. Canonical remains Python standard-library only.

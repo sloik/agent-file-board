@@ -20,6 +20,14 @@ See [the complete report-and-answer demo](examples/openui-report/README.md) and
 Upgrade CLI, board-loop and viewer together before posting reports; existing
 messages need no rewrite.
 
+## Safe metadata upgrades
+
+`boardctl upgrade --path /path/to/project` previews changes to the bundled
+canonical version. Apply after reviewing its fingerprint and file list. The
+viewer also offers **Versions and updates**, including direct updates in writable
+Chromium. Messages and project settings stay intact; custom protocol edits need
+a manual merge. See [upgrade and recovery examples](docs/UPGRADING.md).
+
 ## Start here
 
 1. Copy `.agent-board/` into the root of the project that needs a board.
@@ -35,7 +43,7 @@ The included configuration defaults all messages and project artifacts to Englis
 ## Bootstrap with `boardctl`
 
 The repository includes a Python-standard-library CLI. Clone this repository and
-run it from its root (keep `boardctl.py`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py` and the
+run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py` and the
 `.agent-board/` template together when installing the CLI):
 
 ```bash
@@ -272,7 +280,7 @@ the UI for this standard, not a separate protocol; it follows
 ## Upgrading to 1.9.1
 
 See [release notes](CHANGELOG.md). Existing plain messages remain valid and are
-never rewritten. Update the CLI and its adjacent `message_extensions.py`, `board_presence.py`, `board_guidance.py` and `message_repairs.py` together.
+never rewritten. Update the CLI and its adjacent `board_upgrade.py`, `upgrade-manifest.json`, `message_extensions.py`, `board_presence.py`, `board_guidance.py` and `message_repairs.py` together.
 For an existing board, merge the new convention, index links and glossary into
 its project-maintained documents; do not use `init --force` to upgrade a live board.
 Viewer/CLI 1.8.x support custom text alongside choices and text-only structured
