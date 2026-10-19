@@ -1,0 +1,79 @@
+{
+  "format": 1,
+  "id": "com.example.approvals",
+  "version": "1.1.0",
+  "name": "Example approvals — declarative",
+  "compatibility": {
+    "convention": {
+      "range": ">=2.4.0 <3.0.0",
+      "exclude": [
+        "2.5.2"
+      ]
+    },
+    "api": {
+      "range": ">=1.0.0 <2.0.0"
+    }
+  },
+  "capabilities": [
+    "render",
+    "propose-reply"
+  ],
+  "files": {
+    "request.json": {
+      "encoding": "utf-8",
+      "data": "{\"type\":\"object\",\"properties\":{\"title\":{\"type\":\"string\",\"minLength\":1,\"maxLength\":120}},\"required\":[\"title\"],\"additionalProperties\":false}\n",
+      "sha256": "b73f6399616981879d162379343cd9cd67ad142d822f27355444ab2bfdb7e19c"
+    },
+    "answer.json": {
+      "encoding": "utf-8",
+      "data": "{\"type\":\"object\",\"properties\":{\"approved\":{\"type\":\"boolean\"}},\"required\":[\"approved\"],\"additionalProperties\":false}\n",
+      "sha256": "a594ee22fef20f8f194d775c786e0e80b4560035f727b6c0e51cd398a8e53feb"
+    },
+    "example.json": {
+      "encoding": "utf-8",
+      "data": "{\"title\":\"Local purchase 🦊\"}\n",
+      "sha256": "34cb554b491ed0711c69e425f6c098c2f2e9abcb25b804cee58ef26584f7ce80"
+    },
+    "guide.md": {
+      "encoding": "utf-8",
+      "data": "A proposal requests review; an approved answer does not execute a purchase.",
+      "sha256": "f5bb5d3e934dc0554f1c61605a47e148d01ebbca666a7e1a5ce653803e54a5d1"
+    },
+    "view.json": {
+      "encoding": "utf-8",
+      "data": "{\"type\":\"column\",\"children\":[{\"type\":\"heading\",\"text\":{\"path\":[\"title\"]}},{\"type\":\"text\",\"text\":\"Review this request; your reply will be checked by the board.\"},{\"type\":\"input\",\"name\":\"approved\",\"label\":\"Approve request\",\"inputType\":\"checkbox\"}]}\n",
+      "sha256": "db0d3a0dbb48a49d6d798e71a4c378870fa2341a383e83a748c10015377f8f1e"
+    }
+  },
+  "convention": {
+    "contracts": [
+      {
+        "id": "com.example.approvals/request",
+        "version": "1.0.0",
+        "schema": "request.json",
+        "answerSchema": "answer.json",
+        "guidance": "guide.md",
+        "examples": [
+          "example.json"
+        ]
+      }
+    ]
+  },
+  "ui": {
+    "renderers": [
+      {
+        "id": "request",
+        "mode": "declarative",
+        "entry": "view.json",
+        "contracts": [
+          {
+            "id": "com.example.approvals/request",
+            "versions": {
+              "range": ">=1.0.0 <2.0.0"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

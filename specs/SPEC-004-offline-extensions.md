@@ -8,8 +8,8 @@ devkb_required: [python.md, frontend.md, agent-ui-protocols.md]
 ---
 
 Owner authorized starting implementation after SPEC-003 research and Q&A.
-Architecture: sibling UI docs/EXTENSIONS.md, Cortex1593. No release/push or live
-owner board migration is authorized. Keep existing report/form meanings frozen.
+Architecture: sibling UI docs/EXTENSIONS.md, Cortex1593. Owner later requested complete extension delivery under SPEC-004-002. Living
+specifications are excluded and parked. No live owner board migration is authorized. Keep existing report/form meanings frozen.
 
 Implement in reviewable stages. First deliver SPEC-004-001: local package,
 compatibility, validation and agent-discovery foundation. Later stages add the

@@ -1,0 +1,45 @@
+{
+  "format": 1,
+  "id": "com.example.approvals-ui",
+  "version": "1.0.0",
+  "name": "Approval review — worker",
+  "compatibility": {
+    "convention": {
+      "range": ">=2.4.0 <3.0.0",
+      "exclude": [
+        "2.5.2"
+      ]
+    },
+    "api": {
+      "range": ">=1.0.0 <2.0.0"
+    }
+  },
+  "capabilities": [
+    "render",
+    "propose-reply"
+  ],
+  "files": {
+    "view.js": {
+      "encoding": "utf-8",
+      "data": "BoardExtension.define({\n  render(data, state) {\n    return {type:'column', children:[\n      {type:'heading', text:'Review: '+data.title},\n      {type:'text', text:state.approved ? 'Approval selected' : 'Awaiting review'},\n      {type:'button', label:'Propose approval', event:'approve'}\n    ]};\n  },\n  event(event, data, state) {\n    if(event.type==='action' && event.name==='approve')\n      return {state:{approved:true}, answer:{approved:true}};\n    return {state};\n  }\n});\n",
+      "sha256": "ad7c18336b7d65cde98ccea3e54b54436ef8314d94caeee20c08caf23f6f0418"
+    }
+  },
+  "ui": {
+    "renderers": [
+      {
+        "id": "review",
+        "mode": "worker",
+        "entry": "view.js",
+        "contracts": [
+          {
+            "id": "com.example.approvals/request",
+            "versions": {
+              "range": ">=1.0.0 <2.0.0"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

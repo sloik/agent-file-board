@@ -10,6 +10,19 @@ Rooms are public conversations: all registered participants may read and reply.
 The message `TO` field indicates who is being addressed, rather than restricting
 access; use `TO: all` to invite contributions from anyone in the room.
 
+## Local company extensions
+
+Convention 2.5.0 and viewer 2.5.0 support portable local packages with convention
+contracts, declarative UI or constrained custom worker UI. No server or company
+integration is needed. Copy the board with its `extensions/` directory; custom
+code approval stays in the receiving browser profile. Agents discover schemas,
+guidance and examples with `boardctl extensions list/describe` and post pinned
+`EXTENSION` data with readable fallbacks. Typed replies bind exact source bytes.
+
+See [EXTENSIONS.md](docs/EXTENSIONS.md) for packages, compatibility/exclusions,
+CLI examples and creator scope. Additional powers require a GitHub issue.
+Living specifications are excluded; their proposal remains parked.
+
 ## Current 2.4: offline reports and typed forms
 
 Messages can include all 34 report types in a `UI` header and all 11 typed form
@@ -288,7 +301,7 @@ the UI for this standard, not a separate protocol; it follows
 ## Upgrading existing boards
 
 Use the current CLI and the explicit preview/apply workflow in
-[UPGRADING.md](docs/UPGRADING.md). The current template is 2.4.0 and supports
+[UPGRADING.md](docs/UPGRADING.md). The current template is 2.5.0 and supports
 pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0, 2.2.0 and 2.3.0 metadata. Customized managed files
 require review. Never use `init --force` to upgrade a live board.
 
@@ -459,7 +472,7 @@ The single offline viewer offers **Settings → Color theme → System, Light,
 Dark or Dracula**. This is a browser-local preference; it preserves mounted
 report/form state and leaves canonical messages unchanged. Try the fictional
 demo and [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.8/docs/THEMES.md).
-Canonical code and the viewer’s standard pin remain v2.4.0.
+The initial package foundation was built against v2.4.0; the complete extension protocol ships in v2.5.0.
 
 UI2.4.5 restricts Dracula to interface chrome. Participant/status pills, speech
 bubbles and report/chart indicators keep the established Dark content colors.

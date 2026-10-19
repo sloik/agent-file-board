@@ -56,6 +56,45 @@ class ExtensionPackagesTests(unittest.TestCase):
             code = boardctl.main(["extensions", *args, "--path", str(self.root)])
         return code, output.getvalue(), errors.getvalue()
 
+    def test_envelope_historical_validation_and_typed_answer_source(self):
+        decoded = ext.decode_package(self.artifact.read_bytes())
+        ext.install(self.root, self.artifact)
+        board = self.root / ".agent-board"
+        c = decoded["contracts"][0]
+        request = {"version": 1, "package": decoded["artifact"], "contract": c["id"], "contractVersion": c["version"], "contractDigest": c["digest"], "data": {"title": "Local request"}}
+        headers = {"EXTENSION": json.dumps(request), "FROM": "agent-author", "TO": "all", "SCOPE": "ROOM", "THREAD": "T001-test", "REPLY-TO": "-"}
+        path = board / "rooms/general/2026-10-19_0900_agent-author_T001_request.txt"
+        ext.validate_message(board, path, headers, "Readable request", active=True)
+        with self.assertRaisesRegex(ValueError, "fallback"):
+            ext.validate_message(board, path, headers, " ", active=True)
+        with self.assertRaisesRegex(ValueError, "structured"):
+            ext.validate_message(board, path, {**headers, "UI": "{}"}, "Request")
+        invalid = {**request, "data": {"title": 123}}
+        with self.assertRaisesRegex(ValueError, "type"):
+            ext.resolve(board, invalid)
+        content = ("\n".join(k + ": " + v for k, v in headers.items()) + "\n---\nReadable request\n").encode()
+        path.write_bytes(content)
+        answer = {k: v for k, v in request.items() if k != "renderer"}
+        answer.update(source={"message": str(path.relative_to(board)), "sha256": hashlib.sha256(content).hexdigest()}, data={"approved": True})
+        target = path.with_name("2026-10-19_0901_human-reader_T001_answer.txt")
+        reply = {"EXTENSION-ANSWER": json.dumps(answer), "FROM": "human-reader", "TO": "agent-author", "SCOPE": "ROOM", "THREAD": "T001-renamed", "REPLY-TO": path.name}
+        ext.validate_message(board, target, reply, "Approved", active=True)
+        with self.assertRaisesRegex(ValueError, "same conversation"):
+            ext.validate_message(board, board / "rooms/other/answer.txt", reply, "Approved", active=True)
+        with self.assertRaisesRegex(ValueError, "routing"):
+            ext.validate_message(board, target, {**reply, "TO": "other-agent"}, "Approved", active=True)
+        path.write_bytes(content + b"changed")
+        with self.assertRaisesRegex(ValueError, "stale"):
+            ext.validate_message(board, target, reply, "Approved", active=True)
+        path.write_bytes(content)
+        ext.disable(self.root, decoded["artifact"])
+        ext.validate_message(board, target, reply, "Approved")
+        with self.assertRaisesRegex(ValueError, "disabled"):
+            ext.validate_message(board, target, reply, "Approved", active=True)
+        (board / "extensions/packages" / decoded["artifact"] / "package.afb-plugin.json").unlink()
+        with self.assertRaises(OSError):
+            ext.validate_message(board, path, headers, "Request")
+
     def test_actual_cli_install_copy_describe_disable_and_messages_unchanged(self):
         before = {str(p.relative_to(self.root)): p.read_bytes() for p in (self.root / ".agent-board").rglob("*") if p.is_file()}
         command = [sys.executable, str(Path(boardctl.__file__)), "extensions"]

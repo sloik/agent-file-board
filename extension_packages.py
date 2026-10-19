@@ -1,4 +1,4 @@
-"""Offline extension package API 1. No renderer execution or message semantics."""
+"""Offline extension package API 1. Package integrity, bounded schemas and immutable message semantics."""
 from __future__ import annotations
 
 import base64
@@ -124,8 +124,8 @@ def validate_schema(schema, depth=0, budget=None):
     require(type(schema.get("nullable", False)) is bool, "nullable must be boolean")
     if kind in {"string", "array"}:
         low, high, cap = ("minLength", "maxLength", 10000) if kind == "string" else ("minItems", "maxItems", 256)
-        require(type(schema.get(high)) is int and 0 <= schema[high] <= cap, "explicit bounded maximum required")
-        require(type(schema.get(low, 0)) is int and 0 <= schema.get(low, 0) <= schema[high], "invalid minimum")
+        require(number(schema.get(high)) and int(schema[high]) == schema[high] and 0 <= schema[high] <= cap, "explicit bounded maximum required")
+        require(number(schema.get(low, 0)) and int(schema.get(low, 0)) == schema.get(low, 0) and 0 <= schema.get(low, 0) <= schema[high], "invalid minimum")
     if kind in {"number", "integer"}:
         require(all(number(schema[k]) for k in ("minimum", "maximum") if k in schema), "numeric bounds must be finite safe numbers")
         require(schema.get("minimum", -SAFE_INTEGER) <= schema.get("maximum", SAFE_INTEGER), "inverted bounds")
@@ -185,7 +185,7 @@ def safe_name(value):
 def decode_package(raw):
     package = parse(raw)
     keys(package, {"format", "id", "version", "name", "compatibility", "capabilities", "files"}, {"description", "publisher", "convention", "ui"})
-    require(type(package["format"]) is int and package["format"] == 1, "unsupported package format")
+    require(number(package["format"]) and package["format"] == 1, "unsupported package format")
     require(isinstance(package["id"], str) and len(package["id"]) <= 128 and PACKAGE_ID.fullmatch(package["id"]), "invalid package namespace")
     version(package["version"])
     require(text(package["name"], 120), "invalid name")
@@ -305,7 +305,7 @@ def registry(path):
         return {"format": 1, "packages": []}
     result = parse(read_file(path, 65536), 65536)
     keys(result, {"format", "packages"})
-    require(type(result["format"]) is int and result["format"] == 1 and isinstance(result["packages"], list) and len(result["packages"]) <= MAX_PACKAGES, "invalid registry")
+    require(number(result["format"]) and result["format"] == 1 and isinstance(result["packages"], list) and len(result["packages"]) <= MAX_PACKAGES, "invalid registry")
     seen = set()
     for row in result["packages"]:
         keys(row, {"artifact", "enabled"})
@@ -335,18 +335,21 @@ def catalog(root):
             item.update(id=package["id"], version=package["version"], name=package["name"],
                         state="disabled" if not row["enabled"] else "available" if compatible else "incompatible",
                         contracts=decoded["contracts"], renderers=package.get("ui", {}).get("renderers", []),
-                        execution="unavailable-foundation-only")
+                        execution="viewer-local-approval-required")
         except (ValueError, OSError, UnicodeError) as exc:
             item.update(state="unavailable", error=str(exc))
         result["packages"].append(item)
     # No same-version contract may resolve to different meanings.
     identities = {}
+    releases = {}
     for item in result["packages"]:
+        if "id" in item:
+            releases.setdefault((item["id"], item["version"]), set()).add(item["artifact"])
         for contract in item.get("contracts", []):
             key = (contract["id"], contract["version"])
             identities.setdefault(key, set()).add(contract["digest"])
     for item in result["packages"]:
-        if any(len(identities[(c["id"], c["version"])]) > 1 for c in item.get("contracts", [])):
+        if ("id" in item and len(releases[(item["id"], item["version"])]) > 1) or any(len(identities[(c["id"], c["version"])]) > 1 for c in item.get("contracts", [])):
             item["state"] = "conflict"
     return result
 
@@ -451,6 +454,16 @@ def command(args):
         result = disable(args.path, args.artifact)
     elif action == "list":
         result = catalog(args.path)
+    elif action == "envelope":
+        board = board_dir(args.path)
+        decoded = snapshot(extension_dir(board), args.artifact)
+        contract = next((c for c in decoded["contracts"] if c["id"] == args.contract and c["version"] == args.contract_version), None)
+        require(contract is not None, "contract not found")
+        result = {"version": 1, "package": args.artifact, "contract": contract["id"], "contractVersion": contract["version"], "contractDigest": contract["digest"], "data": parse(read_file(Path(args.data_file).resolve(), 65536), 65536)}
+        if args.renderer_package or args.renderer:
+            require(args.renderer_package and args.renderer, "both renderer arguments required")
+            result["renderer"] = {"package": args.renderer_package, "id": args.renderer}
+        resolve(board, result, active=True)
     else:
         result = catalog(args.path)
         selected = next((item for item in result["packages"] if item["artifact"] == args.artifact), None)
@@ -470,12 +483,94 @@ def command(args):
 
 
 def add_parser(commands):
-    parent = commands.add_parser("extensions", help="Offline package foundation; never executes renderer code")
+    parent = commands.add_parser("extensions", help="Offline packages and agent contracts; never executes renderer code")
     actions = parent.add_subparsers(dest="extension_action", required=True)
-    for action in ("inspect", "install", "list", "describe", "disable"):
+    for action in ("inspect", "install", "list", "describe", "disable", "envelope"):
         sub = actions.add_parser(action)
         if action != "list":
             sub.add_argument("artifact", help="Package filename for inspect/install; SHA256 for describe/disable")
         sub.add_argument("--path", default=".")
         sub.add_argument("--max-bytes", type=int, default=16384)
+        if action == "envelope":
+            sub.add_argument("--contract", required=True)
+            sub.add_argument("--contract-version", default="1.0.0")
+            sub.add_argument("--data-file", required=True)
+            sub.add_argument("--renderer-package")
+            sub.add_argument("--renderer")
         sub.set_defaults(func=command)
+
+
+# Wire envelope version is independent of the package format and SDK API.
+def envelope(value, answer=False):
+    required = {"version", "package", "contract", "contractVersion", "contractDigest", "data"}
+    keys(value, required | ({"source"} if answer else set()), set() if answer else {"renderer"})
+    require(number(value["version"]) and value["version"] == 1, "unsupported envelope version")
+    for key in ("package", "contractDigest"):
+        require(isinstance(value[key], str) and DIGEST.fullmatch(value[key]), "invalid envelope digest")
+    require(isinstance(value["contract"], str) and re.fullmatch(PACKAGE_ID.pattern + r"/" + NAME.pattern, value["contract"]), "invalid contract ID")
+    version(value["contractVersion"])
+    require(len(json.dumps(value, ensure_ascii=False).encode("utf-8")) <= 65536, "envelope byte limit")
+    if answer:
+        keys(value["source"], {"message", "sha256"})
+        source = value["source"]
+        require(isinstance(source["message"], str) and re.fullmatch(r"(?:rooms|direct)/[a-z0-9-]+/[a-zA-Z0-9_.-]+\.txt", source["message"]), "invalid source path")
+        require(isinstance(source["sha256"], str) and DIGEST.fullmatch(source["sha256"]), "invalid source digest")
+    elif value.get("renderer") is not None:
+        keys(value["renderer"], {"package", "id"})
+        require(isinstance(value["renderer"]["package"], str) and DIGEST.fullmatch(value["renderer"]["package"]) and isinstance(value["renderer"]["id"], str) and NAME.fullmatch(value["renderer"]["id"]), "invalid renderer reference")
+    return value
+
+
+def resolve(board, value, active=False, answer=False):
+    envelope(value, answer)
+    directory = extension_dir(board)
+    rows = registry(directory / "registry.json")["packages"]
+    states = {item["artifact"]: item["state"] for item in catalog(board.parent)["packages"]} if active else {}
+    def retained(digest):
+        row = next((row for row in rows if row["artifact"] == digest), None)
+        require(row is not None, "unavailable: package not retained in board")
+        decoded = snapshot(directory, digest)
+        if active:
+            require(row["enabled"], "package disabled for new messages")
+            require(states.get(digest) == "available", "package incompatible, unavailable or conflicting")
+            require(supports(decoded["package"]["compatibility"]["convention"], convention_version(board)) and supports(decoded["package"]["compatibility"]["api"], API_VERSION), "package incompatible for new messages")
+        return decoded
+    decoded = retained(value["package"])
+    contract = next((c for c in decoded["contracts"] if c["id"] == value["contract"] and c["version"] == value["contractVersion"] and c["digest"] == value["contractDigest"]), None)
+    require(contract is not None, "contract identity differs from retained meaning")
+    field = "answerSchema" if answer else "schema"
+    require(field in contract, "contract does not accept answers")
+    validate_value(value["data"], parse(decoded["files"][contract[field]]))
+    if not answer and value.get("renderer"):
+        ref = value["renderer"]
+        visual = retained(ref["package"])
+        renderer = next((r for r in visual["package"].get("ui", {}).get("renderers", []) if r["id"] == ref["id"]), None)
+        require(renderer is not None and any(t["id"] == contract["id"] and supports(t["versions"], contract["version"]) for t in renderer["contracts"]), "renderer does not support contract")
+    return decoded, contract
+
+
+def validate_message(board, path, headers, body, active=False):
+    names = [key for key in ("EXTENSION", "EXTENSION-ANSWER") if key in headers]
+    if not names:
+        return
+    require(len(names) == 1 and not any(key in headers for key in ("UI", "QUESTION", "ANSWER")), "only one structured message kind allowed")
+    require(bool(body.strip()), "readable body fallback required")
+    if active:
+        require(version(convention_version(board)) >= (2, 5, 0), "upgrade board convention to 2.5.0 before extension posts")
+    answer = names[0] == "EXTENSION-ANSWER"
+    value = parse(headers[names[0]].encode("utf-8"), 65536)
+    resolve(board, value, active, answer)
+    if answer:
+        source = board / value["source"]["message"]
+        require(source.parent == path.parent and source.name == headers.get("REPLY-TO") and source != path, "answer source must be reply target in same conversation")
+        raw = read_file(source, 4 * 1024 * 1024)
+        require(hashlib.sha256(raw).hexdigest() == value["source"]["sha256"], "stale answer source")
+        text = raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+        head, sep, source_body = text.partition("\n---\n")
+        require(bool(sep), "invalid source separator")
+        original = pairs([line.split(": ", 1) for line in head.splitlines() if ": " in line])
+        require("EXTENSION" in original and not any(k in original for k in ("EXTENSION-ANSWER", "UI", "QUESTION", "ANSWER")), "source is not an extension request")
+        request = parse(original["EXTENSION"].encode("utf-8"), 65536)
+        resolve(board, request, False)
+        require(bool(source_body.strip()) and original.get("THREAD", "").split("-")[0] == headers.get("THREAD", "").split("-")[0] and original.get("SCOPE") == headers.get("SCOPE") and original.get("FROM") == headers.get("TO"), "answer source routing differs")
+        require(all(value[k] == request[k] for k in ("package", "contract", "contractVersion", "contractDigest")), "answer contract differs from source")

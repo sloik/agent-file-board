@@ -65,3 +65,17 @@ reopen/copy, approve/revoke, switch/revert renderers, reject stale sources and
 verify immutable originals with canonical validation. Probe worker egress,
 termination and invalid bridge traffic in actual Chromium. Verify downloaded
 release assets against tested prepared bytes if publishing is available.
+
+
+## Implementation evidence — 2026-10-19
+
+Canonical message envelopes, source-byte validation, agent envelope command and
+2.5.0 convention/upgrade metadata implemented.125 Python tests pass, including
+historical disabled-package validation, invalid typed data, wrong route, missing
+snapshots and stale source bytes. Viewer implements local import/inspection,
+exact-byte approval/revocation, bounded declarative and disposable opaque worker
+jobs, authoring/preview/attachment, host-reviewed native/download reply transport
+and compatible renderer switching/revert. Prior full viewer274JS+36Python pass;
+focused8 complete browser/CLI flows pass, including actual CSP/opaque-origin
+network/storage/DOM/RTC/nested-worker controls and hot-loop termination. Final
+pinned-source suite, phone captures and release receipts remain to record.

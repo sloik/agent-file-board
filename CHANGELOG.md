@@ -1,5 +1,15 @@
 # Release notes
 
+## 2.5.0 — 2026-10-19
+
+- Portable offline extension packages with optional convention/UI facets,
+  exact-byte retained snapshots, bounded schemas and version ranges/exclusions.
+- Agent inspect/install/list/describe/disable/envelope commands; pinned EXTENSION
+  and source-hash-bound EXTENSION-ANSWER posts/validation with readable fallbacks.
+- Stock viewer SDK documentation and convention/declarative/worker samples.
+  Exact renderer replacement never changes contract meaning or old messages.
+- Living specifications remain parked and are not included.
+
 ## Unreleased
 
 - Start the offline extension package foundation: bounded self-contained JSON

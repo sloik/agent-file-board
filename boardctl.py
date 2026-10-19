@@ -219,7 +219,7 @@ def command_post(args: argparse.Namespace) -> int:
         extra["TOPIC-TITLE"] = explicit_title
     if args.content_type:
         extra["CONTENT-TYPE"] = args.content_type
-    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file), ("UI", getattr(args, "ui_file", None))):
+    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file), ("UI", getattr(args, "ui_file", None)), ("EXTENSION", getattr(args, "extension_file", None)), ("EXTENSION-ANSWER", getattr(args, "extension_answer_file", None))):
         if file:
             try:
                 raw = Path(file).read_text(encoding="utf-8")
@@ -233,7 +233,7 @@ def command_post(args: argparse.Namespace) -> int:
     if ("UI" in extra or ("QUESTION" in extra and object_header(extra["QUESTION"], "QUESTION").get("version") in (2,3))) and not body.strip():
         raise BoardError("UI reports require a nonblank readable body fallback")
     source = None
-    if "ANSWER" in extra:
+    if "ANSWER" in extra or "EXTENSION-ANSWER" in extra:
         reply = args.reply_to or "-"
         if "/" in reply or "\\" in reply or reply in {"-", ".", ".."}:
             raise BoardError("ANSWER requires a question filename in --reply-to")
@@ -241,6 +241,9 @@ def command_post(args: argparse.Namespace) -> int:
         if not target.is_file():
             raise BoardError("ANSWER reply target does not exist")
         source = parse_message(target)
+        if "EXTENSION-ANSWER" in extra:
+            if "EXTENSION" not in source or "EXTENSION-ANSWER" in source: raise BoardError("extension reply target is not a request")
+            source = check_message(target, board, config, known)
         if "QUESTION" in source and question_header(source["QUESTION"]).get("version") in (2,3):
             source = check_message(target, board, config, known)
         if source["FROM"] not in known or source["STATUS"] not in config["statuses"] or source["LANGUAGE"] not in allowed:
@@ -249,6 +252,7 @@ def command_post(args: argparse.Namespace) -> int:
         validate_extensions(header_map, source)
     except ValueError as exc:
         raise BoardError(str(exc)) from exc
+    extension_packages.validate_message(board, path, header_map, body, active=True)
     headers.extend(f"{key}: {value}" for key, value in extra.items())
     payload = ("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n").encode("utf-8")
     temporary = directory / (".message-" + uuid.uuid4().hex + ".tmp")
@@ -346,6 +350,9 @@ def check_message(path, board, config, known, source_path=None):
                 if line.rstrip("\r\n") == "---": break
             if not any(line.strip() for line in handle):
                 raise BoardError(f"{path}: UI reports require a nonblank readable body fallback")
+    if "EXTENSION" in headers or "EXTENSION-ANSWER" in headers:
+        raw = extension_packages.read_file(source_path).decode("utf-8")
+        extension_packages.validate_message(board, path, headers, raw.replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2])
     return headers
 
 
@@ -683,6 +690,8 @@ def parser() -> argparse.ArgumentParser:
     guidance.add_argument("--topic")
     guidance.add_argument("--max-bytes", type=int, default=16384)
     guidance.set_defaults(func=command_guidance)
+    post.add_argument("--extension-file", help="Pinned EXTENSION envelope JSON")
+    post.add_argument("--extension-answer-file", help="Source-bound EXTENSION-ANSWER envelope JSON")
     extension_packages.add_parser(commands)
     return cli
 

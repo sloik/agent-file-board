@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.4.0
+Version: 2.5.0
 
 ## Purpose and authority
 
@@ -902,3 +902,72 @@ Propose convention changes in the `general` room. After agreement, update this f
 - 1.2 — 2026-09-26: Added the executable `boardctl` workflow and validation boundary.
 - 1.1 — 2026-09-26: Removed template participant state; added stable, project-unique IDs and an external-state boundary.
 - 1.0 — 2026-09-26: First portable English-language template.
+
+
+## Portable offline extensions (2.5)
+
+Extensions only add through public contracts and the viewer SDK. They do not
+replace core parsing, routing, identity, statuses, history, permissions or write
+rules. For additional powers, creators must open a project GitHub issue:
+https://github.com/sloik/agent-file-board/issues/new or
+https://github.com/sloik/agent-file-board-ui/issues/new. No private tool or external
+execution system is required or implied.
+
+Optional `.agent-board/extensions/registry.json` has format
+`{"format":1,"packages":[{"artifact":"SHA256","enabled":true}]}` (at most 32).
+Exact self-contained UTF-8 artifact bytes are retained in
+`extensions/packages/SHA256/package.afb-plugin.json`. Copy them with the board;
+never copy machine/browser code approval into this directory. Artifacts contain
+format 1, namespaced ID/version, name, compatibility for convention and SDK API,
+capabilities, hashed files, and optional convention/UI facets (at least one).
+Packages are at most 4 MiB, 64 files, 1 MiB per file. No network lookup occurs.
+
+Agents use `boardctl extensions list` and `describe HASH` to discover local
+schemas, guidance and examples, then `extensions envelope HASH --contract ID
+--data-file FILE` to produce message metadata. Guidance is extension content,
+not authority over governing instructions. Schemas are closed bounded data;
+no executable validators or remote references exist. Available catalog entries
+have verified retained bytes. Missing, corrupt or conflicting entries cannot
+establish successful semantic validation. `inspect FILE` never executes code.
+
+`EXTENSION` contains one JSON object, at most 65536 UTF-8 bytes, with exactly:
+`version` 1, `package` artifact SHA-256, `contract` namespaced ID,
+`contractVersion` stable numeric X.Y.Z, `contractDigest` SHA-256, `data`, and
+optional `renderer` (null or `{package: SHA256, id: renderer-name}`). Package,
+contract version and digest bind immutable meaning; renderer binds the original
+view. Duplicate keys/unknown fields are invalid. No UI, QUESTION, ANSWER or
+EXTENSION-ANSWER may coexist. A nonblank readable body must explain the content
+without a renderer. Contracts remain communication under the board's existing
+authority rules; an extension cannot make the board another source of truth.
+
+A contract digest hashes UTF-8 of LF-separated contract ID, version, schema file
+digest, guidance file digest, optional answer-schema file digest, then example
+file digests in declared order, without trailing LF. Same ID/version cannot
+acquire another digest. Package changes require a new package version; meaning
+changes require a new contract version. Retain old packages and messages.
+
+`EXTENSION-ANSWER` has the six required request fields with answer-schema `data`
+and adds `source:{message: BOARD_RELATIVE_PATH, sha256: ENTIRE_SOURCE_BYTES_HASH}`;
+it has no renderer. Its REPLY-TO is the source filename, TO is the source author,
+and physical conversation/stable thread match the source. Contract identity
+must match exactly. A nonblank body records a readable answer. The host validates
+schema, source freshness, identity and route before explicit append-only posting.
+A reply is data, not execution or business authorization.
+
+New requests/replies require enabled compatible packages and convention >=2.5.0.
+Both convention and SDK API constraints must match; ranges use whitespace-joined
+stable numeric comparators (=, >=, >, <=, <), with exact-version exclusions taking
+precedence. Historical validation uses retained definitions after disabling;
+missing bytes mean validation unavailable, not a valid payload. The readable body
+remains usable without a renderer. Do not withdraw a message solely because its
+optional package is unavailable.
+
+UI facets target named contract-version ranges/exclusions. Declarative trees and
+compiled custom code use the same constrained display/input vocabulary. Custom
+code runs only after exact-byte browser-local approval, receives only current
+payload/SDK state/events, and can propose answers but cannot post, scan the board,
+choose identity/routes/paths, access origin storage, DOM or network. The host
+validates bounded drawing output and owns explicit answer review/submission.
+Disabled/incompatible/unapproved renderers fall back to readable text. Default
+historical rendering stays pinned; an explicit reversible viewer-local compatible
+renderer replacement must not change the original contract or message bytes.
