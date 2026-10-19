@@ -1,7 +1,7 @@
 ---
 id: SPEC-007
 title: Shared extension state and per-information provenance
-status: in_progress
+status: done
 type: feature
 created: 2026-10-19
 nfrs: []
@@ -47,22 +47,22 @@ source trust, conflicts, limits, stale/unknown/disconnected and compatibility.
 
 - [x] AC1: Team product/protocol/security findings have a recorded minimal
   decision and resolved scope; deferred complexity is explicit.
-- [ ] AC2: Real CLI create/publish/show/availability and copied-board flows pass;
+- [x] AC2: Real CLI create/publish/show/availability and copied-board flows pass;
   stable identity survives labels/copy, expected revision conflicts refuse writes,
   old revision/message bytes remain unchanged and malformed/unsafe paths reject.
-- [ ] AC3: Python/JS fixtures agree on information, references, revisions and
+- [x] AC3: Python/JS fixtures agree on information, references, revisions and
   freshness/availability states, including absent observation times, future clock
   readings, conflicts, missing/corrupt source, invalid updates and no fake freshness.
-- [ ] AC4: Actual file-page native/upload viewer shows recorded and latest values,
+- [x] AC4: Actual file-page native/upload viewer shows recorded and latest values,
   refresh updates multiple references, source details are readable and inert,
   and both declarative and approved worker modes receive bounded current context.
-- [ ] AC5: Old extension/report/form/notification/composer behaviors and immutable
+- [x] AC5: Old extension/report/form/notification/composer behaviors and immutable
   posting remain intact. Stale shared-state replies never silently retarget newer
   state; original source checks and explicit review remain enforced.
-- [ ] AC6: Docs and small synthetic examples cover normal and failure workflows,
+- [x] AC6: Docs and small synthetic examples cover normal and failure workflows,
   no device integration, shell execution, private dependency, living-spec code,
   new account/permission service or arbitrary plugin filesystem access.
-- [ ] AC7: Full existing suites plus meaningful focused CLI/browser controls,
+- [x] AC7: Full existing suites plus meaningful focused CLI/browser controls,
   source embeds, schema/upgrade generation and exact pin/version checks pass;
   parent verifies complete disposable end-to-end workflows and phone EN/PL.
 
@@ -148,9 +148,40 @@ recorded/latest/failure/provenance regardless of renderer omission.
 
 Parent owns loading/refresh/board hooks and native pre-submit re-resolution;
 render signature includes resolved context, and changed current data requires
-renewed explicit review. Typed replies retain exact reviewed binding metadata
-in additive INFORMATION review field (final details coordinated before coding).
+renewed explicit review. Typed replies retain INFORMATION review:{bindings:[{id,artifact,definition,status,heads}]},
+sorted by id/heads, source identity implicit in EXTENSION-ANSWER.source. Review-only
+items may be empty. Historical validation checks source binding identity; new
+posts re-resolve local status/heads before publication.
 Historical messages remain readable when optional local definitions are absent;
 strict validate reports unavailable, but missing current data does not authorize
 withdrawal/repair. Invalid core wire still rejects. Existing fallback/reply/route/
 exact-byte approvals remain intact.
+
+## Completion evidence (2026-10-19)
+
+Integrated canonical state/CLI 7bca5cf, convention2.6 f17f51f and optional-source
+repair correction e51bb7c (local source tag v2.6.0). Viewer pins that exact code
+revision and keeps living specifications parked. No network/collector/command
+execution was introduced; all workflows use disposable synthetic data.
+
+Parent canonical full suite:137 tests OK. Viewer full JavaScript/browser suite
+309 passed, then final immutable-verification cache regression added and28focused
+controls passed. UI Python36 passed after exact local source tag was created;
+release consistency check UI2.6.0/standard2.6.0 passed. Final combined viewer
+runner result is recorded in UI docs/validation/shared-information-2.6.0.md.
+
+Actual file-page native and uploaded boards cover two references refreshing,
+immutable recorded bytes, inert commands, missing/malformed sources, independent
+plain-message facts, declarative and approved worker context, changed-state
+pre-submit refusal, renewed review and canonical-validated replies, uploaded
+review-head downloads and forged missing-review rejection. Freshness expires
+with board refresh off. Source disclosures survive refresh. EN/PL390px overflow
+checks and screenshots were inspected. Python/JS shared fixtures include exact
+UTF-8 byte boundary/emoji, numeric/Unicode/structure/time boundaries. Direct
+publisher parity is covered for custom physical directories.
+
+Parent security refinement: optional source files damaged after posting must
+not establish invalid message content. Missing/corrupt/unreadable source bytes
+now yield unavailable semantics; readable history stays and repair refuses.
+Successfully verified scope/contract/snapshot mismatches remain known invalid.
+No performance/adoption/device integration or public publication is claimed.
