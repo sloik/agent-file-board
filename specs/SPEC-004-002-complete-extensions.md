@@ -54,7 +54,7 @@ No live owner board mutation. Deliver source CLI and stock standalone viewer.
   malicious/missing input isolation, native/download immutable responses and no
   external requests. Inspect desktop/phone themes/ENPL. Full suites, embeds,
   exact-version/pin and release checks pass without weakening prior tests.
-- [ ] AC9: Deliver matching 2.5.0 convention/viewer versions through existing
+- [ ] AC9: Deliver matching 2.5.1 convention/viewer versions through existing
   release machinery, preserving older tags/assets, exact tested artifact bytes
   and docs. No living-spec implementation, private-tool coupling or VoiceOver checks.
 
@@ -79,3 +79,13 @@ and compatible renderer switching/revert. Prior full viewer274JS+36Python pass;
 focused8 complete browser/CLI flows pass, including actual CSP/opaque-origin
 network/storage/DOM/RTC/nested-worker controls and hot-loop termination. Final
 pinned-source suite, phone captures and release receipts remain to record.
+
+
+Pre-publication integration finding: historical missing packages were reported as
+invalid by the shared CLI validator, which could hide readable fallback from
+queries and incorrectly permit repair withdrawal. Required AC1 distinction must
+also govern shared readers/repair admission. Pause/cancel queued viewer2.5.0
+release, preserve already-pushed tags, implement a typed unavailable diagnostic,
+keep strict validation nonzero while core readers retain readable content and
+repair refuses withdrawal solely for missing optional semantics. Deliver2.5.1;
+verify actual CLI read/repair, historical disabled data and all old invariants.
