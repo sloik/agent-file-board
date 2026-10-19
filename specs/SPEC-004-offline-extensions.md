@@ -2,10 +2,18 @@
 id: SPEC-004
 title: Additive offline extension packages and constrained renderer API
 type: feature
-status: in_progress
+status: done
 created: 2026-10-19
 devkb_required: [python.md, frontend.md, agent-ui-protocols.md]
 ---
+
+Completed2026-10-19: foundation004-001 and complete delivery004-002 Done.
+Published canonicalCLI/convention2.5.1 and stockviewer2.5.2 with exact tag pin,
+both renderer modes, optional facets, bounded offline SDK, typed host replies,
+local approval and historical renderer switching. Final282JS/browser+36viewer
+Python+126canonicalPython pass, required releaseCI green and downloaded assets
+match tested bytes. See child004-002 for receipts and corrective findings.
+Living specifications are explicitly excluded and parked separately.
 
 Owner authorized starting implementation after SPEC-003 research and Q&A.
 Architecture: sibling UI docs/EXTENSIONS.md, Cortex1593. Owner later requested complete extension delivery under SPEC-004-002. Living
