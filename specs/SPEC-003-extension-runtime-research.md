@@ -2,7 +2,7 @@
 id: SPEC-003
 title: Resolve offline extension architecture and runtime boundaries
 type: research
-status: in_progress
+status: done
 created: 2026-10-19
 cortex_cites: [1592]
 ---
@@ -44,4 +44,28 @@ Research and disposable browser probes only; no production extension implementat
 
 ## Completion
 
-Pending source research and disposable runtime evidence.
+Research and proposal retained in UI commit0e5a15c, linked/refined at65abc49:
+`agent-file-board-ui/docs/EXTENSIONS.md` and `docs/research/extensions/`.
+Three retained probe scripts ran successfully from actual file pages in
+Chromium151.0.7922.34. Results include local React rendering, isolated iframe
+parent/storage access, inherited parent CSP navigation restriction, loopback-only
+STUN egress despite CSP and unrecognized webrtc directive, opaque data-worker
+storage/DOM/RTC restrictions and terminated infinite loop, typed host drawing
+admission, interactive replies, closed WebSocket transport and stale generation
+rejection. Probe HTTP(S) requests were intercepted locally; WebRTC contacted only
+an owned loopback UDP listener. No external service received data.
+
+Owner explicitly approved constrained drawing/input SDK after seeing this
+tradeoff. Recommend opaque worker computation plus trusted host drawing for
+custom code, alongside declarative views using the same public primitives.
+React DOM components need adaptation. One self-contained JSON package includes
+optional convention/UI facets and local assets; original bytes/digests, registry,
+compatibility ranges/exclusions, exact historic contracts and explicit local
+compatible-renderer substitution are documented. A real legacy2.4.0 CLI probe
+accepted an unknown top-level header without validating its semantics; existing
+UI libraries stay closed. New extension-aware protocol/tooling is required.
+
+Cortex1593 records owner decisions. This is completed architecture research, not
+production plugin support. Other browsers still require qualification during
+implementation; resource-limit and adversarial acceptance remains explicit.
+No new plugin feature/runtime is shipped by this research.
