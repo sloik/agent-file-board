@@ -295,7 +295,7 @@ def parse_message(path: Path) -> dict[str, str]:
     return headers
 
 
-def check_message(path, board, config, known, source_path=None):
+def check_message(path, board, config, known, source_path=None, require_semantics=False):
     source_path = source_path or path
     if not source_path.is_file() or source_path.is_symlink(): raise BoardError(f"{path}: message must be a regular file")
     for parent in path.parents:
@@ -352,13 +352,16 @@ def check_message(path, board, config, known, source_path=None):
                 raise BoardError(f"{path}: UI reports require a nonblank readable body fallback")
     if "EXTENSION" in headers or "EXTENSION-ANSWER" in headers:
         raw = extension_packages.read_file(source_path).decode("utf-8")
-        extension_packages.validate_message(board, path, headers, raw.replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2])
+        try:
+            extension_packages.validate_message(board, path, headers, raw.replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2])
+        except extension_packages.ExtensionUnavailable:
+            if require_semantics: raise
     return headers
 
 
-def message_error(path, board, config, known):
+def message_error(path, board, config, known, require_semantics=False):
     try:
-        check_message(path, board, config, known)
+        check_message(path, board, config, known, require_semantics=require_semantics)
     except (ValueError, OSError, KeyError, TypeError, RecursionError) as exc:
         return str(exc)
     return None
@@ -383,7 +386,7 @@ def validate(root: Path) -> list[str]:
     for path in sorted((board / "rooms").glob("**/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("**/*.txt")):
         if ".DS_Store" in path.relative_to(board).parts: continue
         if path.relative_to(board).as_posix() in quarantined: continue
-        error = message_error(path, board, config, known)
+        error = message_error(path, board, config, known, require_semantics=True)
         if error: errors.append(error)
     return errors
 
@@ -622,7 +625,8 @@ def command_repair(args):
         replacement = target.parent / name
         with __import__("tempfile").TemporaryDirectory() as tmp:
             draft = Path(tmp) / "draft.txt"; draft.write_bytes(raw)
-            check_message(replacement, board, config, known, source_path=draft)
+            check_message(replacement, board, config, known, source_path=draft, require_semantics=True)
+            extension_packages.validate_message(board, replacement, headers, raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2], active=True)
         directory.mkdir(exist_ok=True)
         with replacement.open("xb") as handle: handle.write(raw)
         record["replacement"] = replacement.relative_to(board).as_posix()

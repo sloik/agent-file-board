@@ -1,6 +1,6 @@
 # Portable offline extensions
 
-Convention/viewer 2.5.0 supports local, self-contained extension packages. A
+Convention/viewer 2.5.1 supports local, self-contained extension packages. A
 package can contain a convention contract, a viewer UI, or both. Companies share
 packages inside the board folder; recipients use the stock viewer offline.
 Extensions are additive. They cannot override built-in message meanings,
@@ -184,7 +184,8 @@ they do not execute business actions or prove authorization outside the board.
 New messages/answers require enabled compatible packages. Historical validation
 uses retained definitions even after disabling or changing compatibility. Missing
 or corrupt artifacts mean semantic validation is unavailable, never a successful
-schema check; `validate` reports this. A viewer retains the readable message and
+schema check; `validate` reports this. Core CLI readers retain the readable
+fallback and optional-package unavailability alone cannot authorize repair. A viewer retains the readable message and
 shows an unavailable renderer. A known invalid envelope/schema is invalid metadata.
 
 Samples: `example-approvals.afb-plugin.json` (convention only),

@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.5.0
+Version: 2.5.1
 
 ## Purpose and authority
 
@@ -971,3 +971,11 @@ validates bounded drawing output and owns explicit answer review/submission.
 Disabled/incompatible/unapproved renderers fall back to readable text. Default
 historical rendering stays pinned; an explicit reversible viewer-local compatible
 renderer replacement must not change the original contract or message bytes.
+
+
+Historical validation distinguishes unavailable optional package definitions from
+invalid message syntax or known schema violations. Core readers still expose the
+readable fallback when only optional definitions are missing/corrupt. Strict
+`validate` reports unavailable semantics and returns nonzero; it must not claim
+schema success. Unavailable definitions alone never authorize withdrawal/repair.
+New posts and corrections continue requiring enabled compatible definitions.

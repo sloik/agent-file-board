@@ -92,8 +92,44 @@ class ExtensionPackagesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "disabled"):
             ext.validate_message(board, target, reply, "Approved", active=True)
         (board / "extensions/packages" / decoded["artifact"] / "package.afb-plugin.json").unlink()
-        with self.assertRaises(OSError):
+        with self.assertRaises(ext.ExtensionUnavailable):
             ext.validate_message(board, path, headers, "Request")
+
+    def test_unavailable_semantics_preserve_actual_cli_read_and_refuse_repair(self):
+        board = self.root / ".agent-board"
+        (board / "participants.json").write_text(json.dumps({"version": 1, "participants": [{"id": "agent-author", "kind": "agent"}, {"id": "human-reader", "kind": "human"}]}))
+        receipt = ext.install(self.root, self.artifact)
+        decoded = ext.decode_package(self.artifact.read_bytes())
+        c = decoded["contracts"][0]
+        value = {"version": 1, "package": receipt["artifact"], "contract": c["id"], "contractVersion": c["version"], "contractDigest": c["digest"], "data": {"title": "Readable without plugin"}}
+        definition = self.root / "envelope.json"
+        definition.write_text(json.dumps(value))
+        def run(*args):
+            out, err = io.StringIO(), io.StringIO()
+            with redirect_stdout(out), redirect_stderr(err):
+                code = boardctl.main([*args, "--path", str(self.root)])
+            return code, out.getvalue(), err.getvalue()
+        code, out, err = run("post", "--from", "agent-author", "--to", "all", "--scope", "room", "--room", "general", "--thread", "T001", "--slug", "request", "--body", "Please review the local purchase.", "--extension-file", str(definition))
+        self.assertEqual(code, 0, err)
+        path = self.root / out.strip()
+        original = path.read_bytes()
+        snapshot = board / "extensions/packages" / receipt["artifact"] / "package.afb-plugin.json"
+        snapshot.unlink()
+        self.assertEqual(boardctl.check_message(path, board, boardctl.load_json(board / "config.json"), {"agent-author", "human-reader"})["FROM"], "agent-author")
+        code, out, err = run("validate")
+        self.assertEqual(code, 1)
+        self.assertIn("unavailable", out + err)
+        code, out, err = run("recent", "--participant", "human-reader", "--room", "general")
+        self.assertEqual(code, 0, err)
+        self.assertEqual(json.loads(out)["messages"][0]["path"], str(path.relative_to(self.root)))
+        code, out, err = run("repair", "--message", str(path.relative_to(board)), "--by", "human-reader", "--reason", "Optional plugin unavailable")
+        self.assertEqual(code, 2)
+        self.assertIn("valid messages are immutable", err)
+        self.assertFalse((board / "repairs").exists())
+        self.assertEqual(path.read_bytes(), original)
+        # Malformed wire metadata remains invalid even when its package is absent.
+        path.write_bytes(original.replace(c["digest"].encode(), b"bad"))
+        self.assertIsNotNone(boardctl.message_error(path, board, boardctl.load_json(board / "config.json"), {"agent-author", "human-reader"}))
 
     def test_actual_cli_install_copy_describe_disable_and_messages_unchanged(self):
         before = {str(p.relative_to(self.root)): p.read_bytes() for p in (self.root / ".agent-board").rglob("*") if p.is_file()}

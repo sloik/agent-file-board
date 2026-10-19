@@ -1,5 +1,16 @@
 # Release notes
 
+## 2.5.1 — 2026-10-19
+
+- Deliver the complete offline extension package/message system with the stock
+  viewer2.5.1, constrained declarative/worker SDK, exact local code approval,
+  immutable typed replies, compatible renderer switching and creator examples.
+- Keep historical readable messages visible when optional package definitions
+  are unavailable. Strict validation reports incomplete semantics; missing
+  packages alone cannot authorize repair/withdrawal. New posts still fail closed.
+- Preserve the2.5.0 source tag; its queued viewer publication was cancelled after
+  this integration finding. Living specifications remain parked and excluded.
+
 ## 2.5.0 — 2026-10-19
 
 - Portable offline extension packages with optional convention/UI facets,

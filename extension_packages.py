@@ -23,6 +23,10 @@ DIGEST = re.compile(r"[a-f0-9]{64}")
 VERSION = re.compile(r"(0|[1-9][0-9]{0,6})\.(0|[1-9][0-9]{0,6})\.(0|[1-9][0-9]{0,6})")
 
 
+class ExtensionUnavailable(ValueError):
+    """Readable core message; optional retained semantic definition unavailable."""
+
+
 def require(ok, message):
     if not ok:
         raise ValueError("extensions: " + message)
@@ -523,13 +527,20 @@ def envelope(value, answer=False):
 
 def resolve(board, value, active=False, answer=False):
     envelope(value, answer)
-    directory = extension_dir(board)
-    rows = registry(directory / "registry.json")["packages"]
-    states = {item["artifact"]: item["state"] for item in catalog(board.parent)["packages"]} if active else {}
+    try:
+        directory = extension_dir(board)
+        rows = registry(directory / "registry.json")["packages"]
+        states = {item["artifact"]: item["state"] for item in catalog(board.parent)["packages"]} if active else {}
+    except (ValueError, OSError, UnicodeError) as exc:
+        raise ExtensionUnavailable("extensions: unavailable registry: " + str(exc)) from exc
     def retained(digest):
         row = next((row for row in rows if row["artifact"] == digest), None)
-        require(row is not None, "unavailable: package not retained in board")
-        decoded = snapshot(directory, digest)
+        if row is None:
+            raise ExtensionUnavailable("extensions: unavailable: package not retained in board")
+        try:
+            decoded = snapshot(directory, digest)
+        except (ValueError, OSError, UnicodeError) as exc:
+            raise ExtensionUnavailable("extensions: unavailable snapshot: " + str(exc)) from exc
         if active:
             require(row["enabled"], "package disabled for new messages")
             require(states.get(digest) == "available", "package incompatible, unavailable or conflicting")
@@ -559,7 +570,7 @@ def validate_message(board, path, headers, body, active=False):
         require(version(convention_version(board)) >= (2, 5, 0), "upgrade board convention to 2.5.0 before extension posts")
     answer = names[0] == "EXTENSION-ANSWER"
     value = parse(headers[names[0]].encode("utf-8"), 65536)
-    resolve(board, value, active, answer)
+    envelope(value, answer)
     if answer:
         source = board / value["source"]["message"]
         require(source.parent == path.parent and source.name == headers.get("REPLY-TO") and source != path, "answer source must be reply target in same conversation")
@@ -571,6 +582,9 @@ def validate_message(board, path, headers, body, active=False):
         original = pairs([line.split(": ", 1) for line in head.splitlines() if ": " in line])
         require("EXTENSION" in original and not any(k in original for k in ("EXTENSION-ANSWER", "UI", "QUESTION", "ANSWER")), "source is not an extension request")
         request = parse(original["EXTENSION"].encode("utf-8"), 65536)
-        resolve(board, request, False)
+        envelope(request)
         require(bool(source_body.strip()) and original.get("THREAD", "").split("-")[0] == headers.get("THREAD", "").split("-")[0] and original.get("SCOPE") == headers.get("SCOPE") and original.get("FROM") == headers.get("TO"), "answer source routing differs")
         require(all(value[k] == request[k] for k in ("package", "contract", "contractVersion", "contractDigest")), "answer contract differs from source")
+    resolve(board, value, active, answer)
+    if answer:
+        resolve(board, request, False)
