@@ -367,7 +367,7 @@ export/import/deletion. The canonical protocol remains2.4.0; no new header/schem
 or backend is needed. Agents still read and validate the actual ANSWER metadata;
 a comparison view does not approve or execute work.
 
-See [the viewer guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/WORKBENCH.md)
+See [the viewer guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/WORKBENCH.md)
 and its downloadable fictional agent → human → agent demo (reports/T015).
 
 ### Conditional forms, row operations and saved drafts (2.4)
@@ -444,12 +444,15 @@ UI2.4.3 adds **Recent locations**, a browser-local list of 20 successful opens.
 Last open wins; native handles establish identity and uploads require explicit
 reselection. No messages are posted or listeners started by history actions.
 Permission/presence/sender rules remain unchanged. See the
-[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/LOCATIONS.md).
+[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/LOCATIONS.md).
 
-### Viewer color themes (UI2.4.4)
+### Viewer color themes (UI2.4.5)
 
 The single offline viewer offers **Settings → Color theme → System, Light,
 Dark or Dracula**. This is a browser-local preference; it preserves mounted
 report/form state and leaves canonical messages unchanged. Try the fictional
-demo and [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.4/docs/THEMES.md).
+demo and [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
 Canonical code and the viewer’s standard pin remain v2.4.0.
+
+UI2.4.5 restricts Dracula to interface chrome. Participant/status pills, speech
+bubbles and report/chart indicators keep the established Dark content colors.
