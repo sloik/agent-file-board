@@ -23,7 +23,7 @@ Viewer2.4.2 adds a local JSON authoring preview, typed answer comparisons and
 draft backup tools without changing canonical2.4.0 payloads. The complete viewer
 demo includes reports/T015's fictional agent/human/agent cycle and a viewer-only
 draft backup example. See the
-[illustrated guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/WORKBENCH.md).
+[illustrated guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/WORKBENCH.md).
 
 UI2.4.2 adds visual form building, browser-local authoring recovery, named
 snapshots and explicit authoring backup import/export. The demo includes
@@ -34,15 +34,19 @@ UI2.4.3 adds **Recent locations**, a browser-local list of 20 successful opens.
 Last open wins; native handles establish identity and uploads require explicit
 reselection. No messages are posted or listeners started by history actions.
 Permission/presence/sender rules remain unchanged. See the
-[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/LOCATIONS.md).
+[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/LOCATIONS.md).
 
-### Viewer color themes (UI2.4.5)
+### Viewer color themes (UI2.4.6)
 
 The single offline viewer offers **Settings → Color theme → System, Light,
 Dark or Dracula**. This is a browser-local preference; it preserves mounted
 report/form state and leaves canonical messages unchanged. Try the fictional
-demo and [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.5/docs/THEMES.md).
+demo and [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
 Canonical code and the viewer’s standard pin remain v2.4.0.
 
 UI2.4.5 restricts Dracula to interface chrome. Participant/status pills, speech
 bubbles and report/chart indicators keep the established Dark content colors.
+
+UI2.4.6 keeps Close visible in long dialogs and lets users resize Settings by
+its left edge or arrow keys, saving width locally. Header/footer actions remain
+visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).
