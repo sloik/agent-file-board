@@ -367,7 +367,7 @@ export/import/deletion. The canonical protocol remains2.4.0; no new header/schem
 or backend is needed. Agents still read and validate the actual ANSWER metadata;
 a comparison view does not approve or execute work.
 
-See [the viewer guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/WORKBENCH.md)
+See [the viewer guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/WORKBENCH.md)
 and its downloadable fictional agent → human → agent demo (reports/T015).
 
 ### Conditional forms, row operations and saved drafts (2.4)
@@ -444,14 +444,14 @@ UI2.4.3 adds **Recent locations**, a browser-local list of 20 successful opens.
 Last open wins; native handles establish identity and uploads require explicit
 reselection. No messages are posted or listeners started by history actions.
 Permission/presence/sender rules remain unchanged. See the
-[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/LOCATIONS.md).
+[location guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/LOCATIONS.md).
 
 ### Viewer color themes (UI2.4.6)
 
 The single offline viewer offers **Settings → Color theme → System, Light,
 Dark or Dracula**. This is a browser-local preference; it preserves mounted
 report/form state and leaves canonical messages unchanged. Try the fictional
-demo and [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/THEMES.md).
+demo and [theme guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/THEMES.md).
 Canonical code and the viewer’s standard pin remain v2.4.0.
 
 UI2.4.5 restricts Dracula to interface chrome. Participant/status pills, speech
@@ -459,4 +459,7 @@ bubbles and report/chart indicators keep the established Dark content colors.
 
 UI2.4.6 keeps Close visible in long dialogs and lets users resize Settings by
 its left edge or arrow keys, saving width locally. Header/footer actions remain
-visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.6/docs/PANELS.md).
+visible. See the [panel guide](https://github.com/sloik/agent-file-board-ui/blob/v2.4.7/docs/PANELS.md).
+
+UI2.4.7 reserves a separate refresh-status line below toolbar actions, keeping
+buttons stable across countdown, refresh rollover and paused/off states.
