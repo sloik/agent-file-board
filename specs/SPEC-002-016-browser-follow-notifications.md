@@ -37,7 +37,11 @@ No release/push or installed/live owner board change is commissioned.
    handle denied/default/error cases honestly and retain the in-page fallback.
    No background server, network requests, push subscription or service worker.
    Explain detection requires an open viewer plus successful manual/auto refresh;
-   uploaded boards only change when explicitly reselected.
+   uploaded boards only change when explicitly reselected. While browser alerts
+   are explicitly enabled and follows exist, let the existing enabled/in-schedule
+   auto-refresh poll an open hidden tab, subject to browser throttling. Preserve
+   the existing hidden-tab pause when alerts are off; never promise closed-tab
+   delivery or an exact background timing guarantee.
 - [ ] AC4: Quick reply uses a normal visible viewer interaction: notification activation
    navigates to the exact message and offers/prepares the existing reply composer.
    Do not auto-send or silently overwrite a draft. Preserve existing unsent work
