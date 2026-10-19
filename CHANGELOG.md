@@ -1,5 +1,14 @@
 # Release notes
 
+## 2.6.1 — 2026-10-19
+
+- Ship portable board-feedback guidance for agents: repository routing, duplicate
+  search, offline drafts and authorized issue submission.
+- Add human feedback guide, bug/feature/general feedback forms and cross-repository
+  links. Keep unknown versions, incomplete reproductions and plain issues welcome.
+- Link feedback from the copied convention and board-loop. No message format or
+  command-execution changes.
+
 ## 2.6.0 — 2026-10-19
 
 - Add per-information inert provenance on ordinary and extension messages.

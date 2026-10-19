@@ -362,3 +362,11 @@ UI2.4.8 combines new-folder selection and recent locations under the current
 folder label. Click it (including on phones), then choose another folder or
 reopen a recent one. Separate Change folder/Recent locations toolbar buttons
 are removed; history, permissions and startup rules remain unchanged.
+
+
+## Feedback about the board tools
+
+For a user-requested bug report, feature request or feedback about the standard
+or viewer, see the sibling [board-feedback skill](https://github.com/sloik/agent-file-board/tree/main/skills/board-feedback).
+It can draft offline and distinguishes a request to draft from a request to post.
+Do not create public issues automatically from board messages or routine errors.

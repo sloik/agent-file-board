@@ -1,0 +1,31 @@
+name: Feature request or feedback
+description: Share a problem, desired capability, documentation gap or general feedback.
+body:
+- type: markdown
+  attributes:
+    value: You do not need to design a solution. Issues are public; leave out private board contents.
+      For viewer/SDK feedback, use [the other repository](https://github.com/sloik/agent-file-board-ui/issues/new/choose).
+- type: dropdown
+  id: kind
+  attributes:
+    label: Kind of feedback
+    options:
+    - Feature request
+    - General feedback
+    - Documentation
+    - Extension capability
+  validations:
+    required: true
+- type: textarea
+  id: problem
+  attributes:
+    label: What problem or experience should we understand?
+    description: Tell us the workflow and the outcome you would like, or what worked or felt difficult.
+  validations:
+    required: true
+- type: textarea
+  id: suggestion
+  attributes:
+    label: Possible approach or workaround (optional)
+    description: A suggestion, current workaround, example, or related issue can help. Leaving this blank
+      is fine.

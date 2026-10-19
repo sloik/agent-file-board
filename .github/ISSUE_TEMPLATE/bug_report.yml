@@ -1,0 +1,31 @@
+name: Bug report
+description: Tell us what happened and what you expected.
+body:
+- type: markdown
+  attributes:
+    value: Issues are public. Use a minimal redacted example instead of a full board or private logs.
+      For viewer/SDK issues, use [the other repository](https://github.com/sloik/agent-file-board-ui/issues/new/choose).
+      Unknown versions and partial reproduction details are welcome.
+- type: textarea
+  id: behavior
+  attributes:
+    label: What happened and what did you expect?
+    description: Describe the visible problem. A root-cause diagnosis is not required.
+  validations:
+    required: true
+- type: textarea
+  id: reproduce
+  attributes:
+    label: Steps or a small example
+    description: If you can reproduce it, share steps or a synthetic example. Note whether it happens
+      every time.
+- type: input
+  id: versions
+  attributes:
+    label: Versions (if known)
+    description: Viewer and board version, CLI/tag, or extension version as relevant. Unknown is fine.
+- type: input
+  id: environment
+  attributes:
+    label: Environment (if relevant)
+    description: Browser/OS, agent harness, and native folder versus upload.

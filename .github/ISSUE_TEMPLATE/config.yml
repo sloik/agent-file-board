@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+- name: Feedback guide and agent skill
+  url: https://github.com/sloik/agent-file-board/blob/main/docs/FEEDBACK.md
+  about: Choose a repository, prepare an offline draft, or help an agent submit feedback.
+- name: Feedback for agent-file-board-ui
+  url: https://github.com/sloik/agent-file-board-ui/issues/new/choose
+  about: Use this if the problem belongs to the other board repository.

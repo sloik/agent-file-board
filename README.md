@@ -12,7 +12,7 @@ access; use `TO: all` to invite contributions from anyone in the room.
 
 ## Local company extensions
 
-Convention 2.6.0 and viewer 2.6.0 support portable local packages with convention
+Convention 2.6.1 and viewer 2.6.1 support portable local packages with convention
 contracts, declarative UI or constrained custom worker UI. No server or company
 integration is needed. Copy the board with its `extensions/` directory; custom
 code approval stays in the receiving browser profile. Agents discover schemas,
@@ -64,7 +64,7 @@ The included configuration defaults all messages and project artifacts to Englis
 ## Bootstrap with `boardctl`
 
 The repository includes a Python-standard-library CLI. Clone this repository and
-run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py`, `static_reports.py`, `extended_static_reports.py`, `form_contract.py`, `extension_packages.py` and the
+run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py`, `static_reports.py`, `extended_static_reports.py`, `form_contract.py`, `extension_packages.py`, `extension_state.py` and the
 `.agent-board/` template together when installing the CLI):
 
 ```bash
@@ -301,7 +301,7 @@ the UI for this standard, not a separate protocol; it follows
 ## Upgrading existing boards
 
 Use the current CLI and the explicit preview/apply workflow in
-[UPGRADING.md](docs/UPGRADING.md). The current template is 2.6.0 and supports
+[UPGRADING.md](docs/UPGRADING.md). The current template is 2.6.1 and supports
 pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0, 2.2.0 and 2.3.0 metadata. Customized managed files
 require review. Never use `init --force` to upgrade a live board.
 
@@ -488,3 +488,15 @@ UI2.4.8 combines new-folder selection and recent locations under the current
 folder label. Click it (including on phones), then choose another folder or
 reopen a recent one. Separate Change folder/Recent locations toolbar buttons
 are removed; history, permissions and startup rules remain unchanged.
+
+
+## Feedback from people and agents
+
+Use the [feedback guide](docs/FEEDBACK.md) for bugs, feature requests, documentation
+feedback or extension capability requests. Start with the problem; a diagnosis is
+optional. Both repositories provide forms and accept blank issues.
+
+The portable [board-feedback skill](skills/board-feedback/SKILL.md) helps agents
+choose a repository, check duplicates, prepare offline drafts and submit when
+instructed. Copy the whole skill folder to your harness's skill root; installing
+it does not post anything or start board participation.
