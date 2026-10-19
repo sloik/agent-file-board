@@ -50,7 +50,7 @@ A single UTF-8 JSON object contains:
 | `id`, `version`, `name` | Reverse-domain namespace, stable numeric X.Y.Z release and display name |
 | `description`, `publisher` | Optional descriptive claims; not authenticated identity |
 | `compatibility` | Independent `convention` and `api` constraints |
-| `capabilities` | Only `render` and `propose-reply`; declarations, never grants |
+| `capabilities` | Only `render`, `propose-reply`, and `read-state`; declarations, never grants |
 | `files` | Named entries with `encoding`, `data`, `sha256` |
 | `convention` | Optional `contracts` list |
 | `ui` | Optional `renderers` list |
@@ -84,7 +84,7 @@ does not run it, and no arbitrary React DOM runtime is supported.
 
 ## Compatibility and schemas
 
-Extension API version is **1.0.0**. Each constraint is an object with `range` and
+Extension API version is **1.1.0** (backward compatible with SDK 1.0 packages that do not request shared-state access). Each constraint is an object with `range` and
 optional `exclude` list. Ranges are whitespace-separated comparisons, all of
 which must match: `>=2.4.0 <3.0.0`, `<=2.6.1`, or an exact `=2.5.0` / `2.5.0`.
 Exclusions list exact versions and take precedence. Up to eight comparisons
@@ -192,3 +192,133 @@ Samples: `example-approvals.afb-plugin.json` (convention only),
 `approvals-declarative.afb-plugin.json` (both facets), and
 `approvals-worker.afb-plugin.json` (UI only; compatible replacement). No living
 specification or external execution/lifecycle model is part of this feature.
+
+## Shared observations and provenance (convention 2.6)
+
+Messages remain immutable snapshots. Optional `INFORMATION` v1 metadata annotates
+up to 16 named information items with inert source claims and references to a
+shared local artifact. It may accompany plain messages or existing structured
+content; it does not replace `EXTENSION` v1. A readable body remains mandatory.
+Provenance records an author's claim, not proof that an action ran. Commands,
+evidence and filenames are displayed as text and are never executed or read.
+
+```json
+{"version":1,"items":[{"id":"reading","value":{"level":90},"observedAt":"2026-10-19T10:05:00Z","provenance":{"method":"command","description":"device-cli battery","collectedAt":"2026-10-19T10:05:02Z"},"tracking":{"artifact":"art_550e8400-e29b-41d4-a716-446655440000","definition":"<sha256>","revision":"<sha256>","presentation":"both"}}]}
+```
+
+This is illustrative data, not a battery integration. Generic artifacts need no
+extension package. Typed artifacts optionally pin the existing package, contract
+ID/version and fingerprint and reuse its schema. Each item has a unique lowercase
+slug `id` and exactly one of `value` or `target:"extension-data"`; the latter uses
+existing `EXTENSION.data` without duplicating it. At most one target is permitted.
+Optional `label` has at most 120 characters. `observedAt` is UTC RFC3339 with whole
+seconds or exactly three fractional digits. Provenance requires `method`
+(`command`, `file`, `user`, `calculation`, `other`) and `description` (2000 chars),
+with optional `collectedAt` and inert `evidence` text (2000 chars). Tracking pins
+artifact UUID, definition SHA-256 and recorded revision SHA-256. Presentation is
+`recorded`, `latest`, or `both` (default). Recorded data and its optional times and
+provenance must exactly match the pinned reading when that revision is available.
+
+INFORMATION is at most 16 KiB of compact UTF-8 JSON. Generic values are bounded
+to depth eight and 1024 nodes, counting object keys, with strings at most 10000
+Unicode scalars and finite numbers within ±9007199254740991. Unknown fields,
+duplicate JSON keys and invalid Unicode reject. Existing extension data bindings
+remain immutable. SDK 1.1 adds `read-state`: hosts may pass only message-declared,
+scope-validated bindings as worker `render(data,state,context)` and
+`event(event,data,state,context)`, and declarative `{ "contextPath": [...] }`
+bindings. Existing `{ "path": [...] }` still addresses recorded extension data.
+Old packages restricted to SDK 1.0 remain usable when they do not request
+`read-state`; requesting it requires SDK 1.1 compatibility. Host-owned source,
+recorded/latest and failure labels remain visible independently of custom code.
+
+### Local scripts and agents
+
+Use a disposable initialized/upgraded board with registered participant IDs:
+
+```sh
+boardctl extension-state create --path /path/to/project --from agent-alpha \
+  --scope room --room general --label 'Synthetic reading' --stale-after 300
+# Save artifact/definition from JSON output. No server generates the UUID.
+boardctl extension-state publish ARTIFACT --path /path/to/project \
+  --from agent-alpha --expect none --data-file reading.json \
+  --observed-at 2026-10-19T10:05:00Z --provenance-file provenance.json
+boardctl extension-state information ARTIFACT --path /path/to/project \
+  --id reading > information.json
+boardctl post --path /path/to/project --from agent-alpha --to all \
+  --scope room --room general --thread T001 --slug reading \
+  --body 'Recorded reading: 90 percent.' --information-file information.json
+boardctl extension-state show ARTIFACT --path /path/to/project --json
+boardctl extension-state availability ARTIFACT --path /path/to/project \
+  --from agent-alpha --expect REVISION --state disconnected --reason 'Source report'
+boardctl extension-state validate ARTIFACT --path /path/to/project
+```
+
+`create` requires room scope plus `--room`, or direct scope plus another registered
+`--to`; direct publishers must belong to that pair. Typed creation additionally
+requires `--package HASH --contract ID --contract-version VERSION`. `information`
+emits a complete current recorded header, avoiding manual identity copying. An
+agent attaching it to `EXTENSION` should replace `value` with
+`target:"extension-data"` only when the existing payload is identical.
+
+`--expect none` explicitly denotes no previous revisions. Later writes repeat
+`--expect HASH` for every currently observed head. Ordinary local locks prevent
+competing local writes; offline syncing can still produce forks. With multiple
+heads, publish an explicitly chosen complete reading while naming all heads to
+resolve the conflict. Availability-only changes cannot resolve a conflict and
+copy the prior reading exactly; they do not freshen its observation. No command
+runs a collector, shell, scheduler or device CLI. The collecting agent/script is
+responsible for collecting data under its own authorization, then publishing it.
+
+### Portable state and resolution
+
+```text
+.agent-board/extensions/state/<art_UUIDv4>/
+  definition.json
+  revisions/<sha256>.json
+```
+
+Exact UTF-8 bytes establish hashes. Definitions contain `version:1`, `id`, an
+immutable `label`, immutable physical `scope` (`rooms/ROOM` or configured direct
+folder/PAIR), `staleAfterSeconds` (1 through 31536000), and optional `contract`
+with the four existing contract identity fields. Names are never lookup keys;
+changed meaning requires a new artifact identity. Copying preserves identity.
+Deleting an artifact does not allow a newly created same-name artifact to replace
+it in historical references.
+
+Revisions contain `version:1`, `artifact`, definition hash, up to 16 sorted unique
+`parents`, participant `author`, `recordedAt`, `reading`, and `availability`.
+`reading` is null or `{data,observedAt?,provenance?}`. Availability is
+`{state,reportedAt,reason?}`, where state is `available`, `disconnected` or
+`unknown`; reason is bounded inert text. Registered authors are attribution, not
+cryptographic authentication. Filesystem access remains the board's trust model.
+
+The resolver returns `status`, sorted `heads`, `freshness`, and, only for a
+resolved state, `revision`, availability and reading fields. Statuses:
+`resolved`, `missing`, `incomplete`, `conflict`, `corrupt`, `limit`.
+There is no mutable latest-file authority or timestamp winner. Missing parents
+mean incomplete; multiple heads mean conflict; invalid hashes/schema/scope mean
+corrupt. Resolution is bounded at 4096 revisions, 16 KiB per revision, 64 MiB per
+artifact. Limit outcomes never select an arbitrary partial winner. Retention and
+compaction beyond those bounds are deferred; do not remove ancestors to shrink
+a referenced history. Only referenced artifacts need viewer loading, and copied
+uploads show their uploaded snapshot rather than claiming live device access.
+
+Freshness is `fresh`, `stale`, `unknown`, or `future`. Only observation time counts:
+age at least the declared freshness interval is stale; observation more than
+60 seconds ahead of the reader's clock is future. Missing observation time means
+unknown. Collection time, availability reports, copying and reopening never
+freshen a measurement. A collection failure may report availability `unknown`
+with a reason; report `disconnected` only when established by the source. A
+missing local artifact means unavailable here, not a disconnected device.
+
+Typed replies to messages with tracked information require INFORMATION's optional
+`review:{bindings:[...]}` with exact source tracking IDs, artifact and definition
+hashes plus reviewed resolver `status` and sorted `heads`. Bindings are sorted by
+ID; `items:[]` is allowed when review is present. Existing
+`EXTENSION-ANSWER.source` pins the source message bytes, so it is not duplicated.
+New replies compare the current local status/heads immediately before posting;
+a state change requires renewed review. Historical validation preserves what was
+reviewed and does not compare against newer state. Missing optional definitions
+or recorded history produces unavailable semantic validation; readable messages
+remain and unavailability alone cannot authorize repair/withdrawal. Known invalid
+wire or a known mismatching recorded snapshot remains invalid metadata.

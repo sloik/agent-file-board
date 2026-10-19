@@ -12,7 +12,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
-API_VERSION = "1.0.0"
+API_VERSION = "1.1.0"
 MAX_PACKAGE = 4 * 1024 * 1024
 MAX_FILE = 1024 * 1024
 MAX_PACKAGES = 32
@@ -200,7 +200,7 @@ def decode_package(raw):
     for item in package["compatibility"].values():
         constraint(item)
     caps = package["capabilities"]
-    require(isinstance(caps, list) and all(isinstance(x, str) and x in {"render", "propose-reply"} for x in caps) and len(set(caps)) == len(caps), "unsupported capabilities; request additions through GitHub")
+    require(isinstance(caps, list) and all(isinstance(x, str) and x in {"render", "propose-reply", "read-state"} for x in caps) and len(set(caps)) == len(caps), "unsupported capabilities; request additions through GitHub")
     require("convention" in package or "ui" in package, "at least one facet required")
     require(isinstance(package["files"], dict) and 1 <= len(package["files"]) <= 64, "file count limit")
     files = {}
@@ -325,6 +325,11 @@ def snapshot(directory, digest):
     return decoded
 
 
+def api_compatible(package):
+    rule = package["compatibility"]["api"]
+    return supports(rule, API_VERSION) or ("read-state" not in package["capabilities"] and supports(rule, "1.0.0"))
+
+
 def catalog(root):
     board = board_dir(root)
     directory = extension_dir(board)
@@ -335,7 +340,7 @@ def catalog(root):
         try:
             decoded = snapshot(directory, row["artifact"])
             package = decoded["package"]
-            compatible = supports(package["compatibility"]["convention"], board_version) and supports(package["compatibility"]["api"], API_VERSION)
+            compatible = supports(package["compatibility"]["convention"], board_version) and api_compatible(package)
             item.update(id=package["id"], version=package["version"], name=package["name"],
                         state="disabled" if not row["enabled"] else "available" if compatible else "incompatible",
                         contracts=decoded["contracts"], renderers=package.get("ui", {}).get("renderers", []),
@@ -390,7 +395,7 @@ def install(root, artifact):
     board = board_dir(root)
     directory = extension_dir(board, True)
     package = decoded["package"]
-    require(supports(package["compatibility"]["convention"], convention_version(board)) and supports(package["compatibility"]["api"], API_VERSION), "package is incompatible")
+    require(supports(package["compatibility"]["convention"], convention_version(board)) and api_compatible(package), "package is incompatible")
     with mutation_lock(directory):
         current = registry(directory / "registry.json")
         for row in current["packages"]:
@@ -544,7 +549,7 @@ def resolve(board, value, active=False, answer=False):
         if active:
             require(row["enabled"], "package disabled for new messages")
             require(states.get(digest) == "available", "package incompatible, unavailable or conflicting")
-            require(supports(decoded["package"]["compatibility"]["convention"], convention_version(board)) and supports(decoded["package"]["compatibility"]["api"], API_VERSION), "package incompatible for new messages")
+            require(supports(decoded["package"]["compatibility"]["convention"], convention_version(board)) and api_compatible(decoded["package"]), "package incompatible for new messages")
         return decoded
     decoded = retained(value["package"])
     contract = next((c for c in decoded["contracts"] if c["id"] == value["contract"] and c["version"] == value["contractVersion"] and c["digest"] == value["contractDigest"]), None)

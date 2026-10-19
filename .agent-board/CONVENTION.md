@@ -979,3 +979,22 @@ readable fallback when only optional definitions are missing/corrupt. Strict
 `validate` reports unavailable semantics and returns nonzero; it must not claim
 schema success. Unavailable definitions alone never authorize withdrawal/repair.
 New posts and corrections continue requiring enabled compatible definitions.
+
+## INFORMATION and shared local observations (2.6)
+
+`INFORMATION` is optional strict JSON metadata, version 1, for named recorded
+information and inert provenance. It does not change existing `EXTENSION` v1 data
+or permit command execution. Its complete normative schema, immutable artifact
+layout, limits, freshness/availability rules, conflict resolution and CLI workflow
+are in [docs/EXTENSIONS.md](../docs/EXTENSIONS.md#shared-observations-and-provenance-convention-26).
+A readable message body remains mandatory. Provenance is an author claim, never
+independent proof of execution. Source commands/evidence are inert text.
+
+Information items pin a recorded shared revision and may display recorded,
+latest-known or both values. Latest-known data is resolved only from local
+scope-matching immutable revisions. A source missing from this copy is not a
+device disconnection. Conflicts, invalid bytes, missing parents and limits never
+produce an arbitrary current winner. Observation time alone controls freshness.
+Recorded messages/revisions are never rewritten. Copies preserve artifact IDs;
+new same-name artifacts cannot replace historical references. Typed replies pin
+the exact reviewed local heads and must be reviewed again if those heads change.

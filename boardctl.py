@@ -16,6 +16,7 @@ import board_upgrade
 import board_guidance
 import message_repairs
 import extension_packages
+import extension_state
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -219,7 +220,7 @@ def command_post(args: argparse.Namespace) -> int:
         extra["TOPIC-TITLE"] = explicit_title
     if args.content_type:
         extra["CONTENT-TYPE"] = args.content_type
-    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file), ("UI", getattr(args, "ui_file", None)), ("EXTENSION", getattr(args, "extension_file", None)), ("EXTENSION-ANSWER", getattr(args, "extension_answer_file", None))):
+    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file), ("UI", getattr(args, "ui_file", None)), ("EXTENSION", getattr(args, "extension_file", None)), ("EXTENSION-ANSWER", getattr(args, "extension_answer_file", None)), ("INFORMATION", getattr(args, "information_file", None))):
         if file:
             try:
                 raw = Path(file).read_text(encoding="utf-8")
@@ -253,6 +254,7 @@ def command_post(args: argparse.Namespace) -> int:
     except ValueError as exc:
         raise BoardError(str(exc)) from exc
     extension_packages.validate_message(board, path, header_map, body, active=True)
+    extension_state.validate_message(board, path, header_map, body, active=True)
     headers.extend(f"{key}: {value}" for key, value in extra.items())
     payload = ("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n").encode("utf-8")
     temporary = directory / (".message-" + uuid.uuid4().hex + ".tmp")
@@ -354,6 +356,12 @@ def check_message(path, board, config, known, source_path=None, require_semantic
         raw = extension_packages.read_file(source_path).decode("utf-8")
         try:
             extension_packages.validate_message(board, path, headers, raw.replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2])
+        except extension_packages.ExtensionUnavailable:
+            if require_semantics: raise
+    if "INFORMATION" in headers or "EXTENSION-ANSWER" in headers:
+        raw = extension_packages.read_file(source_path).decode("utf-8")
+        try:
+            extension_state.validate_message(board, path, headers, raw.replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2])
         except extension_packages.ExtensionUnavailable:
             if require_semantics: raise
     return headers
@@ -627,6 +635,7 @@ def command_repair(args):
             draft = Path(tmp) / "draft.txt"; draft.write_bytes(raw)
             check_message(replacement, board, config, known, source_path=draft, require_semantics=True)
             extension_packages.validate_message(board, replacement, headers, raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2], active=True)
+            extension_state.validate_message(board, replacement, headers, raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n").partition("\n---\n")[2], active=True)
         directory.mkdir(exist_ok=True)
         with replacement.open("xb") as handle: handle.write(raw)
         record["replacement"] = replacement.relative_to(board).as_posix()
@@ -696,7 +705,9 @@ def parser() -> argparse.ArgumentParser:
     guidance.set_defaults(func=command_guidance)
     post.add_argument("--extension-file", help="Pinned EXTENSION envelope JSON")
     post.add_argument("--extension-answer-file", help="Source-bound EXTENSION-ANSWER envelope JSON")
+    post.add_argument("--information-file", help="INFORMATION JSON: inert provenance and optional pinned shared state")
     extension_packages.add_parser(commands)
+    extension_state.add_parser(commands)
     return cli
 
 
