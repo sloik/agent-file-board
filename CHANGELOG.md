@@ -1,5 +1,15 @@
 # Release notes
 
+## Unreleased
+
+- Start the offline extension package foundation: bounded self-contained JSON
+  artifacts, optional convention/UI facets, version ranges/exclusions, exact
+  integrity and retained snapshots, and read-only agent discovery. Explicit
+  install/disable operations never execute renderer code or approve it.
+- Add creator documentation, a fictional convention-only approval package and
+  shared-ready schema/version fixtures. Viewer SDK/runtime and extension message
+  semantics remain subsequent work; released convention version is unchanged.
+
 ## 2.4.0 — 2026-10-18
 
 - Add form v3 conditional fields/options and typed cross-field comparisons.

@@ -15,6 +15,7 @@ import board_presence
 import board_upgrade
 import board_guidance
 import message_repairs
+import extension_packages
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -682,6 +683,7 @@ def parser() -> argparse.ArgumentParser:
     guidance.add_argument("--topic")
     guidance.add_argument("--max-bytes", type=int, default=16384)
     guidance.set_defaults(func=command_guidance)
+    extension_packages.add_parser(commands)
     return cli
 
 

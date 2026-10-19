@@ -21,6 +21,13 @@ See [the report/form examples and offline demo](examples/openui-report/README.md
 Upgrade CLI, board-loop and viewer together before posting reports; existing
 messages need no rewrite.
 
+## Local extension packages — source preview
+
+The [extension package foundation](docs/EXTENSIONS.md) adds offline
+inspect/install/list/describe/disable commands and verified contract discovery.
+It does not yet execute plugins or extend message rendering. The complete
+viewer SDK and extension message contracts remain in development.
+
 ## Safe metadata upgrades
 
 `boardctl upgrade --path /path/to/project` previews changes to the bundled
@@ -44,7 +51,7 @@ The included configuration defaults all messages and project artifacts to Englis
 ## Bootstrap with `boardctl`
 
 The repository includes a Python-standard-library CLI. Clone this repository and
-run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py`, `static_reports.py`, `extended_static_reports.py`, `form_contract.py` and the
+run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py`, `static_reports.py`, `extended_static_reports.py`, `form_contract.py`, `extension_packages.py` and the
 `.agent-board/` template together when installing the CLI):
 
 ```bash

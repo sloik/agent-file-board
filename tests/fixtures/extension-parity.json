@@ -1,0 +1,23 @@
+{
+  "format": 1,
+  "versions": [
+    {"constraint": {"range": ">=1.0.0 <2.0.0"}, "version": "1.9.12", "supported": true},
+    {"constraint": {"range": ">=1.0.0 <2.0.0"}, "version": "2.0.0", "supported": false},
+    {"constraint": {"range": ">=1.0.0 <=2.0.0", "exclude": ["1.5.0"]}, "version": "1.5.0", "supported": false},
+    {"constraint": {"range": "=1.2.3"}, "version": "1.2.3", "supported": true},
+    {"constraint": {"range": ">1.2.3"}, "version": "1.2.3", "supported": false}
+  ],
+  "values": [
+    {"schema": {"type": "string", "maxLength": 1}, "value": "🦊", "valid": true},
+    {"schema": {"type": "string", "maxLength": 1}, "value": "🦊x", "valid": false},
+    {"schema": {"type": "integer"}, "value": true, "valid": false},
+    {"schema": {"type": "integer"}, "value": 1.5, "valid": false},
+    {"schema": {"type": "integer", "enum": [1]}, "value": 1.0, "valid": true},
+    {"schema": {"type": "boolean", "enum": [true]}, "value": 1, "valid": false},
+    {"schema": {"type": "number"}, "value": 9007199254740992, "valid": false},
+    {"schema": {"type": "string", "maxLength": 3, "nullable": true}, "value": null, "valid": true},
+    {"schema": {"type": "array", "items": {"type": "integer"}, "maxItems": 2}, "value": [1, 2, 3], "valid": false},
+    {"schema": {"type": "object", "properties": {"label": {"type": "string", "maxLength": 4}}, "required": ["label"], "additionalProperties": false}, "value": {"label": "ok"}, "valid": true},
+    {"schema": {"type": "object", "properties": {}, "additionalProperties": false}, "value": {"extra": 1}, "valid": false}
+  ]
+}
