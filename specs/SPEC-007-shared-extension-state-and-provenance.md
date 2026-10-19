@@ -168,7 +168,7 @@ Parent canonical full suite:137 tests OK. Viewer full JavaScript/browser suite
 309 passed, then final immutable-verification cache regression added and28focused
 controls passed. UI Python36 passed after exact local source tag was created;
 release consistency check UI2.6.0/standard2.6.0 passed. Final combined viewer
-runner result is recorded in UI docs/validation/shared-information-2.6.0.md.
+runner passes310JavaScript/browser plus36Python checks; result is recorded in UI docs/validation/shared-information-2.6.0.md.
 
 Actual file-page native and uploaded boards cover two references refreshing,
 immutable recorded bytes, inert commands, missing/malformed sources, independent
