@@ -305,21 +305,31 @@ def item_reading(item, extension):
 
 def check_recorded(board, item, extension, scope, active=False):
     t = item['tracking']
+    # An unavailable or damaged optional store cannot establish that immutable
+    # message metadata was invalid. Only compare meanings after verifying bytes.
     try:
-        d, dh = checked_definition(board, t['artifact'], t['definition'], scope)
-    except FileNotFoundError:
-        raise ext.ExtensionUnavailable('extensions: recorded state definition unavailable')
+        directory = state_directory(board, t['artifact'])
+        raw = ext.read_file(directory / 'definition.json', MAX_BYTES)
+        require(digest(raw) == t['definition'], 'recorded definition hash differs')
+        d = validate_definition(ext.parse(raw, MAX_BYTES))
+    except (ValueError, OSError, UnicodeError, KeyError, TypeError) as exc:
+        raise ext.ExtensionUnavailable('extensions: recorded state definition unavailable') from exc
+    dh = t['definition']
+    require(d['id'] == t['artifact'], 'recorded definition identity differs')
+    physical_scope(board, d['scope'])
+    require(d['scope'] == scope, 'state scope differs')
     if item.get('target') == 'extension-data':
         require(d.get('contract') == {k: extension[k] for k in ('package', 'contract', 'contractVersion', 'contractDigest')}, 'tracked contract differs from EXTENSION')
-    path = state_directory(board, t['artifact']) / 'revisions' / (t['revision'] + '.json')
     try:
-        raw = ext.read_file(path, MAX_BYTES)
-    except FileNotFoundError:
-        raise ext.ExtensionUnavailable('extensions: recorded revision unavailable')
-    require(digest(raw) == t['revision'], 'recorded revision hash differs')
-    revision = validate_revision(ext.parse(raw, MAX_BYTES))
+        raw = ext.read_file(directory / 'revisions' / (t['revision'] + '.json'), MAX_BYTES)
+        require(digest(raw) == t['revision'], 'recorded revision hash differs')
+        revision = validate_revision(ext.parse(raw, MAX_BYTES))
+        validate_typed(board, d, revision, active=active)
+    except (ValueError, OSError, UnicodeError, KeyError, TypeError) as exc:
+        raise ext.ExtensionUnavailable('extensions: recorded revision unavailable') from exc
     require(revision['artifact'] == t['artifact'] and revision['definition'] == dh, 'recorded revision identity differs')
-    validate_typed(board, d, revision, active=active)
+    if not d['scope'].startswith('rooms/'):
+        require(revision['author'] in d['scope'].split('/')[1].split('--'), 'recorded revision author outside direct scope')
     require(equal_json(revision['reading'], item_reading(item, extension)), 'recorded snapshot differs from pinned revision')
 
 

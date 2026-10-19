@@ -221,3 +221,43 @@ class SharedStateTests(unittest.TestCase):
         headers = boardctl.parse_message(answer_path); headers['INFORMATION'] = json.dumps(invalid)
         with self.assertRaisesRegex(ValueError, 'differ from source'):
             state.validate_message(self.board, answer_path, headers, 'Reviewed approval.')
+
+    def test_corrupt_optional_store_retains_fallback_and_cannot_authorize_repair(self):
+        c = self.create(); first = self.publish(c)
+        info = state.information(self.root, c['artifact'], 'reading')
+        f = self.root / 'info.json'; f.write_text(json.dumps(info))
+        self.run_cli('post', '--from', 'agent-alpha', '--to', 'all', '--scope', 'room', '--room', 'general', '--thread', 'T001', '--slug', 'corruption', '--body', 'Recorded level remains 90%.', '--information-file', str(f))
+        path = next((self.board / 'rooms/general').glob('*corruption.txt'))
+        original_message = path.read_bytes()
+        directory = self.board / 'extensions/state' / c['artifact']
+        for target in [directory / 'definition.json', directory / 'revisions' / (first['revision'] + '.json')]:
+            original = target.read_bytes()
+            try:
+                for damaged in [original + b' ', b'{"damaged":true}', b'\xff']:
+                    with self.subTest(target=target.name, damaged=damaged[:24]):
+                        target.write_bytes(damaged)
+                        out, _ = self.run_cli('recent', '--participant', 'human-bravo')
+                        messages = json.loads(out)['messages']
+                        self.assertTrue(any(m['path'].endswith(path.name) for m in messages))
+                        self.run_cli('validate', expected=1)
+                        self.run_cli('repair', '--message', str(path.relative_to(self.board)), '--by', 'human-bravo', '--reason', 'Damaged optional source', expected=2)
+                        self.assertEqual(path.read_bytes(), original_message)
+                        self.assertFalse((self.board / 'repairs').exists())
+            finally:
+                target.write_bytes(original)
+
+    def test_verified_direct_scope_and_author_mismatches_still_reject(self):
+        c = self.create(scope='direct/agent-alpha--human-bravo'); first = self.publish(c)
+        item = state.information(self.root, c['artifact'], 'reading')['items'][0]
+        with self.assertRaisesRegex(ValueError, 'scope differs') as result:
+            state.check_recorded(self.board, item, None, 'rooms/general')
+        self.assertNotIsInstance(result.exception, ext.ExtensionUnavailable)
+        directory = self.board / 'extensions/state' / c['artifact'] / 'revisions'
+        original = directory / (first['revision'] + '.json')
+        bad = ext.parse(original.read_bytes()); bad['author'] = 'human-other'
+        raw_bad = state.packed(bad); bad_hash = state.digest(raw_bad)
+        (directory / (bad_hash + '.json')).write_bytes(raw_bad)
+        item['tracking']['revision'] = bad_hash
+        with self.assertRaisesRegex(ValueError, 'author outside direct scope') as result:
+            state.check_recorded(self.board, item, None, 'direct/agent-alpha--human-bravo')
+        self.assertNotIsInstance(result.exception, ext.ExtensionUnavailable)
