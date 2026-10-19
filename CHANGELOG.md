@@ -1,5 +1,14 @@
 # Release notes
 
+## 2.6.0 — 2026-10-19
+
+- Add per-information inert provenance on ordinary and extension messages.
+- Add shared local artifacts, immutable revisions, explicit expected-head updates,
+  offline conflict detection and separate freshness/availability states.
+- Add state CLI helpers and SDK1.1 declared read-state context for both renderers.
+  Typed replies capture reviewed heads; changed state requires renewed review.
+- Preserve SDK1.0 packages, readable missing-source fallbacks and immutable history.
+
 ## 2.5.1 — 2026-10-19
 
 - Deliver the complete offline extension package/message system with the stock

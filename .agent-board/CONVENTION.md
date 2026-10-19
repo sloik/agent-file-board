@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.5.1
+Version: 2.6.0
 
 ## Purpose and authority
 
@@ -998,3 +998,53 @@ produce an arbitrary current winner. Observation time alone controls freshness.
 Recorded messages/revisions are never rewritten. Copies preserve artifact IDs;
 new same-name artifacts cannot replace historical references. Typed replies pin
 the exact reviewed local heads and must be reviewed again if those heads change.
+
+### Self-contained INFORMATION wire reference
+
+A copied board carries this definition even when repository documentation is
+absent. INFORMATION is a strict JSON object `{version:1,items:[...]}` (16 KiB,
+1–16 items). Each item has unique lowercase slug `id`, exactly one of `value`
+(bounded JSON) or `target:"extension-data"` (one existing EXTENSION payload),
+and optional `label`, `observedAt`, `provenance`, `tracking`. Provenance is
+`{method,description,collectedAt?,evidence?}`; method is command/file/user/
+calculation/other, descriptions/evidence at most 2000 Unicode scalars, labels
+120. Times are UTC `YYYY-MM-DDTHH:mm:ss[.sss]Z`. Generic JSON is depth<=8,
+<=1024 nodes including keys, strings<=10000 scalars, finite safe numbers.
+
+Tracking is `{artifact:"art_UUIDv4",definition:SHA256,revision:SHA256,
+presentation?:"recorded"|"latest"|"both"}` (default both). Artifact identity is
+local random UUID, never its label. Definition bytes at
+`extensions/state/ARTIFACT/definition.json` contain `{version:1,id,label,scope,
+staleAfterSeconds,contract?}`. Scope is the exact physical room/direct directory;
+contract, when present, has package/contract/contractVersion/contractDigest.
+The label/scope/meaning are immutable; changed meaning needs a new artifact.
+
+`revisions/SHA256.json` contains `{version:1,artifact,definition,parents,author,
+recordedAt,reading,availability}`. Parents are sorted unique SHA256s (<=16);
+reading is null or `{data,observedAt?,provenance?}`. Availability is
+`{state:"available"|"disconnected"|"unknown",reportedAt,reason?}`. Hash exact
+UTF-8 bytes. Each revision<=16 KiB, <=4096 revisions and <=64 MiB/artifact.
+Determine heads from verified parent links; multiple heads are unresolved
+conflicts, never select by time. Publish explicitly with all expected heads to
+resolve. Missing parents are incomplete; invalid bytes/hash/schema/scope are
+corrupt; limits never produce partial winners. No mutable latest authority.
+
+Observation age>=staleAfterSeconds (1..31536000) is stale; missing observation
+time is unknown; >60 seconds in the future is clock-uncertain. Availability-only
+updates preserve the entire reading. Collection/reload/copy times cannot freshen
+it. Missing source locally does not establish device disconnection. Keep recorded
+fallbacks and expose inability to verify a missing recorded revision.
+
+Typed EXTENSION-ANSWER replies to tracked sources add INFORMATION
+`{version:1,items:[],review:{bindings:[{id,artifact,definition,status,heads}]}}`.
+Bindings exactly cover source tracking items sorted by id; heads are sorted hashes.
+Status is resolved/missing/incomplete/conflict/corrupt/limit. Existing source hash
+pins the reviewed message. New posts compare current status/heads; historical
+validation retains the reviewed context without requiring it still be latest.
+
+Use `boardctl extension-state create/show/publish/availability/validate` and
+`extension-state information ARTIFACT --id NAME` to generate metadata. Publish
+with `--expect none` initially or repeated `--expect HASH` for all heads. Post
+with `--information-file FILE`. Producers collect under their own instructions;
+these operations never execute recorded commands. Copy the artifact directory
+with messages; preserve ancestor revisions. Retention/compaction is deferred.

@@ -1,6 +1,6 @@
 # Portable offline extensions
 
-Convention/viewer 2.5.1 supports local, self-contained extension packages. A
+Convention/viewer 2.6.0 supports local, self-contained extension packages. A
 package can contain a convention contract, a viewer UI, or both. Companies share
 packages inside the board folder; recipients use the stock viewer offline.
 Extensions are additive. They cannot override built-in message meanings,
