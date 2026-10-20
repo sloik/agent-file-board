@@ -49,7 +49,8 @@ Existing packages restricted to exactly SDK 1.0 or 1.1 remain usable unchanged
 when they do not request capabilities newer than those versions. `read-state`
 requires at least SDK 1.1; `refresh` requires SDK 1.2. Respect exclusions and bounds.
 
-SDK 1.2 renderers receive host-owned context in addition to their existing inputs:
+Renderers declaring `refresh` receive host-owned context in addition to their
+existing inputs:
 
 ```json
 {
@@ -103,7 +104,10 @@ of missed intervals. Disposal, source/context changes, board switch and approval
 revocation cancel jobs and invalidate their results. A worker failure/timeout
 stops its automatic work until explicit retry; no endless retry loop. User actions
 must not fail just because a scheduled job occupies the renderer; queue/coalesce
-without unbounded work. Timers in background tabs may be delayed, and a closed
+without unbounded work. Timer/resume redraws must defer while a component input
+is being edited, including when focus arrives during an active job. Coalesce the
+pending work until editing ends; preserve uncommitted text and focus. Timers in
+background tabs may be delayed, and a closed
 page runs nothing. Refresh support never establishes producer liveness.
 
 Stock policy retains the existing maximum eight active jobs, one-second deadline,

@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.6.1
+Version: 2.7.0
 
 ## Purpose and authority
 
@@ -882,6 +882,7 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 2.7.0 — 2026-10-20: Portable SDK1.2 refresh lifecycle, bounded local diagnostics and exact-package component approval visibility. Collection stays external; existing messages and SDK1.0/1.1 packages remain compatible.
 - 2.0.0 — 2026-10-18: Optional versioned UI report data, strict bounded component validation and readable body fallback; upgrade CLI/skill/viewer together. Existing messages remain valid.
 - 1.9.2 — 2026-10-16: Define explicit local document/folder references and optional viewer-owned open actions.
 - 1.9.1 — 2026-10-16: Ignore Finder `.DS_Store` entries throughout board processing without weakening validation of other metadata.

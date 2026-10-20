@@ -41,6 +41,12 @@
 
 ## Unreleased
 
+- Define SDK1.2 component refresh capabilities, host lifecycle obligations and
+  bounded structured diagnostics for stock and third-party viewers. Preserve
+  SDK1.0/1.1 packages, immutable observations and exact-package local approval.
+- Add portable refresh examples and a reference architecture separating source
+  collection, shared artifacts, board reads and component execution.
+
 - Start the offline extension package foundation: bounded self-contained JSON
   artifacts, optional convention/UI facets, version ranges/exclusions, exact
   integrity and retained snapshots, and read-only agent discovery. Explicit
