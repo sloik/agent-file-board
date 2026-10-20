@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 2.10.0 — 2026-10-20
 
 - Add optional informational agent `operator` links to registered human IDs.
 - Validate new CLI registrations before writing; diagnose broken existing links

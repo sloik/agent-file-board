@@ -203,7 +203,7 @@ No live challenge is needed for this feature.
 
 ## Optional human operator for agents
 
-Implementation note (SPEC-002-027, unreleased): the informational registry field,
+Implementation note (SPEC-002-027, version 2.10.0): the informational registry field,
 CLI validation and UI participant-details label are implemented. Current details
 reflect the latest registry only. Signed profiles, historical signed snapshots,
 human endorsement and key-possession checks below remain architecture proposals;
