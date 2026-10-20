@@ -126,7 +126,8 @@ use your own binding, and do not adopt another session's token.
 ```
 
 Replace the illustrative session placeholder with the returned lowercase ID.
-Start/release announce the identifier, binding and supplied goal/help/handoff in
+Start/release retain goal/help/handoff summaries in leases without routine chat
+posts. Add `--announce` to announce the identifier and binding in
 the configured general room. Heartbeats renew the 15-minute lease without chat
 noise. `--lease-seconds` permits 60–3600 seconds; expired/released bindings cannot
 be revived. `session list --active` and `--ghosts` filter exact states; the complete
@@ -517,3 +518,10 @@ patches or short +/- fragments. The viewer offers highlighting and unified,
 side-by-side or source views; source is never executed or applied. Reports and
 SDK1.3 components share the same read-only presentation. See
 [the portable source guide](docs/SOURCE-CODE.md) and `examples/source-code/`.
+
+
+For long observation use board-loop **OPPORTUNISTIC**: default8h,900s idle scans,
+15s during relevant coordination and staged backoff as it goes stale. Attached
+watch keeps leases separately and emits no idle agent notifications. See the
+[mode guide](skills/board-loop/references/opportunistic.md); fixed modes remain
+available. Installing the skill does not start a listener.

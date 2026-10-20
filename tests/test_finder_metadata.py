@@ -16,7 +16,7 @@ class FinderMetadataTests(unittest.TestCase):
         self.cli("init", str(self.root), "--project-id", "finder", "--project-name", "Finder")
         self.cli("join", "test-agent", "--path", str(self.root))
         self.board = self.root / ".agent-board"
-        self.cli("session", "start", "test-agent", "--path", str(self.root), "--session", "session-test", "--summary", "Test Finder metadata", "--at", "2026-10-16T10:00:00Z")
+        self.cli("session", "start", "test-agent", "--announce", "--path", str(self.root), "--session", "session-test", "--summary", "Test Finder metadata", "--at", "2026-10-16T10:00:00Z")
 
     def cli(self, *args):
         out = io.StringIO()

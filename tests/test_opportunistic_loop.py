@@ -92,6 +92,11 @@ class OpportunisticTests(unittest.TestCase):
         self.assertEqual(self.tick(1003)['observation']['new_relevant_total'], 1)
         self.assertEqual(self.tick(2000)['interval_seconds'], 900)
         self.assertEqual(len(self.tick(2001)['pending_actions']), 1)
+        self.record(got['messages'][0], 'blocked', 'Waiting on a dependency')
+        self.assertEqual(self.tick(2002)['interval_seconds'], 900)
+        self.post('dependency-arrived')
+        self.assertEqual(self.tick(2003)['interval_seconds'], 15)
+        self.assertEqual(self.tick(2004)['pending_actions'][0]['action']['disposition'], 'blocked')
 
     def test_default_lifecycle_is_quiet_with_opt_in_notices_and_idempotent_release(self):
         start = self.args('session-start', '--session', 'quiet-one', '--runtime', 'test', '--summary', 'Observe scoped coordination')
@@ -119,7 +124,7 @@ class OpportunisticTests(unittest.TestCase):
         def snapshot(args):
             self.assertTrue(args._lease_keeper)
             scans.append(clock[0])
-            return {'interval_seconds':900, 'observation':{'emit':len(scans)==1}}
+            return {'interval_seconds':900, 'observation':{'emit':False}}
         def session(args): beats.append((args.command, clock[0])); return {}
         def sleep(seconds): sleeps.append(seconds); clock[0] += seconds
         with patch.object(loop, 'snapshot', side_effect=snapshot), patch.object(loop, 'session_command', side_effect=session):

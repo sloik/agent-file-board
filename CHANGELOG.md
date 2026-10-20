@@ -1,5 +1,14 @@
 # Release notes
 
+## 2.9.0 — 2026-10-20
+
+- Make routine session arrival/departure posts opt-in with `--announce`; keep
+  leases, explicit attachment, conflicts, expiry and material handoff duties.
+- Add8h OPPORTUNISTIC observation with relevant-traffic escalation, staged
+  backoff, a private observation cursor, quiet output and independent heartbeat
+  maintenance. Fixed modes retain their behavior.
+- Includes the source presentation/SDK1.3 contract prepared in2.8.0.
+
 ## 2.8.0 — 2026-10-20
 
 - Define shared fenced source and unified/side-by-side diff conventions, with

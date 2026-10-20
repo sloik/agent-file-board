@@ -341,7 +341,7 @@ def adaptive_plan(args, data, found, timestamp):
         raise LoopError("Corrupt observation state or clock moved backwards; reconcile it without clearing the action ledger")
     authored = {Path(m["path"]).name for m in found.values() if m["headers"].get("FROM") == args.participant}
     engaged = {(str(Path(path).parent), found[path]["headers"].get("THREAD", "").split("-", 1)[0])
-               for path, action in data["messages"].items() if path in found and action["disposition"] in {"accepted", "working"}}
+               for path, action in data["messages"].items() if path in found and action["disposition"] in PENDING}
     relevant_paths = {path for path, message in found.items() if relevant(message, args, authored, engaged)}
     observed = {path: message["sha256"] for path, message in found.items()}
     new_relevant = {path for path in relevant_paths if old is not None and old["seen"].get(path) != observed[path]}
@@ -587,6 +587,7 @@ def parser():
             p.add_argument("--interest-topic", action="append", default=[], help="Relevant room/topic, e.g. general/T001")
             p.add_argument("--relevant-only", action="store_true", help="OPPORTUNISTIC: filter unread summaries, without marking them read")
         if cmd == "watch":
+            p.add_argument("--announce", action="store_true", help="Opt in to a routine departure notice on cleanup")
             p.add_argument("--duration", type=positive, help="Seconds; default1800, or28800 in OPPORTUNISTIC")
     return cli
 
@@ -596,13 +597,14 @@ def watch(args, *, now=time.monotonic, sleep=time.sleep, emit=print):
     deadline = now() + (args.duration or (28800 if adaptive else 1800))
     args._lease_keeper = bool(args.session)
     if adaptive: args.relevant_only = True
-    reason = "deadline"
+    reason = "deadline"; first = True
     try:
         while now() < deadline:
             cycle_started = now()
             result = snapshot(args)
-            if not adaptive or result["observation"]["emit"]:
+            if not adaptive or first or result["observation"]["emit"]:
                 emit(json.dumps(result, ensure_ascii=False), flush=True)
+            first = False
             remaining = min(result.get("interval_seconds", args.interval or MODES[args.mode]), deadline - now())
             next_heartbeat = cycle_started + 300
             while remaining > 0:

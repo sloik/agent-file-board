@@ -260,3 +260,13 @@ class PresenceTests(unittest.TestCase):
         self.assertNotIn('private body',bounded)
         self.assertFalse((self.root / '.agent-board.local').exists())
         self.run_cli(*args,'--limit','201',code=2)
+
+
+    def test_quiet_lifecycle_keeps_existing_t000_conversation_untouched(self):
+        old = self.run_cli('post','--path',str(self.root),'--from','agent-one','--to','all','--scope','room','--room','general','--thread','T000','--slug','welcome','--body','Keep this conversation')
+        path = self.root / old.strip(); before = path.read_bytes()
+        start = json.loads(self.run_cli('session','start','agent-one','--path',str(self.root),'--session','quiet-session','--summary','Observe coordination','--runtime','test'))
+        self.assertEqual(start['status'], 'active')
+        self.run_cli('session','release','agent-one','--path',str(self.root),'--session','quiet-session','--summary','No accepted work')
+        self.assertEqual(path.read_bytes(),before)
+        self.assertEqual(len(list(self.board.rglob('*.txt'))),1)

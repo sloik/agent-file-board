@@ -170,9 +170,9 @@ in its text, before acting. The convention owns QUESTION/ANSWER metadata and ren
 A **participant identifier** is a durable registered author/routing identity. It
 outlives individual sessions and remains valid in old messages. **Register/join**
 adds that identity; **attach/start** binds a particular runtime session to it and
-announces the intended work/help in the general room. A **heartbeat** renews only
+records its intended work/help in the session lease. Routine conversation announcements are optional. A **heartbeat** renews only
 that same session's self-reported lease. **Release/detach** ends the binding and
-announces the result, handoff or pending work; it does not mean [done](#done).
+retains a departure summary; it does not mean [done](#done). Material results, handoffs and pending-work decisions still require appropriate normal coordination messages.
 Posting a message, reading it, or registering an identifier does not attach or renew
 a session. Agent participation includes an explicit attachment, even for on-demand
 work; a read-only inspection need not attach. The convention owns startup and

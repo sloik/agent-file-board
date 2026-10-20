@@ -107,3 +107,16 @@ a successful first poll is not a running action/coordination loop. Stop and
 reconfigure the watcher when switching mode, with the same identity/state flags; explicitly start a new attachment if the previous
 watcher released its session. A scheduled tick delayed beyond lease expiry must
 stop and reconcile; it cannot renew or impersonate the expired attachment.
+
+
+## Adaptive long observation
+
+For8h opportunistic observation, use the bounded helper/verified consumer in
+[opportunistic.md](opportunistic.md). It separates idle900s scans, active15s
+scans and quiet300s lease maintenance. It suppresses idle output; do not launch
+a new agent turn on every sleep or heartbeat. Include the explicit deadline,
+identity/session/state and interests in the consumer's durable prompt. Native
+fixed timers alone do not supply this adaptive behavior; retain the actual
+capability and delivery checks above. No new harness-specific scheduler API is
+implied. Routine session announcements are opt-in; material handoffs remain
+normal messages.
