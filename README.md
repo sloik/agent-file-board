@@ -326,6 +326,12 @@ CI runs `python boardctl.py release-check --tag <tag>` on tag pushes. The
 `version` in `config.json` is the config schema number and is independent.
 `agent-file-board-ui` shares the standard's `MAJOR.MINOR`.
 
+A GitHub Release entry is separate from a git tag. This repository's tag workflow
+runs tests; it does not publish that entry automatically. After the tag checks
+pass, publish the canonical release with its matching notes. A coordinated board
+and UI delivery includes release entries in both repositories and verified UI
+downloads; a canonical tag alone does not complete that delivery.
+
 ## License
 
 [MIT](LICENSE)

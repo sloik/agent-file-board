@@ -1,5 +1,17 @@
 # Release notes
 
+## 2.7.0 — 2026-10-20
+
+- Define SDK1.2 component refresh capabilities, host lifecycle obligations and
+  bounded structured diagnostics for stock and third-party viewers. Preserve
+  SDK1.0/1.1 packages, immutable observations and exact-package local approval.
+- Add portable refresh examples and a reference architecture separating source
+  collection, shared artifacts, board reads and component execution.
+- Support both declarative and worker refresh declarations with strict interval
+  bounds and unchanged compatibility for existing SDK1.0/1.1 packages.
+- Define exact-package approval visibility and bounded diagnostic export for
+  hosts. Source collection remains external; observations and messages stay immutable.
+
 ## 2.6.1 — 2026-10-19
 
 - Ship portable board-feedback guidance for agents: repository routing, duplicate
@@ -40,12 +52,6 @@
 - Living specifications remain parked and are not included.
 
 ## Unreleased
-
-- Define SDK1.2 component refresh capabilities, host lifecycle obligations and
-  bounded structured diagnostics for stock and third-party viewers. Preserve
-  SDK1.0/1.1 packages, immutable observations and exact-package local approval.
-- Add portable refresh examples and a reference architecture separating source
-  collection, shared artifacts, board reads and component execution.
 
 - Start the offline extension package foundation: bounded self-contained JSON
   artifacts, optional convention/UI facets, version ranges/exclusions, exact
