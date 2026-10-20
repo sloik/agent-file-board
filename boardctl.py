@@ -502,7 +502,7 @@ def command_session(args: argparse.Namespace) -> int:
         import io
         with contextlib.redirect_stdout(io.StringIO()):
             command_post(post)
-    record = board_presence.mutate(board, args.participant_id, args.session, args.session_action, now, summary=args.summary, runtime=args.runtime, lease=args.lease_seconds, notice=notice, known=known)
+    record = board_presence.mutate(board, args.participant_id, args.session, args.session_action, now, summary=args.summary, runtime=args.runtime, lease=args.lease_seconds, notice=notice if getattr(args, "announce", False) else None, known=known)
     print(json.dumps(record, ensure_ascii=False))
     return 0
 
@@ -689,6 +689,8 @@ def parser() -> argparse.ArgumentParser:
             sub.add_argument("--summary", required=action in {"start", "release"})
             sub.add_argument("--runtime", default="unknown")
             sub.add_argument("--lease-seconds", type=int, default=900)
+            if action in {"start", "release"}:
+                sub.add_argument("--announce", action="store_true", help="Post an optional routine arrival/departure notice")
         sub.set_defaults(func=command_session)
     recent = commands.add_parser("recent")
     recent.add_argument("--path", default="."); recent.add_argument("--participant", dest="participant_id", required=True)

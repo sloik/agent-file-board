@@ -226,10 +226,10 @@ class SessionAttachmentTests(unittest.TestCase):
     record = BoardLoopTests.record
     # Reuse fixture utilities, without replaying the inherited baseline tests.
     def start(self, session="session-alpha"):
-        return loop.session_command(self.args("session-start", "--session", session, "--runtime", "codex", "--summary", "Fix release tests; can help with Python; need review"))
+        return loop.session_command(self.args("session-start", "--announce", "--session", session, "--runtime", "codex", "--summary", "Fix release tests; can help with Python; need review"))
 
     def release(self, session="session-alpha"):
-        return loop.session_command(self.args("session-release", "--session", session, "--summary", "Stopping; test fix ready; reviewer owns review"))
+        return loop.session_command(self.args("session-release", "--announce", "--session", session, "--summary", "Stopping; test fix ready; reviewer owns review"))
 
     def lease_path(self, session="session-alpha"):
         return self.root / ".agent-board/presence/alpha-agent" / f"{session}.json"

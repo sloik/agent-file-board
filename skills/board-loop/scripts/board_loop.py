@@ -15,7 +15,7 @@ import tempfile
 import time
 from datetime import datetime, timezone
 
-MODES = {"FAST": 15, "MEDIUM": 60, "LONG": 300}
+MODES = {"FAST": 15, "MEDIUM": 60, "LONG": 300, "OPPORTUNISTIC": 900}
 DISPOSITIONS = ("observed", "accepted", "working", "blocked", "done", "declined")
 PENDING = {"accepted", "working", "blocked"}
 ID = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
@@ -178,6 +178,7 @@ def session_command(args):
                 raise LoopError("A private attachment already exists; inspect/release it before explicitly starting another")
             words = ["session", "start", args.participant, "--summary", args.summary, "--runtime", args.runtime, "--lease-seconds", "900"]
             if args.session: words += ["--session", args.session]
+            if getattr(args, "announce", False): words += ["--announce"]
             result = ctl(args, *words)
             if (not isinstance(result.get("session"), str) or not ID.fullmatch(result["session"])
                     or result.get("participant") != args.participant or result.get("status") != "active"):
@@ -191,7 +192,9 @@ def session_command(args):
         current = owned_session(args, data)
         if args.command == "session-heartbeat":
             return renew(args, data)
-        result = ctl(args, "session", "release", args.participant, "--session", current["session"], "--summary", args.summary)
+        words = ["session", "release", args.participant, "--session", current["session"], "--summary", args.summary]
+        if getattr(args, "announce", False): words += ["--announce"]
+        result = ctl(args, *words)
         if result.get("session") != current["session"] or result.get("participant") != args.participant or result.get("status") != "released":
             raise LoopError("boardctl did not confirm release; retain the private attachment")
         data["released_session"] = current["session"]
@@ -309,13 +312,70 @@ def after_cursor(rows, cursor, all_paths):
     return [row for row in rows if positions[row["path"]] > before]
 
 
-def snapshot(args):
+def routine_notice(message):
+    h = message["headers"]
+    return (h.get("STATUS") == "INFO" and h.get("THREAD", "").split("-", 1)[-1] == "session-presence"
+            and re.match(r"Session (?:start|release): identifier ", message["body"]) is not None)
+
+
+def relevant(message, args, authored, engaged):
+    h = message["headers"]
+    if h.get("FROM") == args.participant or routine_notice(message): return False
+    if args.participant in re.split(r"[,\s]+", h.get("TO", "")): return True
+    if re.search(r"(?<![\w@.-])@" + re.escape(args.participant) + r"(?![\w-])", message["body"], re.I): return True
+    if h.get("REPLY-TO") in authored: return True
+    scope = (str(Path(message["path"]).parent), h.get("THREAD", "").split("-", 1)[0])
+    if scope in engaged: return True
+    if h.get("SCOPE") == "ROOM":
+        return (h.get("ROOM") in args.interest_room
+                or h.get("ROOM", "") + "/" + scope[1] in args.interest_topic)
+    return False
+
+
+def adaptive_plan(args, data, found, timestamp):
+    old = data.get("observation")
+    if old is not None and (not isinstance(old, dict) or not isinstance(old.get("seen"), dict)
+            or any(not isinstance(k, str) or not isinstance(v, str) or not re.fullmatch(r"[a-f0-9]{64}", v) for k, v in old["seen"].items())
+            or not isinstance(old.get("pending"), str) or not re.fullmatch(r"[a-f0-9]{64}", old["pending"])
+            or old.get("last_relevant") is not None and (not isinstance(old["last_relevant"], (float, int)) or not 0 <= old["last_relevant"] <= timestamp + 60)):
+        raise LoopError("Corrupt observation state or clock moved backwards; reconcile it without clearing the action ledger")
+    authored = {Path(m["path"]).name for m in found.values() if m["headers"].get("FROM") == args.participant}
+    engaged = {(str(Path(path).parent), found[path]["headers"].get("THREAD", "").split("-", 1)[0])
+               for path, action in data["messages"].items() if path in found and action["disposition"] in {"accepted", "working"}}
+    relevant_paths = {path for path, message in found.items() if relevant(message, args, authored, engaged)}
+    observed = {path: message["sha256"] for path, message in found.items()}
+    new_relevant = {path for path in relevant_paths if old is not None and old["seen"].get(path) != observed[path]}
+    pending = digest(json.dumps({path: action for path, action in data["messages"].items() if action["disposition"] in PENDING}, sort_keys=True).encode())
+    pending_changed = old is not None and old["pending"] != pending
+    last = old.get("last_relevant") if old else None
+    if new_relevant or pending_changed and any(a["disposition"] in {"accepted", "working"} for a in data["messages"].values()): last = timestamp
+    age = max(0, timestamp - last) if last is not None else float("inf")
+    idle = args.interval or MODES[args.mode]
+    phase, desired = ("active", min(15, idle)) if age < 120 else ("settling", min(60, idle)) if age < 300 else ("cooling", min(300, idle)) if age < 900 else ("idle", idle)
+    # A single attached poll has no independent lease keeper. Report its honest
+    # safe cadence; watch provides quiet heartbeat-only wakeups between scans.
+    interval = min(desired, 300) if args.session and not getattr(args, "_lease_keeper", False) else desired
+    data["observation"] = {"seen": observed, "pending": pending, "last_relevant": last}
+    attention = []
+    for path in reversed(list(found)):
+        if path not in new_relevant: continue
+        candidate = {"path": path, "sha256": found[path]["sha256"]}
+        if len(attention) >= args.limit or output_size(attention + [candidate]) > args.max_bytes // 4: break
+        attention.append(candidate)
+    return {"phase": phase, "desired_interval_seconds": desired, "interval_seconds": interval,
+            "heartbeat_seconds": 300 if args.session else None, "new_relevant_total": len(new_relevant),
+            "new_relevant": attention, "remaining_new_relevant": len(new_relevant) - len(attention),
+            "pending_changed": pending_changed, "emit": old is None or bool(new_relevant) or pending_changed,
+            "startup_baseline": old is None}, relevant_paths
+
+
+def snapshot(args, *, timestamp=None):
     root, board, config, known, identity, state = binding(args)
     with locked(state):
         data = ledger(state, identity)
         attachment = None
         if getattr(args, "session", None):
-            if (args.interval or MODES[args.mode]) > 300:
+            if args.mode != "OPPORTUNISTIC" and (args.interval or MODES[args.mode]) > 300:
                 raise LoopError("Attached action loops require an interval of at most 300 seconds")
             attachment = renew(args, data)
         found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None))
@@ -330,6 +390,10 @@ def snapshot(args):
         unseen = [m for m in recent if m["path"] not in data["messages"]]
         pending = [m for m in recent if data["messages"].get(m["path"], {}).get("disposition") in PENDING]
         unread_total, pending_total = len(unseen), len(pending)
+        adaptive = None
+        if args.mode == "OPPORTUNISTIC":
+            adaptive, relevant_paths = adaptive_plan(args, data, found, time.time() if timestamp is None else timestamp)
+            if args.relevant_only: unseen = [m for m in unseen if m["path"] in relevant_paths]
         unseen = after_cursor(unseen, args.before, all_paths)
         pending = after_cursor(pending, args.pending_before, all_paths)
         glossary = board / "GLOSSARY.md"
@@ -340,6 +404,10 @@ def snapshot(args):
                   "attachment": attachment, "repair_review_required": repair_review[:10], "repair_review_total": len(repair_review), "unread_total": unread_total, "pending_total": pending_total,
                   "messages": [], "pending_actions": [], "remaining_messages": len(unseen),
                   "remaining_pending": len(pending), "next_before": None, "next_pending_before": None}
+        if adaptive is not None:
+            result["observation"] = adaptive
+            result["interval_seconds"] = adaptive["interval_seconds"]
+            result["relevant_only"] = args.relevant_only
         base_size = output_size(result)
         if base_size >= args.max_bytes:
             raise LoopError("Output metadata exceeds --max-bytes; increase the budget")
@@ -361,6 +429,7 @@ def snapshot(args):
                 result[cursor] = None
         if (unseen or pending) and not result["messages"] and not result["pending_actions"]:
             raise LoopError("A summary exceeds --max-bytes; increase the budget")
+        if adaptive is not None: save(state, data)
         return result
 
 
@@ -476,6 +545,7 @@ def parser():
             p.add_argument("--session", required=cmd in {"session-heartbeat", "session-release"})
         if cmd in {"session-start", "session-release"}:
             p.add_argument("--summary", required=True)
+            p.add_argument("--announce", action="store_true", help="Opt in to a routine conversation notice")
         if cmd == "session-start":
             p.add_argument("--runtime", required=True)
         if cmd.startswith("session-"):
@@ -513,26 +583,44 @@ def parser():
             p.add_argument("--limit", type=page_limit, default=20)
             p.add_argument("--before", help="Next older unread page: last path from prior page")
             p.add_argument("--pending-before", help="Next older pending-action page")
+            p.add_argument("--interest-room", action="append", default=[], help="Room whose new traffic is relevant")
+            p.add_argument("--interest-topic", action="append", default=[], help="Relevant room/topic, e.g. general/T001")
+            p.add_argument("--relevant-only", action="store_true", help="OPPORTUNISTIC: filter unread summaries, without marking them read")
         if cmd == "watch":
-            p.add_argument("--duration", type=positive, default=1800)
+            p.add_argument("--duration", type=positive, help="Seconds; default1800, or28800 in OPPORTUNISTIC")
     return cli
 
 
 def watch(args, *, now=time.monotonic, sleep=time.sleep, emit=print):
-    deadline = now() + args.duration
+    adaptive = args.mode == "OPPORTUNISTIC"
+    deadline = now() + (args.duration or (28800 if adaptive else 1800))
+    args._lease_keeper = bool(args.session)
+    if adaptive: args.relevant_only = True
+    reason = "deadline"
     try:
         while now() < deadline:
-            emit(json.dumps(snapshot(args), ensure_ascii=False), flush=True)
-            remaining = min(args.interval or MODES[args.mode], deadline - now())
+            cycle_started = now()
+            result = snapshot(args)
+            if not adaptive or result["observation"]["emit"]:
+                emit(json.dumps(result, ensure_ascii=False), flush=True)
+            remaining = min(result.get("interval_seconds", args.interval or MODES[args.mode]), deadline - now())
+            next_heartbeat = cycle_started + 300
             while remaining > 0:
-                chunk = min(remaining, 60)
+                if args.session and now() >= next_heartbeat:
+                    heartbeat = argparse.Namespace(**vars(args)); heartbeat.command = "session-heartbeat"
+                    session_command(heartbeat)
+                    next_heartbeat = now() + 300
+                chunk = min(remaining, 60, next_heartbeat - now()) if args.session else min(remaining, 60)
                 sleep(chunk)
                 remaining = min(remaining - chunk, deadline - now())
         return 0
+    except BaseException:
+        reason = "interrupted" if isinstance(sys.exc_info()[1], KeyboardInterrupt) else "error"
+        raise
     finally:
+        primary_error = sys.exc_info()[0] is not None
         if args.session:
             # Preserve a primary polling failure, but always report cleanup failures.
-            primary_error = sys.exc_info()[0] is not None
             stop = argparse.Namespace(**vars(args))
             stop.command = "session-release"
             stop.summary = "Board listener stopped; pending action details remain in its private ledger; reconcile handoff with the owner."
@@ -542,6 +630,12 @@ def watch(args, *, now=time.monotonic, sleep=time.sleep, emit=print):
                 if not primary_error:
                     raise
                 print(f"board-loop: release failed: {exc}", file=sys.stderr)
+        if adaptive:
+            try:
+                emit(json.dumps({"event": "observation_stopped", "reason": reason, "mode": args.mode}), flush=True)
+            except Exception as exc:
+                if not primary_error: raise
+                print(f"board-loop: terminal delivery failed: {exc}", file=sys.stderr)
 
 
 def main(argv=None):

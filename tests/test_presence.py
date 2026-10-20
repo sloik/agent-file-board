@@ -29,7 +29,9 @@ class PresenceTests(unittest.TestCase):
         return out.getvalue()
 
     def action(self, action, *args, code=0):
-        return self.run_cli('session', action, 'agent-one', '--path', str(self.root), *args, code=code)
+        # These legacy lifecycle/rollback cases explicitly exercise announcements.
+        flags = ['--announce'] if action in {'start', 'release'} else []
+        return self.run_cli('session', action, 'agent-one', '--path', str(self.root), *args, *flags, code=code)
 
     def start(self, session='session-one'):
         return json.loads(self.action('start', '--session', session, '--summary', 'I will implement the API; need a reviewer.', '--runtime', 'codex', '--at', '2026-10-15T10:00:00Z'))
