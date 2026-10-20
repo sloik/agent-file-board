@@ -110,5 +110,20 @@
     "name": "empty",
     "text": "",
     "valid": false
+  },
+  {
+    "name": "orphan-new-header-after-hunk",
+    "text": "@@ -1 +1 @@\n-a\n+b\n+++ stray\n",
+    "valid": false
+  },
+  {
+    "name": "missing-new-header",
+    "text": "--- a/device.py\n@@ -1 +1 @@\n-a\n+b\n",
+    "valid": false
+  },
+  {
+    "name": "incomplete-file-header",
+    "text": "@@ -1 +1 @@\n-a\n+b\n--- a/device.py\n",
+    "valid": false
   }
 ]

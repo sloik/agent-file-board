@@ -323,7 +323,7 @@ or recorded history produces unavailable semantic validation; readable messages
 remain and unavailability alone cannot authorize repair/withdrawal. Known invalid
 wire or a known mismatching recorded snapshot remains invalid metadata.
 
-## SDK 1.2 lifecycle and diagnostics (unreleased)
+## SDK 1.2 lifecycle and diagnostics
 
 An extension is a package; a component is one rendered instance. The portable
 [extension lifecycle contract](EXTENSION-LIFECYCLE.md) defines periodic/manual

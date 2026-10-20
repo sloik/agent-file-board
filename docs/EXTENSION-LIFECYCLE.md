@@ -28,7 +28,7 @@ alongside stale/unknown/disconnected/conflicting states without inventing zero.
 ## Portable declarations and negotiation
 
 A package requesting refresh declares the `refresh` capability and SDK API
-compatibility including `1.2.0`. At least one renderer must declare exactly:
+compatibility including `1.2.0` or `1.3.0`. At least one renderer must declare exactly:
 
 ```json
 {"refresh":{"intervalSeconds":30}}
