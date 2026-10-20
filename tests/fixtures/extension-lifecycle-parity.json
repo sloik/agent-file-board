@@ -215,7 +215,8 @@
     "valid": false,
     "compatible": true,
     "exclude": [
-      "1.2.0"
+      "1.2.0",
+      "1.3.0"
     ],
     "refresh": {
       "intervalSeconds": 30
@@ -276,6 +277,45 @@
     ],
     "api": ">=1.0.0 <1.2.0",
     "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  },
+  {
+    "name": "worker-sdk13",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.3.0",
+    "valid": true,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  },
+  {
+    "name": "exact-sdk12-preserved",
+    "capabilities": [
+      "render",
+      "read-state"
+    ],
+    "api": "1.2.0",
+    "valid": true,
+    "compatible": true
+  },
+  {
+    "name": "refresh-sdk13-excludes-sdk12",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": ">=1.2.0 <2.0.0",
+    "exclude": [
+      "1.2.0"
+    ],
+    "valid": true,
     "compatible": true,
     "refresh": {
       "intervalSeconds": 30

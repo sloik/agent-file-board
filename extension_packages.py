@@ -12,7 +12,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
-API_VERSION = "1.2.0"
+API_VERSION = "1.3.0"
 MAX_PACKAGE = 4 * 1024 * 1024
 MAX_FILE = 1024 * 1024
 MAX_PACKAGES = 32
@@ -202,7 +202,7 @@ def decode_package(raw):
     caps = package["capabilities"]
     require(isinstance(caps, list) and all(isinstance(x, str) and x in {"render", "propose-reply", "read-state", "refresh"} for x in caps) and len(set(caps)) == len(caps), "unsupported capabilities; request additions through GitHub")
     if "refresh" in caps:
-        require(supports(package["compatibility"]["api"], "1.2.0"), "refresh requires SDK 1.2 compatibility")
+        require(supports(package["compatibility"]["api"], "1.2.0") or supports(package["compatibility"]["api"], API_VERSION), "refresh requires SDK 1.2 or later compatibility")
     require("convention" in package or "ui" in package, "at least one facet required")
     require(isinstance(package["files"], dict) and 1 <= len(package["files"]) <= 64, "file count limit")
     files = {}
@@ -338,6 +338,7 @@ def api_compatible(package):
     rule = package["compatibility"]["api"]
     caps = package["capabilities"]
     return (supports(rule, API_VERSION)
+            or supports(rule, "1.2.0")
             or ("refresh" not in caps and supports(rule, "1.1.0"))
             or ("refresh" not in caps and "read-state" not in caps and supports(rule, "1.0.0")))
 

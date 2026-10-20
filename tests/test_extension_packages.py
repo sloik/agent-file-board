@@ -297,6 +297,18 @@ class ExtensionLifecycleTests(unittest.TestCase):
                     decoded = ext.decode_package(raw(value))
                     self.assertEqual(ext.api_compatible(decoded["package"]), case["compatible"])
 
+    def test_source_review_sdk13_and_legacy12_compatibility(self):
+        package = Path(__file__).resolve().parents[1] / "examples/extensions/source-review.afb-plugin.json"
+        decoded = ext.decode_package(package.read_bytes())
+        self.assertTrue(ext.api_compatible(decoded["package"]))
+        self.assertEqual(ext.API_VERSION, "1.3.0")
+        self.assertEqual({r["mode"] for r in decoded["package"]["ui"]["renderers"]}, {"declarative", "worker"})
+        legacy = copy.deepcopy(decoded["package"])
+        legacy["compatibility"]["api"] = {"range": "1.2.0"}
+        self.assertTrue(ext.api_compatible(legacy))
+        legacy["compatibility"]["api"] = {"range": "1.4.0"}
+        self.assertFalse(ext.api_compatible(legacy))
+
     def test_lifecycle_examples_are_valid_without_execution(self):
         root = Path(__file__).resolve().parents[1]
         for name in ["lifecycle-worker", "lifecycle-declarative"]:

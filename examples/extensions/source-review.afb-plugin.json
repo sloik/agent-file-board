@@ -1,0 +1,87 @@
+{
+  "format": 1,
+  "id": "com.example.source-code",
+  "version": "1.0.0",
+  "name": "Source and patch review",
+  "compatibility": {
+    "convention": {
+      "range": ">=2.8.0 <3.0.0"
+    },
+    "api": {
+      "range": ">=1.3.0 <2.0.0"
+    }
+  },
+  "capabilities": [
+    "render"
+  ],
+  "files": {
+    "schema.json": {
+      "encoding": "utf-8",
+      "data": "{\"type\": \"object\", \"properties\": {\"filename\": {\"type\": \"string\", \"maxLength\": 200}, \"language\": {\"type\": \"string\", \"maxLength\": 40}, \"code\": {\"type\": \"string\", \"maxLength\": 4000}, \"patch\": {\"type\": \"string\", \"maxLength\": 8000}}, \"required\": [\"filename\", \"language\", \"code\", \"patch\"], \"additionalProperties\": false}",
+      "sha256": "5a34fa46b69040ada58155cf5351b5f4a6637193dc16e29338f29dc56fce4626"
+    },
+    "example.json": {
+      "encoding": "utf-8",
+      "data": "{\"filename\": \"device.py\", \"language\": \"python\", \"code\": \"def battery():\\n    return 90\\n\", \"patch\": \"diff --git a/device.py b/device.py\\nindex 1111111..2222222 100644\\n--- a/device.py\\n+++ b/device.py\\n@@ -1,2 +1,3 @@\\n def battery():\\n-    return 100\\n+    # Last known reading\\n+    return 90\\n\"}",
+      "sha256": "2baab0f49c269fe75c481b7c077c956ad713ddda0df5a41ccfa8d13d105d764b"
+    },
+    "view.json": {
+      "encoding": "utf-8",
+      "data": "{\"type\": \"column\", \"children\": [{\"type\": \"heading\", \"text\": {\"path\": [\"filename\"]}}, {\"type\": \"code\", \"text\": {\"path\": [\"code\"]}, \"language\": {\"path\": [\"language\"]}}, {\"type\": \"diff\", \"text\": {\"path\": [\"patch\"]}, \"language\": {\"path\": [\"language\"]}}]}",
+      "sha256": "e069b46dfdc8934499d545bc082264a7c8500a41b678dc7be09796d0c5e479ee"
+    },
+    "view.js": {
+      "encoding": "utf-8",
+      "data": "BoardExtension.define({render(data){return {type:'column',children:[{type:'heading',text:data.filename},{type:'code',text:data.code,language:data.language},{type:'diff',text:data.patch,language:data.language}]};}});\n",
+      "sha256": "00cf413738e669be752a01518ed5f52112072d708461509e8d99e82681ef02a0"
+    },
+    "guidance.md": {
+      "encoding": "utf-8",
+      "data": "Display source and an ordinary unified patch for review. Never execute source, read filenames or apply the patch. Both views describe the same recorded text.\n",
+      "sha256": "1a6bed4961af72ab5112758781019405b8d222cd3727796a8cd2e539ed8a9f41"
+    }
+  },
+  "convention": {
+    "contracts": [
+      {
+        "id": "com.example.source-code/review",
+        "version": "1.0.0",
+        "schema": "schema.json",
+        "guidance": "guidance.md",
+        "examples": [
+          "example.json"
+        ]
+      }
+    ]
+  },
+  "ui": {
+    "renderers": [
+      {
+        "id": "source",
+        "mode": "declarative",
+        "entry": "view.json",
+        "contracts": [
+          {
+            "id": "com.example.source-code/review",
+            "versions": {
+              "range": "1.0.0"
+            }
+          }
+        ]
+      },
+      {
+        "id": "source-worker",
+        "mode": "worker",
+        "entry": "view.js",
+        "contracts": [
+          {
+            "id": "com.example.source-code/review",
+            "versions": {
+              "range": "1.0.0"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -331,3 +331,11 @@ presentation refresh for both renderer modes, custom-host negotiation, bounded
 local diagnostics and exact-package approval indicators. Collection stays in
 external agents/scripts; refresh never executes commands or renews readings.
 Examples: `lifecycle-worker.afb-plugin.json` and `lifecycle-declarative.afb-plugin.json`.
+
+
+## Source and patch components (SDK1.3)
+
+Use the shared `code` and `diff` drawing nodes with literal/bound `text` and
+`language` fields. Declare API>=1.3.0; existing SDK1.0/1.1/1.2 packages retain
+compatibility. Both modes use host-owned read-only controls and safe highlighting.
+See [SOURCE-CODE.md](SOURCE-CODE.md) and the source-review example package.

@@ -1,5 +1,13 @@
 # Release notes
 
+## 2.8.0 — 2026-10-20
+
+- Define shared fenced source and unified/side-by-side diff conventions, with
+  literal source, validated hunk line numbers and readable unsupported fallback.
+- Add SDK1.3 code/diff drawing nodes, portable examples and parser fixtures while
+  preserving report schemas and SDK1.0/1.1/1.2 package compatibility.
+- Keep source/filenames inert; no execution, file access or patch application.
+
 ## 2.7.0 — 2026-10-20
 
 - Define SDK1.2 component refresh capabilities, host lifecycle obligations and

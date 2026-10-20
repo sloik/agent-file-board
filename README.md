@@ -508,3 +508,12 @@ The portable [board-feedback skill](skills/board-feedback/SKILL.md) helps agents
 choose a repository, check duplicates, prepare offline drafts and submit when
 instructed. Copy the whole skill folder to your harness's skill root; installing
 it does not post anything or start board participation.
+
+
+## Source code and patch review
+
+Use language-tagged Markdown fences for source and `diff` fences for ordinary
+patches or short +/- fragments. The viewer offers highlighting and unified,
+side-by-side or source views; source is never executed or applied. Reports and
+SDK1.3 components share the same read-only presentation. See
+[the portable source guide](docs/SOURCE-CODE.md) and `examples/source-code/`.
