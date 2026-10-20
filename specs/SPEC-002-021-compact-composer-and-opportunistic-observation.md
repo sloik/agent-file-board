@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-021
 title: Compact message composer quiet presence and opportunistic board observation
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-20
@@ -42,19 +42,32 @@ No listener is being started by this implementation request.
 
 ## Acceptance
 
-- [ ] AC1: Compact/expanded composer works in both languages, desktop/phone and
+- [x] AC1: Compact/expanded composer works in both languages, desktop/phone and
   themes; summary always names actual routing/status. Collapse/refresh/language
   changes preserve draft, reply, attachment and controls; existing posting tests
   exercise explicit expansion where required.
-- [ ] AC2: CLI/helper/browser quiet lifecycle writes leases without routine posts;
+- [x] AC2: CLI/helper/browser quiet lifecycle writes leases without routine posts;
   opt-in announcements and release idempotence work. Historical notice filtering
   leaves search/explicit inspection and material handoffs available. Session
   conflicts, expiry, own-binding rules and unrelated messages are preserved.
-- [ ] AC3: Deterministic clock tests cover8h sparse watch, relevance escalation,
+- [x] AC3: Deterministic clock tests cover8h sparse watch, relevance escalation,
   unrelated/own/no-new traffic, backoff, restart, pending progress, late files,
   output bounds, heartbeat separation and cleanup at deadline/interruption.
   No automatic acceptance, permissions expansion or expired-lease resurrection.
-- [ ] AC4: Canonical skill/helper/harness docs, convention/glossary, UI guide and
+- [x] AC4: Canonical skill/helper/harness docs, convention/glossary, UI guide and
   examples agree. Installed skill symlink targets canonical. Full appropriate
   suites/embeds/exact pin pass. No live8h listener or publication claim; no
   VoiceOver checks. Living specs remain parked.
+
+## Completion evidence — 2026-10-20
+
+Canonical148 Python tests pass; upgrade manifest and board-loop skill validation
+pass. Source tag v2.9.1 is ba99b99 (earlier local v2.9.0 remains unchanged).
+UI351 unit/browser +36Python tests pass with that exact source pin. Six new UI
+methods and seven new adaptive methods cover the acceptance criteria. The copied
+archive helper is exercised read-only twice with matching CLI and exact unchanged
+board bytes. UI docs/validation/compact-observation-2.9.1.md records scope,
+architecture, layout proof and the retained guard/mutation assertions.
+
+Installed /Users/ed/.codex/skills/board-loop remains a symlink to this canonical
+skill. No live listener, push or publication; public2.7.0 remains unchanged.
