@@ -271,3 +271,35 @@ class ExtensionPackagesTests(unittest.TestCase):
             decoded = ext.decode_package(raw(value))
             self.assertEqual(decoded["contracts"], [])
             self.assertEqual(decoded["package"]["ui"]["renderers"][0]["mode"], mode)
+
+
+class ExtensionLifecycleTests(unittest.TestCase):
+    def test_portable_lifecycle_package_cases(self):
+        cases = json.loads((Path(__file__).parent / "fixtures/extension-lifecycle-parity.json").read_text())
+        for case in cases:
+            with self.subTest(case=case["name"]):
+                value = package()
+                value["capabilities"] = case["capabilities"]
+                value["compatibility"]["api"] = {"range": case["api"]}
+                if "exclude" in case:
+                    value["compatibility"]["api"]["exclude"] = case["exclude"]
+                if case.get("renderers", True):
+                    code = "BoardExtension.define({render(){return {type:'text',text:'Baseline'};}});"
+                    value["files"]["view.js"] = {"encoding":"utf-8", "data":code, "sha256":hashlib.sha256(code.encode()).hexdigest()}
+                    renderer = {"id":"live", "mode":case.get("mode", "worker"), "entry":"view.js", "contracts":[{"id":"com.example.approvals/request", "versions":{"range":"1.0.0"}}]}
+                    if "refresh" in case:
+                        renderer["refresh"] = case["refresh"]
+                    value["ui"] = {"renderers":[renderer]}
+                if not case["valid"]:
+                    with self.assertRaises(ValueError):
+                        ext.decode_package(raw(value))
+                else:
+                    decoded = ext.decode_package(raw(value))
+                    self.assertEqual(ext.api_compatible(decoded["package"]), case["compatible"])
+
+    def test_lifecycle_examples_are_valid_without_execution(self):
+        root = Path(__file__).resolve().parents[1]
+        for name in ["lifecycle-worker", "lifecycle-declarative"]:
+            decoded = ext.decode_package((root / "examples/extensions" / (name + ".afb-plugin.json")).read_bytes())
+            self.assertTrue(ext.api_compatible(decoded["package"]))
+            self.assertEqual(decoded["package"]["capabilities"], ["render", "refresh"])

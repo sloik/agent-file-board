@@ -922,6 +922,22 @@ format 1, namespaced ID/version, name, compatibility for convention and SDK API,
 capabilities, hashed files, and optional convention/UI facets (at least one).
 Packages are at most 4 MiB, 64 files, 1 MiB per file. No network lookup occurs.
 
+SDK 1.2 adds the portable `refresh` capability. At least one renderer (worker or
+declarative) declares `refresh: {intervalSeconds: N}`, with integer N from 30 to
+86400, and package API compatibility includes 1.2.0. Component refresh updates
+presentation from cached declared inputs; it never collects data, executes source
+commands, writes messages or renews observation/availability. All refresh events
+are forbidden from proposing replies. SDK 1.2 hosts may decline runtime refresh
+only with explicit unsupported context and a visible explanation while retaining
+baseline rendering. Older SDK hosts reject unsupported packages; unchanged
+SDK 1.0/1.1 packages retain their compatible baseline behavior. SDK 1.2 also
+provides bounded tab-local structured diagnostics, distinct host/extension origins
+and explicit reviewed export, never automatic uploads. Approval binds whole
+package bytes. The host shows a compact unapproved-component review indicator
+without approving code or hiding the readable message. See the canonical
+[full lifecycle and diagnostics contract](https://github.com/sloik/agent-file-board/blob/main/docs/EXTENSION-LIFECYCLE.md)
+for event/context schemas, limits, host obligations and offline producer boundaries.
+
 Agents use `boardctl extensions list` and `describe HASH` to discover local
 schemas, guidance and examples, then `extensions envelope HASH --contract ID
 --data-file FILE` to produce message metadata. Guidance is extension content,

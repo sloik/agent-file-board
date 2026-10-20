@@ -50,7 +50,7 @@ A single UTF-8 JSON object contains:
 | `id`, `version`, `name` | Reverse-domain namespace, stable numeric X.Y.Z release and display name |
 | `description`, `publisher` | Optional descriptive claims; not authenticated identity |
 | `compatibility` | Independent `convention` and `api` constraints |
-| `capabilities` | Only `render`, `propose-reply`, and `read-state`; declarations, never grants |
+| `capabilities` | `render`, `propose-reply`, `read-state`, and SDK 1.2 `refresh`; declarations, never grants |
 | `files` | Named entries with `encoding`, `data`, `sha256` |
 | `convention` | Optional `contracts` list |
 | `ui` | Optional `renderers` list |
@@ -322,3 +322,12 @@ reviewed and does not compare against newer state. Missing optional definitions
 or recorded history produces unavailable semantic validation; readable messages
 remain and unavailability alone cannot authorize repair/withdrawal. Known invalid
 wire or a known mismatching recorded snapshot remains invalid metadata.
+
+## SDK 1.2 lifecycle and diagnostics (unreleased)
+
+An extension is a package; a component is one rendered instance. The portable
+[extension lifecycle contract](EXTENSION-LIFECYCLE.md) defines periodic/manual
+presentation refresh for both renderer modes, custom-host negotiation, bounded
+local diagnostics and exact-package approval indicators. Collection stays in
+external agents/scripts; refresh never executes commands or renews readings.
+Examples: `lifecycle-worker.afb-plugin.json` and `lifecycle-declarative.afb-plugin.json`.

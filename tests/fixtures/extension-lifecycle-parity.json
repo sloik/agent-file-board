@@ -1,0 +1,284 @@
+[
+  {
+    "name": "worker-30",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": true,
+    "compatible": true,
+    "mode": "worker",
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  },
+  {
+    "name": "worker-86400",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": true,
+    "compatible": true,
+    "mode": "worker",
+    "refresh": {
+      "intervalSeconds": 86400
+    }
+  },
+  {
+    "name": "declarative-30",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": true,
+    "compatible": true,
+    "mode": "declarative",
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  },
+  {
+    "name": "declarative-86400",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": true,
+    "compatible": true,
+    "mode": "declarative",
+    "refresh": {
+      "intervalSeconds": 86400
+    }
+  },
+  {
+    "name": "invalid-True",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": true
+    }
+  },
+  {
+    "name": "invalid-False",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": false
+    }
+  },
+  {
+    "name": "invalid-29",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 29
+    }
+  },
+  {
+    "name": "invalid-86401",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 86401
+    }
+  },
+  {
+    "name": "invalid-30.5",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 30.5
+    }
+  },
+  {
+    "name": "invalid-30",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": "30"
+    }
+  },
+  {
+    "name": "invalid-None",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": null
+    }
+  },
+  {
+    "name": "unknown-refresh-field",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 30,
+      "extra": true
+    }
+  },
+  {
+    "name": "missing-capability",
+    "capabilities": [
+      "render"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  },
+  {
+    "name": "missing-declaration",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true
+  },
+  {
+    "name": "convention-only-refresh",
+    "capabilities": [
+      "refresh"
+    ],
+    "api": "1.2.0",
+    "valid": false,
+    "compatible": true,
+    "renderers": false
+  },
+  {
+    "name": "refresh-exact-old-api",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": "1.1.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  },
+  {
+    "name": "refresh-excluded-api",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": ">=1.0.0 <2.0.0",
+    "valid": false,
+    "compatible": true,
+    "exclude": [
+      "1.2.0"
+    ],
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  },
+  {
+    "name": "baseline-1.0.0",
+    "capabilities": [
+      "render"
+    ],
+    "api": "1.0.0",
+    "valid": true,
+    "compatible": true
+  },
+  {
+    "name": "baseline-1.1.0",
+    "capabilities": [
+      "render"
+    ],
+    "api": "1.1.0",
+    "valid": true,
+    "compatible": true
+  },
+  {
+    "name": "baseline-1.2.0",
+    "capabilities": [
+      "render"
+    ],
+    "api": "1.2.0",
+    "valid": true,
+    "compatible": true
+  },
+  {
+    "name": "read-state-sdk1.0",
+    "capabilities": [
+      "render",
+      "read-state"
+    ],
+    "api": "1.0.0",
+    "valid": true,
+    "compatible": false
+  },
+  {
+    "name": "read-state-sdk1.1",
+    "capabilities": [
+      "render",
+      "read-state"
+    ],
+    "api": "1.1.0",
+    "valid": true,
+    "compatible": true
+  },
+  {
+    "name": "refresh-api-upper-bound",
+    "capabilities": [
+      "render",
+      "refresh"
+    ],
+    "api": ">=1.0.0 <1.2.0",
+    "valid": false,
+    "compatible": true,
+    "refresh": {
+      "intervalSeconds": 30
+    }
+  }
+]

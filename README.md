@@ -34,12 +34,14 @@ See [the report/form examples and offline demo](examples/openui-report/README.md
 Upgrade CLI, board-loop and viewer together before posting reports; existing
 messages need no rewrite.
 
-## Local extension packages — source preview
+## Local extension CLI
 
 The [extension package foundation](docs/EXTENSIONS.md) adds offline
 inspect/install/list/describe/disable commands and verified contract discovery.
-It does not yet execute plugins or extend message rendering. The complete
-viewer SDK and extension message contracts remain in development.
+The CLI never executes renderer code; the viewer supplies constrained rendering.
+An extension is a package and a component is a rendered instance. The unreleased
+[SDK 1.2 lifecycle contract](docs/EXTENSION-LIFECYCLE.md) adds presentation refresh
+and bounded diagnostics while external producers remain responsible for readings.
 
 ## Safe metadata upgrades
 

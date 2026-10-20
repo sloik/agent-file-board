@@ -1,0 +1,48 @@
+{
+  "format": 1,
+  "id": "com.example.lifecycle-worker",
+  "version": "1.0.0",
+  "name": "Lifecycle example — worker",
+  "compatibility": {
+    "convention": {
+      "range": ">=2.4.0 <3.0.0",
+      "exclude": [
+        "2.5.2"
+      ]
+    },
+    "api": {
+      "range": ">=1.2.0 <2.0.0"
+    }
+  },
+  "capabilities": [
+    "render",
+    "refresh"
+  ],
+  "files": {
+    "view.js": {
+      "encoding": "utf-8",
+      "data": "BoardExtension.define({\n  render(data, state, context) {\n    BoardExtension.log({level:'debug', code:'render', message:'Rendering declared inputs'});\n    return {type:'column', children:[\n      {type:'heading', text:data.title},\n      {type:'text', text:'View updated: '+context.host.now}\n    ]};\n  },\n  event(event, data, state) {\n    if(event.type==='refresh') {\n      BoardExtension.log({level:'info', code:'view-refresh', message:'Presentation refreshed', fields:{reason:event.reason}});\n      return {state:{lastReason:event.reason}};\n    }\n    return {state};\n  }\n});\n",
+      "sha256": "7a3021a2e73b336fe4abf361609e594a0c7703eb17135e828fc18ba78473aa48"
+    }
+  },
+  "ui": {
+    "renderers": [
+      {
+        "id": "live",
+        "mode": "worker",
+        "entry": "view.js",
+        "contracts": [
+          {
+            "id": "com.example.approvals/request",
+            "versions": {
+              "range": ">=1.0.0 <2.0.0"
+            }
+          }
+        ],
+        "refresh": {
+          "intervalSeconds": 30
+        }
+      }
+    ]
+  }
+}

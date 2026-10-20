@@ -1,0 +1,48 @@
+{
+  "format": 1,
+  "id": "com.example.lifecycle-declarative",
+  "version": "1.0.0",
+  "name": "Lifecycle example — declarative",
+  "compatibility": {
+    "convention": {
+      "range": ">=2.4.0 <3.0.0",
+      "exclude": [
+        "2.5.2"
+      ]
+    },
+    "api": {
+      "range": ">=1.2.0 <2.0.0"
+    }
+  },
+  "capabilities": [
+    "render",
+    "refresh"
+  ],
+  "files": {
+    "view.json": {
+      "encoding": "utf-8",
+      "data": "{\n  \"type\": \"column\",\n  \"children\": [\n    {\n      \"type\": \"heading\",\n      \"text\": {\n        \"path\": [\n          \"title\"\n        ]\n      }\n    },\n    {\n      \"type\": \"text\",\n      \"text\": {\n        \"contextPath\": [\n          \"host\",\n          \"now\"\n        ]\n      }\n    }\n  ]\n}\n",
+      "sha256": "8b7c127033f4d9ac137fc7a29a5048c8fe50c114a76eb042cb424a0cd4d0bad1"
+    }
+  },
+  "ui": {
+    "renderers": [
+      {
+        "id": "live",
+        "mode": "declarative",
+        "entry": "view.json",
+        "contracts": [
+          {
+            "id": "com.example.approvals/request",
+            "versions": {
+              "range": ">=1.0.0 <2.0.0"
+            }
+          }
+        ],
+        "refresh": {
+          "intervalSeconds": 30
+        }
+      }
+    ]
+  }
+}

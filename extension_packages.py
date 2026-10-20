@@ -12,7 +12,7 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
-API_VERSION = "1.1.0"
+API_VERSION = "1.2.0"
 MAX_PACKAGE = 4 * 1024 * 1024
 MAX_FILE = 1024 * 1024
 MAX_PACKAGES = 32
@@ -200,7 +200,9 @@ def decode_package(raw):
     for item in package["compatibility"].values():
         constraint(item)
     caps = package["capabilities"]
-    require(isinstance(caps, list) and all(isinstance(x, str) and x in {"render", "propose-reply", "read-state"} for x in caps) and len(set(caps)) == len(caps), "unsupported capabilities; request additions through GitHub")
+    require(isinstance(caps, list) and all(isinstance(x, str) and x in {"render", "propose-reply", "read-state", "refresh"} for x in caps) and len(set(caps)) == len(caps), "unsupported capabilities; request additions through GitHub")
+    if "refresh" in caps:
+        require(supports(package["compatibility"]["api"], "1.2.0"), "refresh requires SDK 1.2 compatibility")
     require("convention" in package or "ui" in package, "at least one facet required")
     require(isinstance(package["files"], dict) and 1 <= len(package["files"]) <= 64, "file count limit")
     files = {}
@@ -249,7 +251,12 @@ def decode_package(raw):
         require(isinstance(renderers, list) and 1 <= len(renderers) <= 16 and "render" in caps, "UI requires render capability and bounded renderer list")
         seen = set()
         for renderer in renderers:
-            keys(renderer, {"id", "mode", "entry", "contracts"})
+            keys(renderer, {"id", "mode", "entry", "contracts"}, {"refresh"})
+            if "refresh" in renderer:
+                require("refresh" in caps, "refresh capability required")
+                keys(renderer["refresh"], {"intervalSeconds"})
+                interval = renderer["refresh"]["intervalSeconds"]
+                require(number(interval) and int(interval) == interval and 30 <= interval <= 86400, "refresh interval must be an integer from 30 through 86400")
             require(isinstance(renderer["id"], str) and NAME.fullmatch(renderer["id"]) and renderer["id"] not in seen, "invalid/duplicate renderer ID")
             seen.add(renderer["id"])
             require(isinstance(renderer["mode"], str) and renderer["mode"] in {"declarative", "worker"}, "unsupported renderer mode")
@@ -260,6 +267,8 @@ def decode_package(raw):
                 keys(target, {"id", "versions"})
                 require(text(target["id"], 200) and ":" not in target["id"], "invalid target ID")
                 constraint(target["versions"])
+    if "refresh" in caps:
+        require(any("refresh" in r for r in package.get("ui", {}).get("renderers", [])), "refresh capability requires a renderer declaration")
     return {"artifact": hashlib.sha256(raw).hexdigest(), "package": package, "contracts": contracts, "files": files}
 
 
@@ -327,7 +336,10 @@ def snapshot(directory, digest):
 
 def api_compatible(package):
     rule = package["compatibility"]["api"]
-    return supports(rule, API_VERSION) or ("read-state" not in package["capabilities"] and supports(rule, "1.0.0"))
+    caps = package["capabilities"]
+    return (supports(rule, API_VERSION)
+            or ("refresh" not in caps and supports(rule, "1.1.0"))
+            or ("refresh" not in caps and "read-state" not in caps and supports(rule, "1.0.0")))
 
 
 def catalog(root):
