@@ -43,6 +43,46 @@ class BoardCtlTests(unittest.TestCase):
         self.assertEqual(boardctl.main(["join", "research-agent-01", "--path", str(self.root)]), 2)
         self.assertEqual(boardctl.main(["post", "--path", str(self.root), "--from", "unknown-agent", "--to", "research-agent-01", "--scope", "room", "--room", "general", "--thread", "T001", "--slug", "bad"]), 2)
 
+    def test_operator_join_preserves_metadata_and_allows_many_agents(self):
+        path = self.root / ".agent-board/participants.json"
+        registry = json.loads(path.read_text())
+        registry["com.example.extra"] = {"keep": [1, 2]}
+        registry["participants"][0]["com.example.ui"] = {"avatar": "local.png"}
+        path.write_text(json.dumps(registry))
+        self.assertEqual(boardctl.main(["join", "human-owner-01", "--kind", "human", "--path", str(self.root)]), 0)
+        for agent in ("review-agent-01", "review-agent-02"):
+            self.assertEqual(boardctl.main(["join", agent, "--operator", "human-owner-01", "--path", str(self.root)]), 0)
+        result = json.loads(path.read_text())
+        self.assertEqual(result["com.example.extra"], registry["com.example.extra"])
+        self.assertEqual(result["participants"][0], registry["participants"][0])
+        self.assertEqual([p["operator"] for p in result["participants"] if "operator" in p], ["human-owner-01"] * 2)
+        self.assertEqual(boardctl.validate(self.root), [])
+
+    def test_invalid_operator_join_leaves_registry_unchanged(self):
+        path = self.root / ".agent-board/participants.json"
+        before = path.read_bytes()
+        for kind, target in (("agent", "missing-human"), ("agent", "research-agent-01"),
+                             ("agent", "review-agent-01"), ("agent", ""),
+                             ("agent", "bad ID"), ("human", "research-agent-01")):
+            with self.subTest(kind=kind, target=target):
+                self.assertEqual(boardctl.main(["join", "review-agent-01", "--kind", kind, "--operator", target, "--path", str(self.root)]), 2)
+                self.assertEqual(path.read_bytes(), before)
+
+    def test_bad_existing_operator_is_diagnostic_not_author_invalidation(self):
+        path = self.root / ".agent-board/participants.json"
+        original = json.loads(path.read_text())
+        for target in (None, 42, {}, [], "missing-human", "implementation-agent-01", "research-agent-01"):
+            with self.subTest(target=target):
+                registry = json.loads(json.dumps(original))
+                registry["participants"][0]["operator"] = target
+                path.write_text(json.dumps(registry))
+                self.assertIn("research-agent-01", boardctl.ids(registry))
+                errors = boardctl.validate(self.root)
+                self.assertEqual(len(errors), 1)
+                self.assertIn("operator association for research-agent-01", errors[0])
+        self.assertEqual(boardctl.main(["post", "--path", str(self.root), "--from", "research-agent-01", "--to", "all", "--scope", "room", "--room", "general", "--thread", "T001", "--slug", "association", "--body", "Still a registered author"]), 0)
+        self.assertEqual(boardctl.main(["inbox", "research-agent-01", "--path", str(self.root)]), 0)
+
     def test_inbox_writes_state_only_when_requested(self):
         self.assertEqual(boardctl.main(["inbox", "research-agent-01", "--path", str(self.root)]), 0)
         state_root = self.root / "private-state"

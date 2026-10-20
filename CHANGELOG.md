@@ -1,5 +1,11 @@
 # Release notes
 
+## Unreleased
+
+- Add optional informational agent `operator` links to registered human IDs.
+- Validate new CLI registrations before writing; diagnose broken existing links
+  without invalidating authors or their messages.
+
 ## 2.9.1 — 2026-10-20
 
 - Deliver quiet session lifecycle with opt-in announcements and8h OPPORTUNISTIC

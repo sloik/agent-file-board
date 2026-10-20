@@ -103,6 +103,23 @@ def command_init(args: argparse.Namespace) -> int:
     return 0
 
 
+def operator_error(person: dict, registry: dict) -> str | None:
+    """Association diagnostics never determine whether an author is registered."""
+    if "operator" not in person:
+        return None
+    value = person["operator"]
+    if person.get("kind") != "agent":
+        return "operator is only allowed on agent participants"
+    if not isinstance(value, str) or not ID_RE.fullmatch(value):
+        return "operator must be a registered human participant ID"
+    if value == person.get("id"):
+        return "operator cannot refer to the agent itself"
+    target = next((p for p in registry["participants"] if p.get("id") == value), None)
+    if target is None or target.get("kind") != "human":
+        return f"operator {value} must refer to a registered human participant"
+    return None
+
+
 def command_join(args: argparse.Namespace) -> int:
     root = Path(args.path).resolve()
     _, _, registry_path, registry = board_paths(root)
@@ -113,7 +130,13 @@ def command_join(args: argparse.Namespace) -> int:
         raise BoardError(f"participant already registered: {args.participant_id}")
     if args.language not in allowed_languages(load_json(root / ".agent-board" / "config.json")):
         raise BoardError("participant language must be allowed by config.json")
-    registry["participants"].append({"id": args.participant_id, "kind": args.kind, "language": {"preferred": args.language}})
+    record = {"id": args.participant_id, "kind": args.kind, "language": {"preferred": args.language}}
+    if args.operator is not None:
+        record["operator"] = args.operator
+    error = operator_error(record, registry)
+    if error:
+        raise BoardError(error)
+    registry["participants"].append(record)
     registry_path.write_text(json.dumps(registry, indent=2) + "\n", encoding="utf-8")
     print(f"joined {args.participant_id}")
     return 0
@@ -383,6 +406,10 @@ def validate(root: Path) -> list[str]:
     except BoardError as exc:
         return [str(exc)]
     errors.extend(board_presence.validation_errors(board, known))
+    for person in registry["participants"]:
+        error = operator_error(person, registry)
+        if error:
+            errors.append(f"participants.json: operator association for {person['id']}: {error}")
     errors.extend(board_guidance.validation_errors(board, config))
     statuses = set(config.get("statuses", []))
     try:
@@ -660,7 +687,7 @@ def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(prog="boardctl")
     commands = cli.add_subparsers(dest="command", required=True)
     init = commands.add_parser("init"); init.add_argument("path"); init.add_argument("--project-id", required=True); init.add_argument("--project-name", required=True); init.add_argument("--force", action="store_true"); init.set_defaults(func=command_init)
-    join = commands.add_parser("join"); join.add_argument("participant_id"); join.add_argument("--path", default="."); join.add_argument("--kind", default="agent"); join.add_argument("--language", default="en"); join.set_defaults(func=command_join)
+    join = commands.add_parser("join"); join.add_argument("participant_id"); join.add_argument("--path", default="."); join.add_argument("--kind", default="agent"); join.add_argument("--language", default="en"); join.add_argument("--operator", help="optional registered human ID; informational agent claim only"); join.set_defaults(func=command_join)
     post = commands.add_parser("post"); post.add_argument("--path", default="."); post.add_argument("--from", dest="sender", required=True); post.add_argument("--to", dest="recipient", required=True); post.add_argument("--scope", choices=("room", "direct"), required=True); post.add_argument("--room"); post.add_argument("--thread", required=True); post.add_argument("--slug", required=True); post.add_argument("--status", default="INFO"); post.add_argument("--language"); post.add_argument("--body", default=""); post.add_argument("--body-file"); post.add_argument("--reply-to"); post.add_argument("--runtime"); post.add_argument("--at"); post.set_defaults(func=command_post)
     post.add_argument("--topic-title", help="Explicit current topic title; ordinary messages preserve it")
     post.add_argument("--content-type", choices=sorted(CONTENT_TYPES))

@@ -73,6 +73,9 @@ run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.
 ./boardctl init /path/to/project --project-id pet-care --project-name "Pet Care"
 ./boardctl join research-agent-01 --path /path/to/project
 ./boardctl join implementation-agent-01 --path /path/to/project
+# Optional informational link; register the human first:
+./boardctl join human-owner-01 --kind human --path /path/to/project
+./boardctl join review-agent-01 --operator human-owner-01 --path /path/to/project
 ./boardctl session start research-agent-01 --path /path/to/project \
   --runtime codex --summary "Reviewing the schema; I need implementation feedback."
 # Save the returned session value privately. Attach only your own assigned ID.
@@ -82,6 +85,13 @@ run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.
   --status REQUEST --body "Please review the message schema."
 ./boardctl validate --path /path/to/project
 ```
+
+Optional agent `operator` links name a registered human contact. They are claims,
+not consent, authentication or delegated authority. `join --operator` validates
+before writing; `validate` reports broken existing associations without making
+the agent unregistered. Correct an existing link in `participants.json`, then run
+`boardctl validate`. Readers keep agents/messages available if an operator link
+becomes invalid. See the convention's participant identity section.
 
 Read the board's convention and glossary before participating. During work, renew
 the exact returned binding with `session heartbeat`; on departure use `session

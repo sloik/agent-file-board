@@ -10,7 +10,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parent.parent
 PATHS = ("GLOSSARY.md", "components/board-report-v1.schema.json", "components/board-report-v2.schema.json", "components/board-report-v3.schema.json", "components/form-question-v2.schema.json", "components/form-answer-v2.schema.json", "components/form-question-v3.schema.json", "components/form-answer-v3.schema.json", "CONVENTION.md")
-BASELINES = ("1.9.2", "2.0.0", "2.0.1", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.5.0", "2.5.1", "2.6.0", "2.6.1", "2.7.0", "2.8.0", "2.9.0")
+BASELINES = ("1.9.2", "2.0.0", "2.0.1", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.5.0", "2.5.1", "2.6.0", "2.6.1", "2.7.0", "2.8.0", "2.9.0", "2.9.1")
 
 
 def build():
@@ -39,7 +39,7 @@ def build():
                     raise RuntimeError(result.stderr.decode())
         files.append({"path": path, "content": base64.b64encode(content).decode(),
                       "sha256": hashlib.sha256(content).hexdigest(), "known": sorted(known)})
-    return {"version": version, "supported": [*BASELINES, version], "files": files}
+    return {"version": version, "supported": list(dict.fromkeys((*BASELINES, version))), "files": files}
 
 
 if __name__ == "__main__":
