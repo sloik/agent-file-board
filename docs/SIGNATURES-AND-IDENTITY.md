@@ -4,6 +4,11 @@ Status: reviewed design for SPEC-002-024, 2026-10-20. Not implemented; the relea
 2.9.1 wire convention and unsigned behavior remain unchanged. This is the proposed
 contract for a future additive convention version, with matching CLI/viewer work.
 
+Follow-up [scoped policy and sender proof](SIGNING-POLICY-AND-POSSESSION.md)
+(SPEC-002-025) adds owner-requested trusted-only scopes and explicit ephemeral
+browser signing sessions. It supersedes the initial no-browser-key-custody
+restriction only for host-owned tab-memory imports; no persistent key vault is added.
+
 ## Decisions and purpose
 
 Owner confirmed that existing GPG/OpenPGP interoperability is unnecessary: other
@@ -391,8 +396,9 @@ appear only as explicitly current/unverified information in details, never under
 a lock that appears to endorse it. Extension workers cannot draw or set this host-owned state.
 
 Hash, parse and render the same immutable message buffer. Header indexing/preview
-alone cannot verify a signature. Queue visible messages with bounded concurrency;
-allow explicit verification of other history. Cache against board UUID, exact
+alone cannot verify a signature. Queue bounded candidate windows with priority for the current view, including
+pending rows excluded by strict policy; verification cannot depend on already
+being eligible/visible. Allow explicit bounded verification of further history. Cache against board UUID, exact
 path, actual content/envelope/profile/key digests and local trust/lifecycle
 revision. Reject async results after board/message/profile replacement. Never
 cache success solely by path, size or mtime. A valid old self-proof cannot erase a
@@ -402,8 +408,8 @@ a historical message signature unless separately attested.
 Browser verification capability must be detected under the real file deployment;
 unsupported WebCrypto stays unavailable, with no network fallback. Private keys,
 passphrases and signer configuration remain outside shared board files, UI stores,
-exports, diagnostics and extension APIs. Initial signing uses explicit local CLI
-adapters/maintained crypto dependencies; board metadata cannot name commands or
+exports, diagnostics and extension APIs. Signing providers follow the scoped-policy/possession design: explicit local CLI
+adapters or host-only ephemeral imports, using maintained crypto dependencies; board metadata cannot name commands or
 cause automatic signing. Standard verification and optional crypto tooling must
 not break the core unsigned stdlib-only reader.
 
@@ -453,7 +459,8 @@ and adversarial follow-ups converged on the above. Refinements from review:
 - Restrict stock avatars to public identity/avatars, with historical signed
   presentation and quiet legitimate same-key profile updates.
 - Keep private trust, known lifecycle and stripped-signature policy separate.
-- No central owner, fresh challenge, automatic recovery, browser key custody,
+- No central owner, fresh registration challenge, automatic recovery, persistent
+  browser key custody,
   certificate web, transparency service or automatic network behavior.
 
 Primary references: [DSSE protocol](https://github.com/secure-systems-lab/dsse/blob/master/protocol.md),
