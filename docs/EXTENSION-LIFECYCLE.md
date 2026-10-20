@@ -155,7 +155,7 @@ Stock viewer retention is tab-local memory, at most 500 records and 512 KiB,
 with dropped counts and an explicit Clear action; board switching clears it.
 The component Diagnostics action filters by exact package/component. Extensions
 also exposes all local records. Filtering never changes what an entry means.
-Explicit export previews the selected diagnostic records and downloads JSONL;
+Explicit export previews the selected diagnostic records and downloads JSON containing the dropped count and selected entries;
 there is no automatic upload, persistence, board write or telemetry. Keep raw
 readings, message/reply bodies, secrets and personal paths out of diagnostic
 messages/fields. Arbitrary extension text may still contain sensitive information;
