@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-019
 title: Shared offline highlighted source code and unified or split diffs
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-20
@@ -45,23 +45,23 @@ generation. A file label is inert text. Living specifications remain parked.
 
 ## Acceptance criteria
 
-- [ ] AC1: Code fences and safe HTML pre/code preserve literal source and support
+- [x] AC1: Code fences and safe HTML pre/code preserve literal source and support
   explicit common languages, unknown/empty hints and safe plaintext fallback.
   Untrusted HTML, filenames, source strings and language names cannot inject
   markup, viewer actions, IDs/classes or resource loads.
-- [ ] AC2: Unified and side-by-side diffs show added/removed/context lines, accurate
+- [x] AC2: Unified and side-by-side diffs show added/removed/context lines, accurate
   old/new line numbers and hunk/file labels; copy returns exact original input.
   Fixtures cover multi-file/multi-hunk, uneven changes, zero-count new/deleted
   files, CRLF, trailing-newline markers, header-looking source lines, Unicode,
   malformed counts, binary/combined patches and resource limits.
-- [ ] AC3: Markdown/HTML bodies, existing report code/Markdown and SDK1.3 code/diff
+- [x] AC3: Markdown/HTML bodies, existing report code/Markdown and SDK1.3 code/diff
   nodes share the same presentation. No report schema/version mutation; exact
   SDK1.0/1.1/1.2 package compatibility and refresh/read-state restrictions remain.
   Both declarative and approved workers can emit new nodes with bound data.
-- [ ] AC4: Unified/split/source selection and copy are keyboard usable, preserve
+- [x] AC4: Unified/split/source selection and copy are keyboard usable, preserve
   composer drafts and immutable messages, and fit light/dark/Dracula/phone layouts.
   No automatic network, file writes, patch application or code execution occurs.
-- [ ] AC5: Canonical convention/creator docs, UI guide, examples and bundled license
+- [x] AC5: Canonical convention/creator docs, UI guide, examples and bundled license
   notices explain formats, limits, fallbacks and SDK support. Both repos use an
   exact source pin, generated metadata and embeds; meaningful focused/full checks
   and parent actual-browser/screenshots pass. No VoiceOver checks.
@@ -74,3 +74,24 @@ generation. A file label is inert text. Living specifications remain parked.
    retain strict sanitization and old contracts.
 3. Document, add real code/patch examples, update exact canonical pin/embeds and
    perform browser/CLI compatibility, offline and layout validation.
+
+## Completion — 2026-10-20
+
+Shared source/diff factory, bounded explicit highlighting, strict portable patch
+parser and unified/split/source/copy controls are implemented in the UI. Existing
+rich/report surfaces and both SDK1.3 renderer modes use it. Canonical docs,
+convention2.8.0, examples,21patch fixtures and26lifecycle parity cases define
+portable behavior while preserving report schemas and older SDK compatibility.
+
+Validation:340JS/browser+36UI Python+140canonical Python pass; exact local
+v2.8.0 standard pin9d523500a6fe811c768cd255de50c912c6200f63, generated upgrade
+manifest/embeds and release consistency check pass. Parent actual-browser
+inspection covered3themes, keyboard activation and internally scrolling phone
+layout without network/page errors. Browser integration proves immutable source,
+composer draft/caret, explicit exact clipboard inputs and denied-copy fallback.
+DemoT016 and bundled guide/examples/license are validated and deterministic.
+UI evidence: docs/validation/source-code-2.8.0.md and docs/SOURCE-CODE.md. Logs:
+/tmp/afb-source-ui-full-delivery.log, /tmp/afb-source-canonical-full.log.
+
+Implementation complete locally; no2.8.0 push or publication. Public releases
+remain2.7.0 in both repos. This spec does not authorize resuming living specs.
