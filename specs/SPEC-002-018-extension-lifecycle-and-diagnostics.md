@@ -119,3 +119,15 @@ automatic installation/approval. Synthetic local receipts/logs:
 /tmp/afb-lifecycle-parent-e2e.json, /tmp/afb-lifecycle-npm-verified.log,
 /tmp/afb-lifecycle-canonical-test.log and /tmp/afb-lifecycle-demo-final.zip.
 Living specifications remain parked. No VoiceOver checks were added or run.
+
+
+## Owner-requested publication follow-up — 2026-10-20
+
+Both main branches and canonical v2.7.0 tag were pushed. Owner then clarified
+that automatic downloadable delivery was expected; finalize release notes and
+push the separate UIv2.7.0 tag atfbd9780. Gated UI release39381316046 passed all
+jobs and published Latest. Four downloaded assets and exact notes match staged
+source; previous2.6.1 release records/assets remain unchanged. Canonical code/tag/
+UI vendor pin remains3f5b512, no tag moved. Canonical source main/tag CI passed.
+Receipt /tmp/afb-270-release-receipt.json; viewer validation doc records the
+retained independent main-run draft-import timeout and unchanged retry separately.

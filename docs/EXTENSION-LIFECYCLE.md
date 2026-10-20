@@ -1,4 +1,4 @@
-# Extension lifecycle and diagnostics — SDK 1.2 (unreleased)
+# Extension lifecycle and diagnostics — SDK 1.2
 
 An **extension** is a portable package. A **component** is one rendered instance
 of a renderer from that extension. The canonical board defines the contract;
