@@ -55,5 +55,39 @@ publication is needed to validate this implementation; never alter old tags.
 
 ## Plan and implementation evidence
 
-Architecture team review in progress. Concrete decisions and validation evidence
-will be recorded here and in the reference architecture document before closure.
+Architecture review completed before implementation dispatch: architect-reviewer,
+UX researcher/UI designer and security auditor personas from the local
+awesome-codex-subagents reference collection. Parent resolved the one scope
+disagreement in favor of both renderer modes (the public plan already included
+both; security accepted context.host.now rebinding for declarative trees).
+
+Frozen decisions:
+
+- SDK1.2 capability `refresh`; per-renderer optional `refresh.intervalSeconds`
+  integral30..86400; declaration requires capability and compatible SDK1.2.
+  Preserve explicit SDK1.0/1.1 compatibility without newer capabilities.
+- Opted-in renderers receive `context.host={now,refresh:{supported,automatic,
+  intervalSeconds}}`. Custom1.2 hosts may decline with supported:false,
+  automatic:false, intervalSeconds:null and visible status, preserving baseline
+  rendering. Unknown older hosts must reject unsupported packages honestly.
+- Worker event `{type:'refresh',reason:'timer'|'manual'|'source-change'|'resume',
+  now:ISO}`; initial null event preserved; actual relevant source-change remount
+  uses one event and fresh state. Declarative trees rebind host time. No refresh
+  may propose replies. Reading collection and board file reread remain separate.
+- Host global fair queue, at most8 workers and one coalesced refresh/component;
+  user input/action wins; monotonic best-effort intervals, hidden pause, one
+  resume, no catch-up. Unmount/context/approval changes dispose work. Errors stop
+  automatic attempts; manual retries remain possible. Viewer-wide auto setting.
+- SDK `BoardExtension.log(entry)` buffers into a single result/error envelope;
+  level/code/message/flat scalar fields; at most16 entries/8KiB per job within
+  existing64KiB output. Host independently records failure/timeout. Inert local
+  ring at most500 entries/512KiB, origin separation, board-switch clear, explicit
+  filtered preview/export, no streaming/persistence/telemetry or board writes.
+- Host-owned quiet component boundary and accurate approval/availability status;
+  Review extension opens exact selected renderer artifact. Approval is whole raw
+  package hash; new alternatives do not invalidate old approved historical pins.
+
+Implementation split: canonical+browser validation and reference docs; isolated
+runtime/scheduler+diagnostics; isolated component chrome/mount integration. Parent
+integrates exact vendor pin, embeds, full tests and actual browser verification,
+then obtains independent cross-diff reviews and closes this spec on evidence.
