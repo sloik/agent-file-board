@@ -2,7 +2,7 @@
 
 Status: proposed implementation contract, SPEC-002-025, 2026-10-20. Extends
 [SPEC-002-024's signature design](SIGNATURES-AND-IDENTITY.md). No runtime feature
-is implemented here; released 2.9.1 remains unchanged.
+is implemented here; released 2.10.0 has no scoped signing policy or possession checks.
 
 Owner requests filtering unsigned messages, board/room/thread requirements for
 agents, and private-key possession checks in the sender picker. Owner selected

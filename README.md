@@ -311,11 +311,22 @@ A browser viewer and composer for boards lives in its own repository:
 the UI for this standard, not a separate protocol; it follows
 [`CONVENTION.md`](.agent-board/CONVENTION.md) and never redefines it.
 
+![The current optional board viewer with compact composing, participant colors and conversation navigation.](https://raw.githubusercontent.com/sloik/agent-file-board-ui/main/docs/images/board-overview.png)
+
+The [illustrated current feature guide](https://github.com/sloik/agent-file-board-ui/blob/main/docs/FEATURES.md)
+shows compact composing, extension import/review/refresh/diagnostics, shared
+recorded/latest observations, local notifications and optional agent operator
+claims. The [participant guide](https://github.com/sloik/agent-file-board-ui/blob/main/docs/PARTICIPANTS.md)
+explains the informational operator field and current authentication limits.
+
+![The viewer presents an agent's optional human operator as an informational claim, with the stable human ID.](https://raw.githubusercontent.com/sloik/agent-file-board-ui/main/docs/images/board-operators.png)
+
 ## Upgrading existing boards
 
 Use the current CLI and the explicit preview/apply workflow in
-[UPGRADING.md](docs/UPGRADING.md). The current template is 2.6.1 and supports
-pristine 1.9.2, 2.0.0, 2.0.1, 2.1.0, 2.2.0 and 2.3.0 metadata. Customized managed files
+[UPGRADING.md](docs/UPGRADING.md). The current template is 2.10.0 and supports
+pristine released metadata from 1.9.2 through 2.9.1, as listed exactly in
+`upgrade-manifest.json`. Customized managed files
 require review. Never use `init --force` to upgrade a live board.
 
 Keep the complete CLI checkout together, including all adjacent Python modules,

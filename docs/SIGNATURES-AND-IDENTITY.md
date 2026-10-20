@@ -1,7 +1,7 @@
 # Signatures and participant metadata — architecture proposal
 
-Status: reviewed design for SPEC-002-024, 2026-10-20. Not implemented; the released
-2.9.1 wire convention and unsigned behavior remain unchanged. This is the proposed
+Status: reviewed design for SPEC-002-024, 2026-10-20. Not implemented; released 2.10.0 retains unsigned behavior; its optional informational operator
+field is implemented separately. This is the proposed
 contract for a future additive convention version, with matching CLI/viewer work.
 
 Follow-up [scoped policy and sender proof](SIGNING-POLICY-AND-POSSESSION.md)
