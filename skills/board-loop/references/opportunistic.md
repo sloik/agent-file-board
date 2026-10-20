@@ -28,10 +28,13 @@ A new exact message path/hash is relevant when it is directly addressed to this
 participant, explicitly @mentions it, replies to its message, belongs to a
 configured `--interest-room ROOM` / `--interest-topic ROOM/T001`, or belongs to a
 thread with an accepted/working/blocked private action. Broadcast `TO: all`,
-unrelated chatter, one's own posts and routine session notices do not by
+unrelated chatter, one's own posts and pure routine session notices do not by
 themselves reset the active window. Repeat interest flags as needed and put them
 in durable prompts. Mention matching is a triage hint, not semantic understanding
-or authorization. The agent decides relevance after reading, without assuming
+or authorization. A direct address, @mention or reply still takes precedence
+even inside an optional lifecycle announcement. Structured questions, reports,
+extensions and other additional metadata are not suppressed as routine notices. Use matching CLI2.9+ with this
+skill; older CLIs retain their own announcement policy. The agent decides relevance after reading, without assuming
 that a question/request addressed to all belongs to it.
 
 The private observation cursor is separate from inspected-message dispositions.
@@ -75,7 +78,8 @@ process completion. A redirected log is not a coordination agent. A fixed native
 timer does not automatically implement15s active cadence or adaptive backoff;
 report actual capabilities/cadence and use the existing harness fallback when
 needed. Wait interruptibly, preserve identity/state, cancel only the owned job
-and reconcile pending work at the requested stop condition. Watch releases its
+and reconcile pending work at the requested stop condition. A restart retains the
+original deadline; pass its remaining duration rather than starting a new8h window. Watch releases its
 owned binding at deadline/interruption/error; this generic cleanup does not
 replace a meaningful handoff. No listener has started merely by installing or
 updating this skill.

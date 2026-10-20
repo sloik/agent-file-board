@@ -16,6 +16,7 @@ import time
 from datetime import datetime, timezone
 
 MODES = {"FAST": 15, "MEDIUM": 60, "LONG": 300, "OPPORTUNISTIC": 900}
+NOTICE_HEADERS = frozenset("FROM TO SCOPE ROOM THREAD DATE POSTED-AT LANGUAGE REPLY-TO RUNTIME STATUS".split())
 DISPOSITIONS = ("observed", "accepted", "working", "blocked", "done", "declined")
 PENDING = {"accepted", "working", "blocked"}
 ID = re.compile(r"^[a-z][a-z0-9-]{2,63}$")
@@ -314,16 +315,19 @@ def after_cursor(rows, cursor, all_paths):
 
 def routine_notice(message):
     h = message["headers"]
-    return (h.get("STATUS") == "INFO" and h.get("THREAD", "").split("-", 1)[-1] == "session-presence"
+    return (set(h).issubset(NOTICE_HEADERS) and h.get("SCOPE") == "ROOM" and h.get("TO") == "all" and h.get("REPLY-TO") == "-" and h.get("STATUS") == "INFO"
+            and not re.search(r"(?<![\w@.-])@[a-z][a-z0-9-]{2,63}(?![\w-])", message["body"], re.I)
+            and re.fullmatch(r"T0+-(?:session-presence|session-(?:start|release)-[a-f0-9-]+)", h.get("THREAD", "")) is not None
             and re.match(r"Session (?:start|release): identifier ", message["body"]) is not None)
 
 
 def relevant(message, args, authored, engaged):
     h = message["headers"]
-    if h.get("FROM") == args.participant or routine_notice(message): return False
+    if h.get("FROM") == args.participant: return False
     if args.participant in re.split(r"[,\s]+", h.get("TO", "")): return True
     if re.search(r"(?<![\w@.-])@" + re.escape(args.participant) + r"(?![\w-])", message["body"], re.I): return True
     if h.get("REPLY-TO") in authored: return True
+    if routine_notice(message): return False
     scope = (str(Path(message["path"]).parent), h.get("THREAD", "").split("-", 1)[0])
     if scope in engaged: return True
     if h.get("SCOPE") == "ROOM":

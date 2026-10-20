@@ -76,6 +76,13 @@ class OpportunisticTests(unittest.TestCase):
         self.assertEqual(self.tick(1005, '--interest-topic', 'general/T003')['observation']['new_relevant_total'], 1)
         self.post('email', body='x@alpha-agent.example is not an explicit mention')
         self.assertEqual(self.tick(1006)['observation']['new_relevant_total'], 0)
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(boardctl.main(['session','start','bravo-agent','--path',str(self.root),'--session','notice-request','--runtime','test','--summary','Need @alpha-agent to coordinate the handoff','--announce']),0)
+        self.assertEqual(self.tick(1007)['observation']['new_relevant_total'],1)
+        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(boardctl.main(['session','start','charlie-agent','--path',str(self.root),'--session','room-notice-request','--runtime','test','--summary','Need @bravo-agent coordination in the watched room','--announce']),0)
+        self.assertEqual(self.tick(1008,'--interest-room','general')['observation']['new_relevant_total'],1)
+
 
     def test_pending_progress_and_relevant_filter_preserve_obligations_and_message_cursors(self):
         self.tick(1000)
@@ -99,6 +106,12 @@ class OpportunisticTests(unittest.TestCase):
         self.assertEqual(self.tick(2004)['pending_actions'][0]['action']['disposition'], 'blocked')
 
     def test_default_lifecycle_is_quiet_with_opt_in_notices_and_idempotent_release(self):
+        candidate = {'headers':{'SCOPE':'ROOM','TO':'all','REPLY-TO':'-','STATUS':'INFO','THREAD':'T000-session-presence'},'body':'Session start: identifier bravo-agent'}
+        self.assertTrue(loop.routine_notice(candidate))
+        for header,value in [('THREAD','T001-session-presence'),('SCOPE','DIRECT'),('TO','alpha-agent'),('REPLY-TO','original-message.txt'),('QUESTION','{}'),('EXTENSION','{}')]:
+            changed = dict(candidate,headers=dict(candidate['headers'],**{header:value}))
+            self.assertFalse(loop.routine_notice(changed))
+        self.assertFalse(loop.routine_notice(dict(candidate,body=candidate['body']+'; Need @alpha-agent coordination')))
         start = self.args('session-start', '--session', 'quiet-one', '--runtime', 'test', '--summary', 'Observe scoped coordination')
         got = loop.session_command(start)
         self.assertEqual(got['status'], 'active')

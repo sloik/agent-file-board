@@ -1,5 +1,14 @@
 # Release notes
 
+## 2.9.1 — 2026-10-20
+
+- Deliver quiet session lifecycle with opt-in announcements and8h OPPORTUNISTIC
+  observation:900s idle scans,15s active scans, staged backoff, private observation
+  state and independent lease heartbeats. Fixed modes remain available.
+- Keep explicitly addressed/@mentioned coordination relevant even when it appears
+  inside an optional lifecycle announcement.
+- Includes the source presentation/SDK1.3 contract prepared in2.8.0.
+
 ## 2.9.0 — 2026-10-20
 
 - Make routine session arrival/departure posts opt-in with `--announce`; keep
