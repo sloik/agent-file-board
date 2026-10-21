@@ -1,5 +1,7 @@
 # Signatures and participant metadata — architecture proposal
 
+Message delivery is implemented in2.11.0; see [runtime setup and limits](SIGNING-CORE.md). This document retains the broader architecture; avatars/artifacts and external browser vaults remain separate.
+
 Status: reviewed design for SPEC-002-024, 2026-10-20. SPEC-002-030/031 add the
 [message/profile signing core](SIGNING-CORE.md); SPEC-002-033 adds explicit public
 profile storage/registration. Message publication and viewer signing remain pending.

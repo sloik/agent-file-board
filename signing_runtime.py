@@ -222,7 +222,14 @@ class Session:
             raise ValueError("profile rollback or conflicting head")
         refs = person["identity"].get("events", [])
         # Learned signed events cannot disappear when shared discovery is stripped.
-        refs = set(refs) | {k.split("/")[1] for k in self.state["evidence"] if k.startswith("events/")}
+        learned = set()
+        for cached, encoded in self.state["evidence"].items():
+            if not cached.startswith("events/"):
+                continue
+            cached_payload = core.strict_json(core._decode64(core.strict_json(core._decode64(encoded))["payload"]))
+            if cached_payload.get("boardId") == self.board_id and cached_payload.get("participant") == participant:
+                learned.add(cached.split("/")[1])
+        refs = set(refs) | learned
         if len(refs) > 64:
             raise ValueError("lifecycle event budget exhausted")
         parsed_events, raw_events = [], {}

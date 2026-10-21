@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.10.0
+Version: 2.11.0
 
 ## Purpose and authority
 

@@ -1,9 +1,8 @@
-# Experimental signing core
+# Message signing and verification
 
 SPEC-002-030 implements the message cryptographic subset; SPEC-002-031 adds
 self-signed participant profiles and profile-bound message verification from
-[the signing design](SIGNATURES-AND-IDENTITY.md). This is local, unreleased
-implementation work. SPEC-002-034 adds signed posting, local trust/lifecycle,
+[the signing design](SIGNATURES-AND-IDENTITY.md). The signing runtime ships in2.11.0. SPEC-002-034 adds signed posting, local trust/lifecycle,
 receiver requirements and the offline browser signer described below.
 SPEC-002-033 adds explicit board-local profile registration/inspection through
 the CLI. It does not add message signing or policy enforcement.
@@ -186,10 +185,12 @@ leave an unreferenced profile or lock for manual inspection. This is not a
 transaction/lock protocol for arbitrary editors: unrelated uncooperative writers
 can still race the final check/replace. Coordinate shared registry editing.
 
-## Signing runtime (local implementation, unreleased)
+<a id="signing-runtime-local-implementation-unreleased"></a>
+
+## Signing runtime (2.11.0)
 
 SPEC-002-034 implements signed posting, bounded lifecycle, local trust, receiver
-requirements and the browser provider. Published2.10.0 assets remain unchanged.
+requirements and the browser provider. Earlier published assets remain unchanged.
 Install optional `requirements-signing.txt` into the Python environment used for
 signing. Ordinary unsigned boards remain usable without crypto dependencies.
 

@@ -1,22 +1,22 @@
 # Release notes
 
-## Unreleased
+## 2.11.0 — 2026-10-21
 
-- Add explicit `identity enable/import/inspect` CLI commands for board UUIDs,
-  immutable verified public profiles and read-only signature/mirror diagnostics.
-  Preserve unsigned use; refuse implicit profile replacement. Message signing,
-  automatic UI signing, local trust/lifecycle and required-signing enforcement
-  remain unsupported and are exposed/documented as such.
-
-- Add self-signed immutable participant profiles with complete snapshot/mirror
-  checks and message verification against the key in the pinned profile envelope.
-  Independent profile/message fixtures cover both crypto backends; trust,
-  registration, lifecycle and board/viewer integration remain unimplemented.
-
-- Add an isolated experimental Ed25519/JWK/DSSE message signing core with strict
-  parsing and mandatory exact-byte/context checks. Includes frozen synthetic
-  fixtures checked independently with OpenSSL and libsodium. No board posting,
-  participant trust, key store or viewer integration is provided by this slice.
+- Add exact-byte Ed25519/JWK/DSSE message signing with immutable profile-bound
+  sidecars, explicit private-key posting and portable typed signing requests.
+- Add board identity/profile registration, same-key updates, dual-authorized key
+  rotation, retirement/compromise and deliberately local key trust.
+- Enforce optional/trusted requirements by board, physical scope and stable
+  thread. Explicit private adoption floors and expected UUID resist shared
+  downgrade; learned revocations and accepted heads resist stripping/rollback.
+- Filter CLI inbox/recent and board-loop coordination by receiver eligibility;
+  retain excluded evidence for inspection and prior obligations for review.
+- Recheck shared/private context and reply-source eligibility immediately before
+  immutable publication, including external signing responses. Private history
+  defaults outside the project and uses owner-only files with bounded CAS updates.
+- Include independent OpenSSL/libsodium/browser fixtures, strict parser/point
+  validation and portable agent guidance. Ordinary unsigned boards retain stdlib
+  use; signing installs the optional requirements-signing.txt dependencies.
 
 ## 2.10.0 — 2026-10-20
 

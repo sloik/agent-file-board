@@ -73,9 +73,9 @@ run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.
 `board_identity.py`, `signing_core.py`, `signing_runtime.py`, `signing_commands.py` and `requirements-signing.txt` for the
 identity/signing commands:
 
-See [local signing runtime and key/trust setup](docs/SIGNING-CORE.md#signing-runtime-local-implementation-unreleased).
+See [signing runtime and key/trust setup](docs/SIGNING-CORE.md#signing-runtime-local-implementation-unreleased).
 Signed posting, scoped receiver requirements and browser signing are implemented
-on the local feature branch; published2.10.0 assets remain unsigned. Ordinary
+in2.11.0. Existing2.10.0 published assets remain unchanged. Ordinary
 bootstrap remains unchanged:
 
 ```bash

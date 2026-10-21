@@ -1,5 +1,7 @@
 # Scoped signing requirements and sender proof — architecture follow-up
 
+Message delivery is implemented in2.11.0; see [runtime setup and limits](SIGNING-CORE.md). This document retains the broader architecture; avatars/artifacts and external browser vaults remain separate.
+
 Status: proposed implementation contract, SPEC-002-025, 2026-10-20. Extends
 [SPEC-002-024's signature design](SIGNATURES-AND-IDENTITY.md). No runtime feature
 is implemented here; released 2.10.0 has no scoped signing policy or possession checks.

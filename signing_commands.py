@@ -101,27 +101,43 @@ def publish(s, packet, envelope):
     sidecars = safe_path(s.board, str(path.parent.relative_to(s.board) / ".signatures"))
     sidecars.mkdir(exist_ok=True)
     sidecar = sidecars / (ref["record"] + ".json")
-    # Recheck all shared/private context immediately before immutable publication.
-    fresh = session(s.root, s.state_path.parent.parent)
-    fresh_head = current(fresh, packet["participant"])
-    if fresh.config != s.config or fresh.registry != s.registry or fresh_head.envelope_sha256 != head.envelope_sha256 or fresh.state["pins"] != s.state["pins"]:
-        raise ValueError("signing context changed before publication")
-    publish_atomic(sidecar, envelope)
-    # A failed message publication may leave the immutable harmless orphan sidecar.
-    publish_atomic(path, raw)
-    s.evaluate(path, headers, raw)
+    # Every publication checks the persisted private revision as well as shared
+    # bytes. A prepared request is not authority to bypass a later local floor,
+    # trust removal, source revocation or profile change.
+    latest = [s]
+    def recheck():
+        fresh = session(s.root, s.state_path.parent.parent)
+        fresh_head = current(fresh, packet["participant"])
+        if (fresh.config != s.config or fresh.registry != s.registry
+                or fresh_head.envelope_sha256 != head.envelope_sha256
+                or fresh.before != s.before):
+            raise ValueError("signing context changed before publication")
+        if fresh.minimum(packet["path"], headers["THREAD"].split("-")[0]) == "trusted" and fresh.state["pins"].get(headers["FROM"]) != fresh_head.fingerprint:
+            raise ValueError("outgoing scope requires a trusted signer")
+        if headers.get("REPLY-TO", "-") != "-":
+            source = safe_path(s.board, str(path.parent.relative_to(s.board) / headers["REPLY-TO"]))
+            source_headers = boardctl.check_message(source, fresh.board, fresh.config, boardctl.ids(fresh.registry))
+            if fresh.evaluate(source, source_headers)["eligibility"] != "eligible":
+                raise ValueError("reply source excluded by signing requirements")
+        latest[0] = fresh
+    publish_atomic(sidecar, envelope, guard=recheck)
+    # A failed message publication may leave an immutable harmless orphan sidecar.
+    publish_atomic(path, raw, guard=recheck)
+    latest[0].evaluate(path, headers, raw)
     try:
-        s.save()
+        latest[0].save()
     except (OSError, ValueError):
         print("warning: message published; private verification history could not be saved", file=sys.stderr)
     return path
 
 
-def publish_atomic(path, raw):
+def publish_atomic(path, raw, guard=None):
     temporary = path.parent / (".signing-publish-" + uuid.uuid4().hex)
     try:
         identity._publish(temporary, raw)
         import os
+        if guard is not None:
+            guard()
         os.link(temporary, path)
     finally:
         temporary.unlink(missing_ok=True)

@@ -139,6 +139,44 @@ class SigningRuntimeTests(unittest.TestCase):
         self.assertEqual(s.minimum("rooms/general/a.txt","T002"),"optional")
         self.assertEqual(s.minimum("rooms/other/a.txt","T001"),"optional")
 
+    def test_prepared_publication_rejects_a_new_private_floor(self):
+        source = self.post()
+        raw = source.read_bytes()
+        import re
+        draft = re.sub(rb"SIGNATURE: [^\n]*\n", b"", raw)
+        path = source.relative_to(self.board).as_posix().replace("_signed.txt", "_prepared.txt")
+        stale = self.sess()
+        packet, envelope = commands.signed_packet(stale, path, draft, self.key)
+        fresh = self.sess()
+        fresh.state["floor"] = runtime.policy({"version": 1, "minimum": "trusted"}, fresh.config)
+        fresh.save()
+        with self.assertRaisesRegex(ValueError, "context changed|trusted signer"):
+            commands.publish(stale, packet, envelope)
+        self.assertFalse((self.board / path).exists())
+
+    def test_portable_reply_rechecks_source_eligibility_at_publication(self):
+        source = self.post()
+        import re
+        draft = re.sub(rb"SIGNATURE: [^\n]*\n", b"", source.read_bytes())
+        draft = draft.replace(b"REPLY-TO: -", ("REPLY-TO: " + source.name).encode())
+        path = source.relative_to(self.board).as_posix().replace("_signed.txt", "_response.txt")
+        s = self.sess()
+        packet, envelope = commands.signed_packet(s, path, draft, self.key)
+        # The fixture body is human-readable but must still match exact proof bytes.
+        source.write_bytes(source.read_bytes() + b"Changed after request.\n")
+        with self.assertRaisesRegex(ValueError, "reply source excluded"):
+            commands.publish(s, packet, envelope)
+        self.assertFalse((self.board / path).exists())
+
+    def test_unrelated_learned_events_do_not_consume_a_participant_budget(self):
+        s = self.sess()
+        for i in range(65):
+            raw = runtime.seal({"version": 1, "boardId": self.board_id,
+                "participant": "another-agent", "authorizingProfile": self.digest,
+                "keyId": "public-key", "status": "retired", "reason": str(i)}, runtime.REVOCATION, [self.key])
+            s.state["evidence"]["events/" + hashlib.sha256(raw).hexdigest()] = base64.b64encode(raw).decode()
+        self.assertEqual(s.resolve(self.participant)["head"].envelope_sha256, self.digest)
+
     def test_portable_request_response_checks_exact_bytes_and_current_context(self):
         req=self.private/"request.json";response=self.private/"response.json"
         self.ctl("post","--from",self.participant,"--to","human-owner-01","--scope","room","--room","general","--thread","T001","--slug","external","--body","External synthetic","--prepare-signing",str(req))
