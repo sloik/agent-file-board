@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Add explicit `identity enable/import/inspect` CLI commands for board UUIDs,
+  immutable verified public profiles and read-only signature/mirror diagnostics.
+  Preserve unsigned use; refuse implicit profile replacement. Message signing,
+  automatic UI signing, local trust/lifecycle and required-signing enforcement
+  remain unsupported and are exposed/documented as such.
+
 - Add self-signed immutable participant profiles with complete snapshot/mirror
   checks and message verification against the key in the pinned profile envelope.
   Independent profile/message fixtures cover both crypto backends; trust,

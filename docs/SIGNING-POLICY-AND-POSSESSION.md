@@ -10,6 +10,12 @@ agents, and private-key possession checks in the sender picker. Owner selected
 separate keys on one machine do not require multiple active keys per participant;
 retain the existing linear profile/key-rotation model.
 
+Implementation boundary (SPEC-002-033): the CLI now supports optional board UUIDs
+and verified first-profile registration/inspection. It exposes message signing,
+scoped policy and UI signing as unsupported. The [delivery sequence](SIGNING-CORE.md#delivery-plan-ui-signing-and-agents-that-bypass-the-cli)
+keeps automatic UI per-post signing and non-CLI receiver enforcement explicit;
+profile enable/import is not implementation of the policy or provider below.
+
 ## Three separate mechanisms
 
 1. A display filter changes which messages a human sees.

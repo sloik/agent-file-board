@@ -683,6 +683,11 @@ def command_repair(args):
     return 0
 
 
+def command_identity(args):
+    import board_identity
+    return board_identity.command(args)
+
+
 def parser() -> argparse.ArgumentParser:
     cli = argparse.ArgumentParser(prog="boardctl")
     commands = cli.add_subparsers(dest="command", required=True)
@@ -737,6 +742,19 @@ def parser() -> argparse.ArgumentParser:
     post.add_argument("--information-file", help="INFORMATION JSON: inert provenance and optional pinned shared state")
     extension_packages.add_parser(commands)
     extension_state.add_parser(commands)
+    identity = commands.add_parser("identity", help="Opt-in public profile registration; does not sign messages")
+    identity_actions = identity.add_subparsers(dest="identity_action", required=True)
+    for action in ("enable", "import", "inspect"):
+        sub = identity_actions.add_parser(action)
+        sub.add_argument("--path", default=".")
+        if action == "enable":
+            sub.add_argument("--board-id", help="optional explicit canonical UUID; existing IDs cannot be replaced")
+        else:
+            sub.add_argument("participant_id", nargs="?" if action == "inspect" else None)
+        if action == "import":
+            sub.add_argument("--profile-file", required=True, help="public self-signed profile envelope")
+            sub.add_argument("--sha256", required=True, help="expected exact profile envelope SHA-256")
+        sub.set_defaults(func=command_identity)
     return cli
 
 

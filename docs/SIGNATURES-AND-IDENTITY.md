@@ -1,7 +1,8 @@
 # Signatures and participant metadata — architecture proposal
 
-Status: reviewed design for SPEC-002-024, 2026-10-20. SPEC-002-030/031 add an isolated
-[message/profile signing core](SIGNING-CORE.md); board integration is not implemented.
+Status: reviewed design for SPEC-002-024, 2026-10-20. SPEC-002-030/031 add the
+[message/profile signing core](SIGNING-CORE.md); SPEC-002-033 adds explicit public
+profile storage/registration. Message publication and viewer signing remain pending.
 Released 2.10.0 retains unsigned behavior; its optional informational operator
 field is implemented separately. This is the proposed
 contract for a future additive convention version, with matching CLI/viewer work.
@@ -472,9 +473,10 @@ not break the core unsigned stdlib-only reader.
 
 ## Implementation plan and review disposition
 
-SPEC-002-030/031 implement an isolated message/profile core and independent fixtures;
-see [its verification guide](SIGNING-CORE.md). Registration/storage, full
-lifecycle, board publication, policy and viewer work below remain pending.
+SPEC-002-030/031 implement the message/profile core and independent fixtures;
+SPEC-002-033 adds explicit first-profile registration/storage and read-only CLI
+inspection. See [the guide and delivery sequence](SIGNING-CORE.md). Profile head
+updates, full lifecycle, signed-message publication, policy and viewer work remain pending.
 
 No runtime implementation is authorized by this design artifact. Next work should
 be split into reviewable deliverables:
