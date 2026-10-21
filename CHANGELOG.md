@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Add self-signed immutable participant profiles with complete snapshot/mirror
+  checks and message verification against the key in the pinned profile envelope.
+  Independent profile/message fixtures cover both crypto backends; trust,
+  registration, lifecycle and board/viewer integration remain unimplemented.
+
 - Add an isolated experimental Ed25519/JWK/DSSE message signing core with strict
   parsing and mandatory exact-byte/context checks. Includes frozen synthetic
   fixtures checked independently with OpenSSL and libsodium. No board posting,

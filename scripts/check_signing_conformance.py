@@ -22,6 +22,63 @@ def require(condition, message):
         raise RuntimeError(message)
 
 
+def cross_check(envelope, openssl, sodium, expected_pae=None):
+    """Independent PAE and both primitives; no production encoding helpers."""
+    payload = base64.b64decode(envelope["payload"], validate=True)
+    kind = envelope["payloadType"].encode()
+    preauth = b" ".join((b"DSSEv1", str(len(kind)).encode(), kind,
+                         str(len(payload)).encode(), payload))
+    if expected_pae is not None:
+        require(preauth == expected_pae, "frozen profile PAE mismatch")
+    signature = base64.b64decode(envelope["signatures"][0]["sig"], validate=True)
+    require(openssl.sign(preauth) == sodium.sign(preauth).signature == signature,
+            "independent profile/message signature mismatch")
+    openssl.public_key().verify(sodium.sign(preauth).signature, preauth)
+    sodium.verify_key.verify(preauth, openssl.sign(preauth))
+    for verify, error in (
+        (lambda p: openssl.public_key().verify(signature, p), InvalidSignature),
+        (lambda p: sodium.verify_key.verify(p, signature), BadSignatureError),
+    ):
+        try:
+            verify(preauth + b"!")
+        except error:
+            pass
+        else:
+            raise RuntimeError("backend accepted tampered profile/message")
+
+
+def check_profiles():
+    fixture = json.loads((ROOT / "tests/fixtures/signing-core/profiles.json").read_bytes())
+    seed = bytes.fromhex(fixture["seed_hex"])
+    openssl = Ed25519PrivateKey.from_private_bytes(seed)
+    sodium = SigningKey(seed)
+    for case in fixture["cases"]:
+        raw = base64.b64decode(case["profile_envelope_base64"], validate=True)
+        digest = hashlib.sha256(raw).hexdigest()
+        require(digest == case["profile_envelope_sha256"], "frozen profile envelope hash mismatch")
+        envelope = json.loads(raw)
+        cross_check(envelope, openssl, sodium, base64.b64decode(case["pae_base64"], validate=True))
+        require(envelope["payload"] == case["payload_base64"], "frozen profile payload mismatch")
+        context = core.MessageContext(**case["message_context"])
+        require(context.profile == digest, "message fixture references wrong profile")
+        profile = core.verify_profile(raw, expected_sha256=digest, board_id=context.board_id,
+                                      participant=context.participant)
+        require(profile.payload == base64.b64decode(case["payload_base64"]), "core profile payload mismatch")
+        require(profile.fingerprint == fixture["fingerprint"], "core profile fingerprint mismatch")
+        require(json.loads(profile.snapshot) == case["snapshot"], "complete snapshot mismatch")
+        generated = core.sign_profile(json.dumps(case["snapshot"], ensure_ascii=False).encode(),
+                                      context.board_id, openssl, previous=case["previous"])
+        cross_check(json.loads(generated), openssl, sodium)
+        if case["canonical_profile"]:
+            require(generated == raw, "canonical profile bytes differ from frozen fixture")
+        message_envelope = case["message_envelope"]
+        cross_check(message_envelope, openssl, sodium)
+        result = core.verify_message_with_profile(json.dumps(message_envelope).encode(), raw,
+                                                  base64.b64decode(case["message_base64"]), context)
+        require(result.fingerprint == profile.fingerprint, "profile/message key mismatch")
+    print(f"PASS: {len(fixture['cases'])} frozen profiles and profile-bound messages; OpenSSL/libsodium agreement")
+
+
 def check():
     vectors = json.loads((ROOT / "tests/fixtures/signing-core/vectors.json").read_bytes())
     seed = bytes.fromhex(vectors["seed_hex"])
@@ -77,6 +134,7 @@ def check():
         if case["canonical_statement"]:
             require(generated_data == envelope, "canonical output differs from frozen fixture")
     print(f"PASS: {len(vectors['cases'])} frozen fixtures; OpenSSL/libsodium cross-sign and cross-verify; tamper rejection")
+    check_profiles()
 
 
 if __name__ == "__main__":
