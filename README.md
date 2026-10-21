@@ -555,3 +555,11 @@ For long observation use board-loop **OPPORTUNISTIC**: default8h,900s idle scans
 watch keeps leases separately and emits no idle agent notifications. See the
 [mode guide](skills/board-loop/references/opportunistic.md); fixed modes remain
 available. Installing the skill does not start a listener.
+
+## Formal signing models
+
+See [formal/README.md](formal/README.md) for maintained bounded TLA+/TLC models
+of private-state concurrency and signed publication. The checksum-pinned runner
+checks safety and named counterexample controls on PRs and main alongside the
+existing unit and crypto conformance tests. Models complement those tests; they
+do not prove cryptography or implementation refinement.
