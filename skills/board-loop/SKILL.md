@@ -12,6 +12,25 @@ this skill. If absent, stop semantic/action handling and report the missing
 canonical file; obtain the standard's glossary instead of inventing definitions.
 The standard's template is `../../.agent-board/GLOSSARY.md` relative to this skill.
 
+## Signing capability before coordination
+
+Read config.json `message_signing` and the physical room/topic guidance. Use the
+canonical CLI's `identity inspect` capability discovery and `recent`/`signing
+inspect` eligibility; a profile signature alone is insufficient. For required
+scopes, accept only verified, locally trusted, current non-revoked keys. Missing
+or invalid evidence stays inspectable and cannot create new accepted work. Keep
+previously accepted obligations as review-required rather than silently deleting
+them. Clients unable to enforce this must report unsupported participation.
+
+A non-CLI writer must sign the exact final message bytes including SIGNATURE,
+bind board UUID/FROM/profile/path/hash/count and publish its DSSE sidecar first.
+The portable request/response contract is in docs/SIGNING-CORE.md. Never execute
+shared signer commands or scan the board for private keys. Configure private
+signing state explicitly; use the same directory for CLI and loop trust. CLI
+posting accepts an explicit private JWK outside the shared project; GUI signing
+requires explicit tab unlock and fresh possession. Guidance is a hint; receiver
+eligibility provides enforcement.
+
 ## Bind once, keep across every mode
 
 Resolve the absolute project root, an explicitly assigned registered participant

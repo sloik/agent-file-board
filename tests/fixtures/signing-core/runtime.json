@@ -1,0 +1,403 @@
+{
+  "provenance": "Synthetic RFC8032 seed; Python cryptography signing and libsodium point checks; frozen cross-client lifecycle evidence",
+  "cases": [
+    {
+      "name": "same-key",
+      "config": {
+        "version": 1,
+        "project": {
+          "id": "example-project",
+          "name": "Example project",
+          "source_of_truth": "Project documentation and code, not this board"
+        },
+        "language": {
+          "default": "en",
+          "allowed": [
+            "en"
+          ],
+          "project_artifacts": "en",
+          "topic_defaults": {}
+        },
+        "time_zone": "Europe/Warsaw",
+        "board": {
+          "directory": ".agent-board",
+          "default_room": "general",
+          "direct_directory": "direct",
+          "message_extension": ".txt",
+          "thread_prefix": "T",
+          "thread_digits": 3
+        },
+        "participant_identity": {
+          "registry_file": ".agent-board/participants.json",
+          "id_pattern": "^[a-z][a-z0-9-]{2,63}$",
+          "uniqueness_scope": "project",
+          "state_directory_environment": "AGENT_FILE_BOARD_STATE_DIR"
+        },
+        "statuses": [
+          "INFO",
+          "QUESTION",
+          "REQUEST",
+          "REPLY",
+          "DECISION-NEEDED",
+          "DONE",
+          "CLOSED"
+        ],
+        "safety": {
+          "forbidden_content": [
+            "credentials",
+            "API keys",
+            "payment data",
+            "personal data",
+            "sensitive source documents"
+          ]
+        },
+        "identity": {
+          "boardId": "2cda5aba-086d-46db-bfaf-46c51676f8bb"
+        }
+      },
+      "registry": {
+        "version": 1,
+        "com.example.registry": {
+          "keep": true
+        },
+        "participants": [
+          {
+            "com.example.retained": {
+              "array": [
+                true,
+                null,
+                "text"
+              ],
+              "number": 1
+            },
+            "id": "test-agent-01",
+            "kind": "agent",
+            "language": {
+              "com.example.extra": true,
+              "preferred": "en"
+            },
+            "metadata": {
+              "com.example.company": {
+                "active": true,
+                "levels": [
+                  1,
+                  2,
+                  3
+                ],
+                "ratio": 0.125,
+                "team": "Devices",
+                "unknown": null
+              },
+              "org.example.future": [
+                false,
+                {
+                  "keep": "all fields"
+                }
+              ]
+            },
+            "name": "Updated snapshot",
+            "operator": "human-owner-01",
+            "identity": {
+              "version": 1,
+              "profile": "3f6be0a848e32bff183b89e84e2414d986ef14be6305578cd71683ca9b61cc5b",
+              "events": []
+            }
+          },
+          {
+            "id": "human-owner-01",
+            "kind": "human",
+            "extra": [
+              null,
+              1.5
+            ]
+          }
+        ]
+      },
+      "participant": "test-agent-01",
+      "path": "rooms/general/2026-10-21_0938_test-agent-01_T001_signed.txt",
+      "message": "RlJPTTogdGVzdC1hZ2VudC0wMQpUTzogaHVtYW4tb3duZXItMDEKU0NPUEU6IFJPT00KUk9PTTogZ2VuZXJhbApUSFJFQUQ6IFQwMDEtc2lnbmVkCkRBVEU6IDIwMjYtMTAtMjEgMDk6MzgKTEFOR1VBR0U6IGVuClJFUExZLVRPOiAtClNUQVRVUzogSU5GTwpQT1NURUQtQVQ6IDIwMjYtMTAtMjFUMDc6Mzg6NTAuMzcxWgpTSUdOQVRVUkU6IHsicmVjb3JkIjoic2lnXzQ3YWFhMGI3LTdlZGUtNDYyZC1hM2FjLTBlZDlmNWRhZTk2YSIsInZlcnNpb24iOjF9Ci0tLQpTeW50aGV0aWMgc2lnbmVkIHdvcmsK",
+      "files": {
+        "rooms/general/.signatures/sig_47aaa0b7-7ede-462d-a3ac-0ed9f5dae96a.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT2lKMFpYTjBMV0ZuWlc1MExUQXhJaXdpY0hKdlptbHNaU0k2SWpFeU56azFPV1k0TkRjeE1qWm1aVGxtTkdaaU5UZ3lPVGM1WW1aaE1qTTRPRGRoWldRMk1EQmhOVEV3T1RJd05qVmtNMkkwWWpabFl6QTNNelV4WVRJaUxDSjBZWEpuWlhRaU9uc2lZbmwwWlhNaU9qSTROU3dpYTJsdVpDSTZJbTFsYzNOaFoyVWlMQ0p3WVhSb0lqb2ljbTl2YlhNdloyVnVaWEpoYkM4eU1ESTJMVEV3TFRJeFh6QTVNemhmZEdWemRDMWhaMlZ1ZEMwd01WOVVNREF4WDNOcFoyNWxaQzUwZUhRaUxDSnphR0V5TlRZaU9pSTFZMlF3WW1ObFpESTFaakU0WVRneE5tSTJNR1ZqTnpJNVlXRmxZV0UyWmpFeE1HUmhZekkxTlRSa05XRTFNV0kxWkRnMk9XSTFOVEkyTkRSbFpqTTBJbjBzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQubWVzc2FnZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJyTUFuV1BQOUFueDZ3TmVoaTZmNzhvanZ5ZExzVjlrYlBjL3dadzRweHNOQnFhVkE5U3lramIzaHBTM3pkYWhxUk1PcThyQTFzZ29FS1RDYWpnaTJCQT09In1dfQ==",
+        "identity/profiles/3f6be0a848e32bff183b89e84e2414d986ef14be6305578cd71683ca9b61cc5b.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT25zaVkyOXRMbVY0WVcxd2JHVXVjbVYwWVdsdVpXUWlPbnNpWVhKeVlYa2lPbHQwY25WbExHNTFiR3dzSW5SbGVIUWlYU3dpYm5WdFltVnlJam94ZlN3aWFXUWlPaUowWlhOMExXRm5aVzUwTFRBeElpd2lhMmx1WkNJNkltRm5aVzUwSWl3aWJHRnVaM1ZoWjJVaU9uc2lZMjl0TG1WNFlXMXdiR1V1WlhoMGNtRWlPblJ5ZFdVc0luQnlaV1psY25KbFpDSTZJbVZ1SW4wc0ltMWxkR0ZrWVhSaElqcDdJbU52YlM1bGVHRnRjR3hsTG1OdmJYQmhibmtpT25zaVlXTjBhWFpsSWpwMGNuVmxMQ0pzWlhabGJITWlPbHN4TERJc00xMHNJbkpoZEdsdklqb3dMakV5TlN3aWRHVmhiU0k2SWtSbGRtbGpaWE1pTENKMWJtdHViM2R1SWpwdWRXeHNmU3dpYjNKbkxtVjRZVzF3YkdVdVpuVjBkWEpsSWpwYlptRnNjMlVzZXlKclpXVndJam9pWVd4c0lHWnBaV3hrY3lKOVhYMHNJbTVoYldVaU9pSlZjR1JoZEdWa0lITnVZWEJ6YUc5MElpd2liM0JsY21GMGIzSWlPaUpvZFcxaGJpMXZkMjVsY2kwd01TSjlMQ0p3Y21WMmFXOTFjeUk2SWpFeU56azFPV1k0TkRjeE1qWm1aVGxtTkdaaU5UZ3lPVGM1WW1aaE1qTTRPRGRoWldRMk1EQmhOVEV3T1RJd05qVmtNMkkwWWpabFl6QTNNelV4WVRJaUxDSndkV0pzYVdOTFpYa2lPbnNpWVd4bmIzSnBkR2h0SWpvaVJXUXlOVFV4T1NJc0ltWnZjbTFoZENJNkltcDNheUlzSW10bGVTSTZleUpqY25ZaU9pSkZaREkxTlRFNUlpd2lhM1I1SWpvaVQwdFFJaXdpZUNJNklqRXhjVmxCV1V0NFEzSm1WbE5mTjFSNVYxRklUMmMzYUdOMlVHRndhVTFzY25kSllXRlFZMGhWVW04aWZYMHNJblpsY25OcGIyNGlPakY5IiwicGF5bG9hZFR5cGUiOiJhcHBsaWNhdGlvbi92bmQuYWdlbnQtZmlsZS1ib2FyZC5wcm9maWxlLmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IkNFQWc1MVNUK2E2TzVXV0tlQ0NCbE5kcHkvcjgySmhkbjhQVFgrb3dlM2ZZQkJKTWZjVDNwWUhQZWhhQ3lSdXJBVnNyZlFlNnV6ZTVlZ0tlbXdubEJRPT0ifV19",
+        "identity/profiles/127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT25zaVkyOXRMbVY0WVcxd2JHVXVjbVYwWVdsdVpXUWlPbnNpWVhKeVlYa2lPbHQwY25WbExHNTFiR3dzSW5SbGVIUWlYU3dpYm5WdFltVnlJam94ZlN3aWFXUWlPaUowWlhOMExXRm5aVzUwTFRBeElpd2lhMmx1WkNJNkltRm5aVzUwSWl3aWJHRnVaM1ZoWjJVaU9uc2lZMjl0TG1WNFlXMXdiR1V1WlhoMGNtRWlPblJ5ZFdVc0luQnlaV1psY25KbFpDSTZJbVZ1SW4wc0ltMWxkR0ZrWVhSaElqcDdJbU52YlM1bGVHRnRjR3hsTG1OdmJYQmhibmtpT25zaVlXTjBhWFpsSWpwMGNuVmxMQ0pzWlhabGJITWlPbHN4TERJc00xMHNJbkpoZEdsdklqb3dMakV5TlN3aWRHVmhiU0k2SWtSbGRtbGpaWE1pTENKMWJtdHViM2R1SWpwdWRXeHNmU3dpYjNKbkxtVjRZVzF3YkdVdVpuVjBkWEpsSWpwYlptRnNjMlVzZXlKclpXVndJam9pWVd4c0lHWnBaV3hrY3lKOVhYMHNJbTVoYldVaU9pTEZ1OE96eFlKMGVTQnJiM1FnOEorUWlDSXNJbTl3WlhKaGRHOXlJam9pYUhWdFlXNHRiM2R1WlhJdE1ERWlmU3dpY0hKbGRtbHZkWE1pT201MWJHd3NJbkIxWW14cFkwdGxlU0k2ZXlKaGJHZHZjbWwwYUcwaU9pSkZaREkxTlRFNUlpd2labTl5YldGMElqb2lhbmRySWl3aWEyVjVJanA3SW1OeWRpSTZJa1ZrTWpVMU1Ua2lMQ0pyZEhraU9pSlBTMUFpTENKNElqb2lNVEZ4V1VGWlMzaERjbVpXVTE4M1ZIbFhVVWhQWnpkb1kzWlFZWEJwVFd4eWQwbGhZVkJqU0ZWU2J5SjlmU3dpZG1WeWMybHZiaUk2TVgwPSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQucHJvZmlsZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJkbzNBTnJYaEw1VWlWSjBlZ29KNE1SMVVOVVRqdDRpaEVoQU4xNkZuUlVoMDVqZkxReUgxUjRBdVNJU0d3UHRDbi9NbnhhRWo5OFZ6OVJiYSs1UXdDZz09In1dfQ=="
+      },
+      "expected": {
+        "eligibility": "eligible",
+        "signature": "valid",
+        "trust": "trusted",
+        "lifecycle": "current",
+        "minimum": "optional",
+        "reason": "verified",
+        "fingerprint": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:kPrK_qmxVWaYVA9wwBF6Iuo3vVzz7TxHCTwXBygrS4k",
+        "profile": "127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2"
+      }
+    },
+    {
+      "name": "rotation",
+      "config": {
+        "version": 1,
+        "project": {
+          "id": "example-project",
+          "name": "Example project",
+          "source_of_truth": "Project documentation and code, not this board"
+        },
+        "language": {
+          "default": "en",
+          "allowed": [
+            "en"
+          ],
+          "project_artifacts": "en",
+          "topic_defaults": {}
+        },
+        "time_zone": "Europe/Warsaw",
+        "board": {
+          "directory": ".agent-board",
+          "default_room": "general",
+          "direct_directory": "direct",
+          "message_extension": ".txt",
+          "thread_prefix": "T",
+          "thread_digits": 3
+        },
+        "participant_identity": {
+          "registry_file": ".agent-board/participants.json",
+          "id_pattern": "^[a-z][a-z0-9-]{2,63}$",
+          "uniqueness_scope": "project",
+          "state_directory_environment": "AGENT_FILE_BOARD_STATE_DIR"
+        },
+        "statuses": [
+          "INFO",
+          "QUESTION",
+          "REQUEST",
+          "REPLY",
+          "DECISION-NEEDED",
+          "DONE",
+          "CLOSED"
+        ],
+        "safety": {
+          "forbidden_content": [
+            "credentials",
+            "API keys",
+            "payment data",
+            "personal data",
+            "sensitive source documents"
+          ]
+        },
+        "identity": {
+          "boardId": "2cda5aba-086d-46db-bfaf-46c51676f8bb"
+        }
+      },
+      "registry": {
+        "version": 1,
+        "com.example.registry": {
+          "keep": true
+        },
+        "participants": [
+          {
+            "com.example.retained": {
+              "array": [
+                true,
+                null,
+                "text"
+              ],
+              "number": 1
+            },
+            "id": "test-agent-01",
+            "kind": "agent",
+            "language": {
+              "com.example.extra": true,
+              "preferred": "en"
+            },
+            "metadata": {
+              "com.example.company": {
+                "active": true,
+                "levels": [
+                  1,
+                  2,
+                  3
+                ],
+                "ratio": 0.125,
+                "team": "Devices",
+                "unknown": null
+              },
+              "org.example.future": [
+                false,
+                {
+                  "keep": "all fields"
+                }
+              ]
+            },
+            "name": "Updated snapshot",
+            "operator": "human-owner-01",
+            "identity": {
+              "version": 1,
+              "profile": "9c780e6dbc84dd41429e73d8ce5270b52aee5a183df644225e9fe61a42925bda",
+              "events": [
+                "1a9ca5171e67050e1a69e679a1cfa744a6fec4dce9271bb9666aeb5b1a3b94fd"
+              ]
+            }
+          },
+          {
+            "id": "human-owner-01",
+            "kind": "human",
+            "extra": [
+              null,
+              1.5
+            ]
+          }
+        ]
+      },
+      "participant": "test-agent-01",
+      "path": "rooms/general/2026-10-21_0938_test-agent-01_T001_signed.txt",
+      "message": "RlJPTTogdGVzdC1hZ2VudC0wMQpUTzogaHVtYW4tb3duZXItMDEKU0NPUEU6IFJPT00KUk9PTTogZ2VuZXJhbApUSFJFQUQ6IFQwMDEtc2lnbmVkCkRBVEU6IDIwMjYtMTAtMjEgMDk6MzgKTEFOR1VBR0U6IGVuClJFUExZLVRPOiAtClNUQVRVUzogSU5GTwpQT1NURUQtQVQ6IDIwMjYtMTAtMjFUMDc6Mzg6NTAuNDI4WgpTSUdOQVRVUkU6IHsicmVjb3JkIjoic2lnX2Y2MDhkYzFjLWEwOGUtNDM3Yi1iNzFkLWViNGNkMzgwNjVjNCIsInZlcnNpb24iOjF9Ci0tLQpTeW50aGV0aWMgc2lnbmVkIHdvcmsK",
+      "files": {
+        "rooms/general/.signatures/sig_f608dc1c-a08e-437b-b71d-eb4cd38065c4.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT2lKMFpYTjBMV0ZuWlc1MExUQXhJaXdpY0hKdlptbHNaU0k2SWpFeU56azFPV1k0TkRjeE1qWm1aVGxtTkdaaU5UZ3lPVGM1WW1aaE1qTTRPRGRoWldRMk1EQmhOVEV3T1RJd05qVmtNMkkwWWpabFl6QTNNelV4WVRJaUxDSjBZWEpuWlhRaU9uc2lZbmwwWlhNaU9qSTROU3dpYTJsdVpDSTZJbTFsYzNOaFoyVWlMQ0p3WVhSb0lqb2ljbTl2YlhNdloyVnVaWEpoYkM4eU1ESTJMVEV3TFRJeFh6QTVNemhmZEdWemRDMWhaMlZ1ZEMwd01WOVVNREF4WDNOcFoyNWxaQzUwZUhRaUxDSnphR0V5TlRZaU9pSXhZMk5sT0dRd1pUVmlOVEl6T1dRMU4yWXlaamhtT1RnMVpERmxZVFJrTlRFME5tRXhZamd5TURkallXTXpZMlU0TVRJd00ySTFNak00TWpBM05UaGhJbjBzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQubWVzc2FnZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJJSElxLzN5SS93dTRNNnIyK2s3cUxNSTh6YXRpUlBjQ25DdWZ1NGwyRTRGUkU4OVJobElNTTFtS2tGWUdxNnN1QjlkbE5hdVdvTitkWW5yaENwL2tBdz09In1dfQ==",
+        "identity/profiles/127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT25zaVkyOXRMbVY0WVcxd2JHVXVjbVYwWVdsdVpXUWlPbnNpWVhKeVlYa2lPbHQwY25WbExHNTFiR3dzSW5SbGVIUWlYU3dpYm5WdFltVnlJam94ZlN3aWFXUWlPaUowWlhOMExXRm5aVzUwTFRBeElpd2lhMmx1WkNJNkltRm5aVzUwSWl3aWJHRnVaM1ZoWjJVaU9uc2lZMjl0TG1WNFlXMXdiR1V1WlhoMGNtRWlPblJ5ZFdVc0luQnlaV1psY25KbFpDSTZJbVZ1SW4wc0ltMWxkR0ZrWVhSaElqcDdJbU52YlM1bGVHRnRjR3hsTG1OdmJYQmhibmtpT25zaVlXTjBhWFpsSWpwMGNuVmxMQ0pzWlhabGJITWlPbHN4TERJc00xMHNJbkpoZEdsdklqb3dMakV5TlN3aWRHVmhiU0k2SWtSbGRtbGpaWE1pTENKMWJtdHViM2R1SWpwdWRXeHNmU3dpYjNKbkxtVjRZVzF3YkdVdVpuVjBkWEpsSWpwYlptRnNjMlVzZXlKclpXVndJam9pWVd4c0lHWnBaV3hrY3lKOVhYMHNJbTVoYldVaU9pTEZ1OE96eFlKMGVTQnJiM1FnOEorUWlDSXNJbTl3WlhKaGRHOXlJam9pYUhWdFlXNHRiM2R1WlhJdE1ERWlmU3dpY0hKbGRtbHZkWE1pT201MWJHd3NJbkIxWW14cFkwdGxlU0k2ZXlKaGJHZHZjbWwwYUcwaU9pSkZaREkxTlRFNUlpd2labTl5YldGMElqb2lhbmRySWl3aWEyVjVJanA3SW1OeWRpSTZJa1ZrTWpVMU1Ua2lMQ0pyZEhraU9pSlBTMUFpTENKNElqb2lNVEZ4V1VGWlMzaERjbVpXVTE4M1ZIbFhVVWhQWnpkb1kzWlFZWEJwVFd4eWQwbGhZVkJqU0ZWU2J5SjlmU3dpZG1WeWMybHZiaUk2TVgwPSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQucHJvZmlsZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJkbzNBTnJYaEw1VWlWSjBlZ29KNE1SMVVOVVRqdDRpaEVoQU4xNkZuUlVoMDVqZkxReUgxUjRBdVNJU0d3UHRDbi9NbnhhRWo5OFZ6OVJiYSs1UXdDZz09In1dfQ==",
+        "identity/profiles/9c780e6dbc84dd41429e73d8ce5270b52aee5a183df644225e9fe61a42925bda.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT25zaVkyOXRMbVY0WVcxd2JHVXVjbVYwWVdsdVpXUWlPbnNpWVhKeVlYa2lPbHQwY25WbExHNTFiR3dzSW5SbGVIUWlYU3dpYm5WdFltVnlJam94ZlN3aWFXUWlPaUowWlhOMExXRm5aVzUwTFRBeElpd2lhMmx1WkNJNkltRm5aVzUwSWl3aWJHRnVaM1ZoWjJVaU9uc2lZMjl0TG1WNFlXMXdiR1V1WlhoMGNtRWlPblJ5ZFdVc0luQnlaV1psY25KbFpDSTZJbVZ1SW4wc0ltMWxkR0ZrWVhSaElqcDdJbU52YlM1bGVHRnRjR3hsTG1OdmJYQmhibmtpT25zaVlXTjBhWFpsSWpwMGNuVmxMQ0pzWlhabGJITWlPbHN4TERJc00xMHNJbkpoZEdsdklqb3dMakV5TlN3aWRHVmhiU0k2SWtSbGRtbGpaWE1pTENKMWJtdHViM2R1SWpwdWRXeHNmU3dpYjNKbkxtVjRZVzF3YkdVdVpuVjBkWEpsSWpwYlptRnNjMlVzZXlKclpXVndJam9pWVd4c0lHWnBaV3hrY3lKOVhYMHNJbTVoYldVaU9pSlZjR1JoZEdWa0lITnVZWEJ6YUc5MElpd2liM0JsY21GMGIzSWlPaUpvZFcxaGJpMXZkMjVsY2kwd01TSjlMQ0p3Y21WMmFXOTFjeUk2SWpFeU56azFPV1k0TkRjeE1qWm1aVGxtTkdaaU5UZ3lPVGM1WW1aaE1qTTRPRGRoWldRMk1EQmhOVEV3T1RJd05qVmtNMkkwWWpabFl6QTNNelV4WVRJaUxDSndkV0pzYVdOTFpYa2lPbnNpWVd4bmIzSnBkR2h0SWpvaVJXUXlOVFV4T1NJc0ltWnZjbTFoZENJNkltcDNheUlzSW10bGVTSTZleUpqY25ZaU9pSkZaREkxTlRFNUlpd2lhM1I1SWpvaVQwdFFJaXdpZUNJNklrRTJSVWgyWDFCUFJVdzBaR05PTUZrMU1IWkJiVmRtYXpGcVEySndVVEZtU0dSNVIxcENTbFpOWW1jaWZYMHNJblpsY25OcGIyNGlPakY5IiwicGF5bG9hZFR5cGUiOiJhcHBsaWNhdGlvbi92bmQuYWdlbnQtZmlsZS1ib2FyZC5wcm9maWxlLmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6MUlHMnRNSDdKMndiSlpuT2Y4TEp6UWl0S2Y3TE12b0FFbHN1RE1WTTU0WSIsInNpZyI6InZiT2FxRjZtWXhLZjlEakpOaWV4dHkzdEQ3aU9OVUg3VkpIWW9PMmhRNEJQSmczUUh2dmNacVpjRVlNNEZ4cXNNZlJpYktqU0ZMbUcxdE5jNmlVS0NBPT0ifV19",
+        "identity/events/1a9ca5171e67050e1a69e679a1cfa744a6fec4dce9271bb9666aeb5b1a3b94fd.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2labkp2YlZCeWIyWnBiR1VpT2lJeE1qYzVOVGxtT0RRM01USTJabVU1WmpSbVlqVTRNamszT1dKbVlUSXpPRGczWVdWa05qQXdZVFV4TURreU1EWTFaRE5pTkdJMlpXTXdOek0xTVdFeUlpd2ljR0Z5ZEdsamFYQmhiblFpT2lKMFpYTjBMV0ZuWlc1MExUQXhJaXdpZEc5UWNtOW1hV3hsSWpvaU9XTTNPREJsTm1SaVl6ZzBaR1EwTVRReU9XVTNNMlE0WTJVMU1qY3dZalV5WVdWbE5XRXhPRE5rWmpZME5ESXlOV1U1Wm1VMk1XRTBNamt5TldKa1lTSXNJblpsY25OcGIyNGlPakY5IiwicGF5bG9hZFR5cGUiOiJhcHBsaWNhdGlvbi92bmQuYWdlbnQtZmlsZS1ib2FyZC5rZXktdHJhbnNpdGlvbi5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OjFJRzJ0TUg3SjJ3Ykpabk9mOExKelFpdEtmN0xNdm9BRWxzdURNVk01NFkiLCJzaWciOiJlcG1RVVloN2YwOUFxWkFkdXgxRm5TRU5HZWZJRTZBQjdONy9CTmZRZENLKytVbVJQU2MxQ1IvWUF2NWNybUlVMngxcUJJcjJIWTFva2pwd0R1V3VCUT09In0seyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJ3YjVCc0ZVdGEzNUJlMTZ3TDFlODEzSzh0WGxVK21IWXc4N1lkZDdDcmgrSFVZb0g5byt4NU1QWXFqaS83cjJXUHJuKzhwU1JRNnY0UU4xQjJjSm5DZz09In1dfQ=="
+      },
+      "expected": {
+        "eligibility": "eligible",
+        "signature": "valid",
+        "trust": "trusted",
+        "lifecycle": "superseded",
+        "minimum": "optional",
+        "reason": "verified",
+        "fingerprint": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:kPrK_qmxVWaYVA9wwBF6Iuo3vVzz7TxHCTwXBygrS4k",
+        "profile": "127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2"
+      }
+    },
+    {
+      "name": "compromise",
+      "config": {
+        "version": 1,
+        "project": {
+          "id": "example-project",
+          "name": "Example project",
+          "source_of_truth": "Project documentation and code, not this board"
+        },
+        "language": {
+          "default": "en",
+          "allowed": [
+            "en"
+          ],
+          "project_artifacts": "en",
+          "topic_defaults": {}
+        },
+        "time_zone": "Europe/Warsaw",
+        "board": {
+          "directory": ".agent-board",
+          "default_room": "general",
+          "direct_directory": "direct",
+          "message_extension": ".txt",
+          "thread_prefix": "T",
+          "thread_digits": 3
+        },
+        "participant_identity": {
+          "registry_file": ".agent-board/participants.json",
+          "id_pattern": "^[a-z][a-z0-9-]{2,63}$",
+          "uniqueness_scope": "project",
+          "state_directory_environment": "AGENT_FILE_BOARD_STATE_DIR"
+        },
+        "statuses": [
+          "INFO",
+          "QUESTION",
+          "REQUEST",
+          "REPLY",
+          "DECISION-NEEDED",
+          "DONE",
+          "CLOSED"
+        ],
+        "safety": {
+          "forbidden_content": [
+            "credentials",
+            "API keys",
+            "payment data",
+            "personal data",
+            "sensitive source documents"
+          ]
+        },
+        "identity": {
+          "boardId": "2cda5aba-086d-46db-bfaf-46c51676f8bb"
+        }
+      },
+      "registry": {
+        "version": 1,
+        "com.example.registry": {
+          "keep": true
+        },
+        "participants": [
+          {
+            "id": "test-agent-01",
+            "kind": "agent",
+            "language": {
+              "preferred": "en",
+              "com.example.extra": true
+            },
+            "name": "\u017b\u00f3\u0142ty kot \ud83d\udc08",
+            "operator": "human-owner-01",
+            "metadata": {
+              "com.example.company": {
+                "team": "Devices",
+                "active": true,
+                "unknown": null,
+                "ratio": 0.125,
+                "levels": [
+                  1,
+                  2,
+                  3
+                ]
+              },
+              "org.example.future": [
+                false,
+                {
+                  "keep": "all fields"
+                }
+              ]
+            },
+            "com.example.retained": {
+              "number": 1,
+              "array": [
+                true,
+                null,
+                "text"
+              ]
+            },
+            "identity": {
+              "version": 1,
+              "profile": "127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2",
+              "events": [
+                "47e80d59ea01d79d1295116812eec1892db32d816f07ae4b0c83bd2de9c20142"
+              ]
+            }
+          },
+          {
+            "id": "human-owner-01",
+            "kind": "human",
+            "extra": [
+              null,
+              1.5
+            ]
+          }
+        ]
+      },
+      "participant": "test-agent-01",
+      "path": "rooms/general/2026-10-21_0938_test-agent-01_T001_signed.txt",
+      "message": "RlJPTTogdGVzdC1hZ2VudC0wMQpUTzogaHVtYW4tb3duZXItMDEKU0NPUEU6IFJPT00KUk9PTTogZ2VuZXJhbApUSFJFQUQ6IFQwMDEtc2lnbmVkCkRBVEU6IDIwMjYtMTAtMjEgMDk6MzgKTEFOR1VBR0U6IGVuClJFUExZLVRPOiAtClNUQVRVUzogSU5GTwpQT1NURUQtQVQ6IDIwMjYtMTAtMjFUMDc6Mzg6NTAuNTAyWgpTSUdOQVRVUkU6IHsicmVjb3JkIjoic2lnXzg0M2M0NjcyLTQ2NTgtNGY1Zi04NzQ3LWVkZTc2MzE1MWM5YyIsInZlcnNpb24iOjF9Ci0tLQpTeW50aGV0aWMgc2lnbmVkIHdvcmsK",
+      "files": {
+        "rooms/general/.signatures/sig_843c4672-4658-4f5f-8747-ede763151c9c.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT2lKMFpYTjBMV0ZuWlc1MExUQXhJaXdpY0hKdlptbHNaU0k2SWpFeU56azFPV1k0TkRjeE1qWm1aVGxtTkdaaU5UZ3lPVGM1WW1aaE1qTTRPRGRoWldRMk1EQmhOVEV3T1RJd05qVmtNMkkwWWpabFl6QTNNelV4WVRJaUxDSjBZWEpuWlhRaU9uc2lZbmwwWlhNaU9qSTROU3dpYTJsdVpDSTZJbTFsYzNOaFoyVWlMQ0p3WVhSb0lqb2ljbTl2YlhNdloyVnVaWEpoYkM4eU1ESTJMVEV3TFRJeFh6QTVNemhmZEdWemRDMWhaMlZ1ZEMwd01WOVVNREF4WDNOcFoyNWxaQzUwZUhRaUxDSnphR0V5TlRZaU9pSXhabUk1T0RrMU1EZGtaVGd5TldFMVpEZGpNREF5TkRreE1XUmxZek5sWVRZd01qTTFNekpoTlRNek9UUXpNVFExTXpjMFl6RXhZamN4TmprME5XSTVJbjBzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQubWVzc2FnZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJLOWxROTdkUU5lTjdjdUdwTVp1MzdvelgwUjN3RHZ0aUU2WHozV2lvZUxzU0hET05ISXg4TFdudEZ5M0hPYWRDZ2VKVTgwNnBrQStyb2FaYVJ1VEZCUT09In1dfQ==",
+        "identity/profiles/127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2.json": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT25zaVkyOXRMbVY0WVcxd2JHVXVjbVYwWVdsdVpXUWlPbnNpWVhKeVlYa2lPbHQwY25WbExHNTFiR3dzSW5SbGVIUWlYU3dpYm5WdFltVnlJam94ZlN3aWFXUWlPaUowWlhOMExXRm5aVzUwTFRBeElpd2lhMmx1WkNJNkltRm5aVzUwSWl3aWJHRnVaM1ZoWjJVaU9uc2lZMjl0TG1WNFlXMXdiR1V1WlhoMGNtRWlPblJ5ZFdVc0luQnlaV1psY25KbFpDSTZJbVZ1SW4wc0ltMWxkR0ZrWVhSaElqcDdJbU52YlM1bGVHRnRjR3hsTG1OdmJYQmhibmtpT25zaVlXTjBhWFpsSWpwMGNuVmxMQ0pzWlhabGJITWlPbHN4TERJc00xMHNJbkpoZEdsdklqb3dMakV5TlN3aWRHVmhiU0k2SWtSbGRtbGpaWE1pTENKMWJtdHViM2R1SWpwdWRXeHNmU3dpYjNKbkxtVjRZVzF3YkdVdVpuVjBkWEpsSWpwYlptRnNjMlVzZXlKclpXVndJam9pWVd4c0lHWnBaV3hrY3lKOVhYMHNJbTVoYldVaU9pTEZ1OE96eFlKMGVTQnJiM1FnOEorUWlDSXNJbTl3WlhKaGRHOXlJam9pYUhWdFlXNHRiM2R1WlhJdE1ERWlmU3dpY0hKbGRtbHZkWE1pT201MWJHd3NJbkIxWW14cFkwdGxlU0k2ZXlKaGJHZHZjbWwwYUcwaU9pSkZaREkxTlRFNUlpd2labTl5YldGMElqb2lhbmRySWl3aWEyVjVJanA3SW1OeWRpSTZJa1ZrTWpVMU1Ua2lMQ0pyZEhraU9pSlBTMUFpTENKNElqb2lNVEZ4V1VGWlMzaERjbVpXVTE4M1ZIbFhVVWhQWnpkb1kzWlFZWEJwVFd4eWQwbGhZVkJqU0ZWU2J5SjlmU3dpZG1WeWMybHZiaUk2TVgwPSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQucHJvZmlsZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJkbzNBTnJYaEw1VWlWSjBlZ29KNE1SMVVOVVRqdDRpaEVoQU4xNkZuUlVoMDVqZkxReUgxUjRBdVNJU0d3UHRDbi9NbnhhRWo5OFZ6OVJiYSs1UXdDZz09In1dfQ==",
+        "identity/events/47e80d59ea01d79d1295116812eec1892db32d816f07ae4b0c83bd2de9c20142.json": "eyJwYXlsb2FkIjoiZXlKaGRYUm9iM0pwZW1sdVoxQnliMlpwYkdVaU9pSXhNamM1TlRsbU9EUTNNVEkyWm1VNVpqUm1ZalU0TWprM09XSm1ZVEl6T0RnM1lXVmtOakF3WVRVeE1Ea3lNRFkxWkROaU5HSTJaV013TnpNMU1XRXlJaXdpWW05aGNtUkpaQ0k2SWpKalpHRTFZV0poTFRBNE5tUXRORFprWWkxaVptRm1MVFEyWXpVeE5qYzJaamhpWWlJc0ltdGxlVWxrSWpvaWRYSnVPbWxsZEdZNmNHRnlZVzF6T205aGRYUm9PbXAzYXkxMGFIVnRZbkJ5YVc1ME9uTm9ZUzB5TlRZNmExQnlTMTl4YlhoV1YyRlpWa0U1ZDNkQ1JqWkpkVzh6ZGxaNmVqZFVlRWhEVkhkWVFubG5jbE0wYXlJc0luQmhjblJwWTJsd1lXNTBJam9pZEdWemRDMWhaMlZ1ZEMwd01TSXNJbk4wWVhSMWN5STZJbU52YlhCeWIyMXBjMlZrSWl3aWRtVnljMmx2YmlJNk1YMD0iLCJwYXlsb2FkVHlwZSI6ImFwcGxpY2F0aW9uL3ZuZC5hZ2VudC1maWxlLWJvYXJkLmtleS1yZXZvY2F0aW9uLmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IlZCNm1iRDZPTUFoWjVVSk52c2psRGJRdFhnbXBBT0xXeDlYa0lYSmtYMFJvMHFGVURsMElpSEw4Mkk1OGVGcjA5bGRsUk1xQ3A0V3NTY1F6K1ZpWkJnPT0ifV19"
+      },
+      "expected": {
+        "eligibility": "excluded",
+        "signature": "valid",
+        "trust": "trusted",
+        "lifecycle": "compromised",
+        "minimum": "optional",
+        "reason": "compromised",
+        "fingerprint": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:kPrK_qmxVWaYVA9wwBF6Iuo3vVzz7TxHCTwXBygrS4k",
+        "profile": "127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2"
+      }
+    }
+  ]
+}

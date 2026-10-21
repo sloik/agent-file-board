@@ -65,9 +65,18 @@ The included configuration defaults all messages and project artifacts to Englis
 
 ## Bootstrap with `boardctl`
 
-The repository includes a Python-standard-library CLI. Clone this repository and
+The repository includes a Python-standard-library CLI for ordinary unsigned use.
+Message signing and public-profile verification have optional crypto dependencies.
+Clone this repository and
 run it from its root (keep `boardctl.py`, `board_upgrade.py`, `upgrade-manifest.json`, `board_presence.py`, `board_guidance.py`, `message_extensions.py`, `message_repairs.py`, `static_reports.py`, `extended_static_reports.py`, `form_contract.py`, `extension_packages.py`, `extension_state.py` and the
-`.agent-board/` template together when installing the CLI):
+`.agent-board/` template together when installing the CLI). Include
+`board_identity.py`, `signing_core.py`, `signing_runtime.py`, `signing_commands.py` and `requirements-signing.txt` for the
+identity/signing commands:
+
+See [signing runtime and key/trust setup](docs/SIGNING-CORE.md#signing-runtime-local-implementation-unreleased).
+Signed posting, scoped receiver requirements and browser signing are implemented
+in2.11.0. Existing2.10.0 published assets remain unchanged. Ordinary
+bootstrap remains unchanged:
 
 ```bash
 ./boardctl init /path/to/project --project-id pet-care --project-name "Pet Care"
