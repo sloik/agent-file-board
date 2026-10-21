@@ -1,5 +1,6 @@
 """Shared signing, bounded lineage, local trust and scoped receiver eligibility."""
 import base64
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -15,6 +16,24 @@ TRANSITION = "application/vnd.agent-file-board.key-transition.ed25519.v1+json"
 REVOCATION = "application/vnd.agent-file-board.key-revocation.ed25519.v1+json"
 POSSESSION = "application/vnd.agent-file-board.possession.ed25519.v1+json"
 HASH = re.compile(r"[a-f0-9]{64}\Z")
+
+
+@contextmanager
+def _state_write_lock(path):
+    """Serialize cooperating private writers across comparison and replacement.
+
+    A crash can leave this directory behind. Never steal it automatically:
+    the owner must inspect it after confirming no writer is still active.
+    """
+    lock = path.with_name(path.name + ".write-lock")
+    try:
+        lock.mkdir(mode=0o700)
+    except FileExistsError as error:
+        raise ValueError("private signing writer busy; inspect a stale .write-lock manually, never steal it") from error
+    try:
+        yield
+    finally:
+        lock.rmdir()
 
 
 def private_key(path, project=None):
@@ -168,13 +187,17 @@ class Session:
         if len(raw) > 8388608:
             raise ValueError("private signing evidence budget exhausted")
         self.state_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        if self.before is None:
-            if self.state_path.exists():
-                raise ValueError("private signing state changed concurrently")
-            identity._publish(self.state_path, raw, mode=0o600)
-        elif raw != self.before:
-            identity._atomic_replace(self.state_path, self.before, raw)
-        self.before = raw
+        # The expected-byte check and os.replace are distinct filesystem
+        # operations. Hold an exclusive private lock across both so another
+        # cooperating CLI cannot pass the same comparison and lose updates.
+        with _state_write_lock(self.state_path):
+            if self.before is None:
+                if self.state_path.exists():
+                    raise ValueError("private signing state changed concurrently")
+                identity._publish(self.state_path, raw, mode=0o600)
+            elif raw != self.before:
+                identity._atomic_replace(self.state_path, self.before, raw)
+            self.before = raw
 
     def load(self, kind, digest):
         core._hash(digest)

@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import tempfile
+import threading
 import unittest
 from unittest.mock import patch
 
@@ -88,6 +89,74 @@ class SigningRuntimeTests(unittest.TestCase):
         next_session.state["messages"].pop("rooms/general/observed-0.txt")
         next_session.save()
         self.assertEqual(len(self.sess().state["messages"]), 399)
+
+    def test_private_save_serializes_compare_and_replace_and_retry_merges(self):
+        self.trust()
+        adopter, remover = self.sess(), self.sess()
+        adopter.state["floor"]["minimum"] = "trusted"
+        remover.state["pins"].pop(self.participant)
+        compared, release = threading.Event(), threading.Event()
+        original_read = runtime.identity._read
+        outcomes = {}
+
+        def delayed_read(path, *args, **kwargs):
+            raw = original_read(path, *args, **kwargs)
+            if path == adopter.state_path and threading.current_thread().name == "adopter":
+                compared.set()
+                if not release.wait(5):
+                    raise AssertionError("test did not release paused expected-byte comparison")
+            return raw
+
+        def save_adopter():
+            try:
+                adopter.save()
+                outcomes["adopter"] = "saved"
+            except BaseException as error:
+                outcomes["adopter"] = error
+
+        with patch.object(runtime.identity, "_read", side_effect=delayed_read):
+            worker = threading.Thread(target=save_adopter, name="adopter")
+            worker.start()
+            try:
+                self.assertTrue(compared.wait(5), "adopter never reached expected-byte comparison")
+                try:
+                    remover.save()
+                    outcomes["remover"] = "saved"
+                except ValueError as error:
+                    outcomes["remover"] = error
+            finally:
+                release.set()
+                worker.join(5)
+        self.assertFalse(worker.is_alive())
+        self.assertEqual(outcomes["adopter"], "saved")
+        self.assertIsInstance(outcomes["remover"], ValueError,
+                              "both stale saves succeeded across compare/replace")
+        state = self.sess()
+        self.assertEqual(state.state["floor"]["minimum"], "trusted")
+        self.assertIn(self.participant, state.state["pins"])
+        state.state["pins"].pop(self.participant)
+        state.save()
+        persisted = self.sess().state
+        self.assertEqual(persisted["floor"]["minimum"], "trusted")
+        self.assertNotIn(self.participant, persisted["pins"])
+
+    def test_private_save_stale_lock_is_not_stolen_and_handled_error_releases(self):
+        s = self.sess()
+        s.save()
+        lock = s.state_path.with_name(s.state_path.name + ".write-lock")
+        lock.mkdir()
+        with self.assertRaisesRegex(ValueError, "never steal"):
+            s.save()
+        self.assertTrue(lock.is_dir())
+        lock.rmdir()
+        s.state["floor"]["minimum"] = "trusted"
+        with patch.object(runtime.identity, "_atomic_replace", side_effect=OSError("disk full")):
+            with self.assertRaisesRegex(OSError, "disk full"):
+                s.save()
+        self.assertFalse(lock.exists())
+        self.assertEqual(self.sess().state["floor"]["minimum"], "optional")
+        s.save()
+        self.assertEqual(self.sess().state["floor"]["minimum"], "trusted")
 
     def test_exact_signed_post_and_tamper_replay_never_become_unsigned(self):
         path = self.post()

@@ -1,0 +1,38 @@
+{
+  "tool": {
+    "version": "1.7.4",
+    "url": "https://github.com/tlaplus/tlaplus/releases/download/v1.7.4/tla2tools.jar",
+    "sha256": "936a262061c914694dfd669a543be24573c45d5aa0ff20a8b96b23d01e050e88"
+  },
+  "cases": [
+    {
+      "module": "PrivateState.tla",
+      "config": "PrivateState.cfg"
+    },
+    {
+      "module": "PrivateState.tla",
+      "config": "PrivateStateBad.cfg",
+      "counterexample": "NoLostSecurityState"
+    },
+    {
+      "module": "Publication.tla",
+      "config": "Publication.cfg",
+      "timeout": 180
+    },
+    {
+      "module": "Publication.tla",
+      "config": "PublicationBad.cfg",
+      "counterexample": "AuthorizationValid"
+    },
+    {
+      "module": "Publication.tla",
+      "config": "PublicationBadUnsigned.cfg",
+      "counterexample": "NoUnboundMessage"
+    },
+    {
+      "module": "Publication.tla",
+      "config": "PublicationReachable.cfg",
+      "counterexample": "NoPublicationYet"
+    }
+  ]
+}
