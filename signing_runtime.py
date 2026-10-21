@@ -130,7 +130,8 @@ class Session:
         self.board = self.root / ".agent-board"
         self.config, self.registry = config, registry
         self.board_id = identity._board_id(config)
-        base = Path(state_dir or os.environ.get("AGENT_FILE_BOARD_STATE_DIR", self.root / ".agent-board.local"))
+        default_state = Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state")) / "agent-file-board"
+        base = Path(state_dir or os.environ.get("AGENT_FILE_BOARD_STATE_DIR", default_state))
         self.state_path = base / "signing" / (hashlib.sha256(str(self.root).encode()).hexdigest() + ".json")
         if self.state_path.resolve().is_relative_to(self.board):
             raise ValueError("signing state must be outside the shared board")
@@ -166,11 +167,11 @@ class Session:
         raw = identity._encode(self.state)
         if len(raw) > 8388608:
             raise ValueError("private signing evidence budget exhausted")
-        self.state_path.parent.mkdir(parents=True, exist_ok=True)
+        self.state_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         if self.before is None:
             if self.state_path.exists():
                 raise ValueError("private signing state changed concurrently")
-            identity._publish(self.state_path, raw)
+            identity._publish(self.state_path, raw, mode=0o600)
         elif raw != self.before:
             identity._atomic_replace(self.state_path, self.before, raw)
         self.before = raw

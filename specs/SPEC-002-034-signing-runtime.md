@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-034
 title: Implement the signing delivery plan across CLI, agents and viewer
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-21
@@ -15,30 +15,30 @@ membership, unsigned opt-in compatibility and existing immutable history.
 
 ## Acceptance Criteria
 
-- [ ] AC1: Exact-byte signed message publication and independent verification;
+- [x] AC1: Exact-byte signed message publication and independent verification;
   private CLI signer plus portable typed request/response support; no executable
   signer configuration from shared metadata. Sidecar publication precedes final
   immutable message; post-sign rechecks reject stale context/draft/lock results.
-- [ ] AC2: Bounded profile lineage, same-key updates, dual-authorized rotations,
+- [x] AC2: Bounded profile lineage, same-key updates, dual-authorized rotations,
   retirement/compromise, conflict/rollback detection and deliberately local trust.
   Private pins/learned revocations survive shared stripping/rollback. Unknown or
   incomplete evidence never establishes accepted current identity.
-- [ ] AC3: Board/physical scope/stable thread optional/trusted requirements, local
+- [x] AC3: Board/physical scope/stable thread optional/trusted requirements, local
   adoption floors and expected UUID, malformed-policy refusal; consistent
   eligible/pending/excluded results across CLI inbox/recent, agent observation,
   viewer attention/actions and notifications. Inspection retains original files
   and pending obligations; excluded traffic cannot create busy observation loops.
-- [ ] AC4: Offline UI verifies the same bytes/contracts, displays separate
+- [x] AC4: Offline UI verifies the same bytes/contracts, displays separate
   signature/trust/lifecycle states, local trust controls and inspectable exclusions.
   Host-owned explicit private JWK import, bounded session-only non-extractable
   signing keys, fresh one-use possession proof, sender catalog, real per-post
   signing; lock/reload/board change/15min actual inactivity discard capability.
   Async races and invalid provider output preserve drafts, never fall back unsigned.
-- [ ] AC5: All host publication paths use one gateway, including manual composer,
+- [x] AC5: All host publication paths use one gateway, including manual composer,
   quick/form/extension replies and optional lifecycle posts. Viewing/recipient/
   signing/trust identities remain distinct; workers receive no private keys or
   signing handles. No private persistence/export/logging or shared-key-file scan.
-- [ ] AC6: Independent Python/libsodium/browser conformance and adversarial
+- [x] AC6: Independent Python/libsodium/browser conformance and adversarial
   replay/tamper/parser/lifecycle/policy/provider/race tests plus actual file:// UI
   and CLI trials. Appropriate full suites pass; docs/convention/capabilities and
   local vendor/embed integration match implementation. No real keys/live boards,
@@ -55,7 +55,26 @@ This is one delivery with serial checkpoints; do not mark complete after a
 partial backend or UI slice. Avatars/artifact signing are outside this message
 delivery plan; existing architecture remains documented separately.
 
-## State rationale
+## Verification and outcome
 
-In progress: explicit owner request to implement the whole remaining plan.
-Finish all ACs and cross-client verification before claiming completion.
+Implemented locally on feat/signing-core-conformance and UI feat/signing-runtime.
+Canonical211tests pass on Python3.10.20 and3.14.7. OpenSSL/libsodium frozen
+message/profile conformance passes; added a synthetic lifecycle corpus verified
+independently by browser Noble. UI366Node/browser checks and37Python checks pass;
+post-review44publication/form/extension checks and8contract checks also pass.
+Actual file:// tests publish UI signatures and independently verify them with the
+pinned Python CLI, then reject tampering and remembered stripping. Lock/draft
+races, inactivity, adopted floors and non-actionable inspection are covered.
+
+Private history defaults outside the project, is mode0600 and has a separate8MiB
+aggregate budget; >64KiB update regression passes. Existing unsigned compose
+bytes remain identical. No private keys/handles enter extension workers or
+persistent storage. Explicitly selected synthetic fixtures only; no live boards.
+
+The exact local UI vendor pin and embedded upgrade/signing/tools are integrated.
+The UI development-standard.json records its untagged canonical commit/hash.
+The strict release guard deliberately still rejects an untagged vendor; the
+repository consistency test proves that refusal and exact development pin.
+No release tag/push/deployment or frozen published asset changes. Read-only
+uploads verify/inspect; signed publication requires a writable native board.
+Avatars/artifact signatures and an external browser vault remain out of scope.

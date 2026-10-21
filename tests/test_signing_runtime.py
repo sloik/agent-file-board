@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
@@ -30,6 +31,8 @@ class SigningRuntimeTests(unittest.TestCase):
         private = tempfile.TemporaryDirectory()
         self.addCleanup(private.cleanup)
         self.private = Path(private.name)
+        self.state_env = patch.dict("os.environ", {"AGENT_FILE_BOARD_STATE_DIR": str(self.private / "state")})
+        self.state_env.start(); self.addCleanup(self.state_env.stop)
         self.key_file = self.private / "key.json"
         pub = json.loads(core._private_descriptor(self.key)) if hasattr(core, "_private_descriptor") else json.loads(core.public_key_descriptor(self.key.public_key().public_bytes_raw()))
         seed = bytes.fromhex(json.loads((Path(boardctl.__file__).parent / "tests/fixtures/signing-core/profiles.json").read_bytes())["seed_hex"])
@@ -74,6 +77,17 @@ class SigningRuntimeTests(unittest.TestCase):
         path = self.private / (hashlib.sha256(raw).hexdigest()+".json")
         path.write_bytes(raw)
         return old, path, hashlib.sha256(raw).hexdigest()
+
+    def test_private_history_updates_beyond_public_envelope_limit_and_stays_private(self):
+        s = self.sess()
+        s.state["messages"] = {"rooms/general/observed-%d.txt" % i: {"sha256": "a" * 64, "profile": self.digest, "keyId": "b" * 100} for i in range(400)}
+        s.save()
+        self.assertGreater(s.state_path.stat().st_size, 65536)
+        self.assertEqual(s.state_path.stat().st_mode & 0o777, 0o600)
+        next_session = self.sess()
+        next_session.state["messages"].pop("rooms/general/observed-0.txt")
+        next_session.save()
+        self.assertEqual(len(self.sess().state["messages"]), 399)
 
     def test_exact_signed_post_and_tamper_replay_never_become_unsigned(self):
         path = self.post()

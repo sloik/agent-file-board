@@ -138,18 +138,18 @@ def _atomic_replace(path, expected, raw):
             handle.write(raw)
             handle.flush()
             os.fsync(handle.fileno())
-        if _read(path) != expected:
+        if _read(path, max(65536, len(expected))) != expected:
             raise ValueError("identity metadata changed during operation; retry after inspection")
         os.replace(temporary, path)
     finally:
         Path(temporary).unlink(missing_ok=True)
 
 
-def _publish(path, raw):
+def _publish(path, raw, mode=0o666):
     """Exclusive public-file publication; remove a partial file on handled error."""
     identity = None
     try:
-        with path.open("xb") as handle:
+        with open(path, "xb", opener=lambda name, flags: os.open(name, flags, mode)) as handle:
             identity = os.fstat(handle.fileno())
             handle.write(raw)
             handle.flush()

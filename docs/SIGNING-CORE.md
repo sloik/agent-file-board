@@ -206,8 +206,9 @@ python boardctl.py signing adopt --path PROJECT
 The explicit private JWK has exactly `kty`, `crv`, `x`, `d`; Ed25519 x/d are32-byte
 canonical base64url. The key must be outside PROJECT. Never put a private key in
 a board, extension, snapshot or repository. Signing state defaults to
-`.agent-board.local/signing/` (ignored local data); set
-`AGENT_FILE_BOARD_STATE_DIR` to a private location outside synced checkouts.
+`$XDG_STATE_HOME/agent-file-board/signing/`, or
+`~/.local/state/agent-file-board/signing/`; set `AGENT_FILE_BOARD_STATE_DIR`
+for another private location outside synced checkouts.
 Use the same state directory for CLI and board-loop when sharing local trust.
 
 For an external signer, `post ... --prepare-signing /private/request.json`
