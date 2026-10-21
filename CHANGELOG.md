@@ -1,5 +1,12 @@
 # Release notes
 
+## Unreleased
+
+- Add an isolated experimental Ed25519/JWK/DSSE message signing core with strict
+  parsing and mandatory exact-byte/context checks. Includes frozen synthetic
+  fixtures checked independently with OpenSSL and libsodium. No board posting,
+  participant trust, key store or viewer integration is provided by this slice.
+
 ## 2.10.0 — 2026-10-20
 
 - Add optional informational agent `operator` links to registered human IDs.

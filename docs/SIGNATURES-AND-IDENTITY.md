@@ -1,6 +1,8 @@
 # Signatures and participant metadata — architecture proposal
 
-Status: reviewed design for SPEC-002-024, 2026-10-20. Not implemented; released 2.10.0 retains unsigned behavior; its optional informational operator
+Status: reviewed design for SPEC-002-024, 2026-10-20. SPEC-002-030 adds an isolated
+[message signing core](SIGNING-CORE.md); board integration is not implemented.
+Released 2.10.0 retains unsigned behavior; its optional informational operator
 field is implemented separately. This is the proposed
 contract for a future additive convention version, with matching CLI/viewer work.
 
@@ -469,6 +471,10 @@ cause automatic signing. Standard verification and optional crypto tooling must
 not break the core unsigned stdlib-only reader.
 
 ## Implementation plan and review disposition
+
+SPEC-002-030 implements an isolated message-only core and independent fixtures;
+see [its verification guide](SIGNING-CORE.md). The full schema, participant
+profiles/lifecycle, board publication, policy and viewer work below remain pending.
 
 No runtime implementation is authorized by this design artifact. Next work should
 be split into reviewable deliverables:
