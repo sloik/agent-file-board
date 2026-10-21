@@ -52,6 +52,24 @@ class BoardLoopTests(unittest.TestCase):
         return loop.record_message(self.args("record", "--message", message["path"], "--sha256", message["sha256"],
             "--disposition", disposition, "--note", note, *extra))
 
+    def test_required_signing_excludes_new_work_without_busy_poll_and_retains_obligations(self):
+        self.post()
+        initial = self.poll()
+        self.record(initial["messages"][0])
+        config_path = self.root / ".agent-board/config.json"
+        config = json.loads(config_path.read_bytes())
+        config["identity"] = {"boardId": "8e651ae2-d9db-4f4f-9bf4-a46ff66838bd"}
+        config["message_signing"] = {"version": 1, "minimum": "trusted"}
+        config_path.write_text(json.dumps(config))
+        one = loop.snapshot(self.args("poll", "--mode", "OPPORTUNISTIC"), timestamp=1000)
+        two = loop.snapshot(self.args("poll", "--mode", "OPPORTUNISTIC"), timestamp=1100)
+        self.assertEqual(one["unread_total"], 0)
+        self.assertEqual(one["pending_total"], 1)
+        self.assertTrue(one["pending_actions"][0]["review_required"])
+        self.assertEqual(one["pending_actions"][0]["signing"]["eligibility"], "excluded")
+        self.assertFalse(two["observation"]["emit"])
+        self.assertEqual(two["observation"]["new_relevant_total"], 0)
+
     def test_template_delivers_canonical_meanings_and_poll_is_read_only(self):
         rel = self.post()
         before = {str(p): p.read_bytes() for p in self.root.rglob("*") if p.is_file()}

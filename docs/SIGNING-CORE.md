@@ -3,7 +3,8 @@
 SPEC-002-030 implements the message cryptographic subset; SPEC-002-031 adds
 self-signed participant profiles and profile-bound message verification from
 [the signing design](SIGNATURES-AND-IDENTITY.md). This is local, unreleased
-implementation work. Board posting and the viewer still have no signing feature.
+implementation work. SPEC-002-034 adds signed posting, local trust/lifecycle,
+receiver requirements and the offline browser signer described below.
 SPEC-002-033 adds explicit board-local profile registration/inspection through
 the CLI. It does not add message signing or policy enforcement.
 
@@ -146,8 +147,7 @@ UUID; it cannot replace an existing UUID. Repeating enable is idempotent. Enabli
 does not create keys, change message rules or turn on signing requirements.
 
 Register the participant normally first. Prepare its public profile envelope
-using `sign_profile` or a conforming external tool; this CLI slice has no private
-key import or signer command. The complete signed snapshot must match that
+using `signing profile`, `sign_profile` or a conforming external tool. The complete signed snapshot must match that
 participant's current registry entry, excluding only `identity`. A first imported
 profile requires `previous=null`. Supply the exact expected envelope SHA-256;
 the command verifies it, the embedded public key's self-signature and the expected
@@ -186,57 +186,74 @@ leave an unreferenced profile or lock for manual inspection. This is not a
 transaction/lock protocol for arbitrary editors: unrelated uncooperative writers
 can still race the final check/replace. Coordinate shared registry editing.
 
-## Delivery plan: UI signing and agents that bypass the CLI
+## Signing runtime (local implementation, unreleased)
 
-The reviewed [policy/provider design](SIGNING-POLICY-AND-POSSESSION.md) covers both.
-The delivery order is:
+SPEC-002-034 implements signed posting, bounded lifecycle, local trust, receiver
+requirements and the browser provider. Published2.10.0 assets remain unchanged.
+Install optional `requirements-signing.txt` into the Python environment used for
+signing. Ordinary unsigned boards remain usable without crypto dependencies.
 
-1. Core/profile proof and board-local registration (implemented here, unreleased).
-2. Exact-byte signed-message publication and an explicit local signer interface,
-   plus lifecycle and local-trust validation needed for real message acceptance.
-3. Receiver enforcement of board/room/thread requirements and private adoption
-   floors across CLI, agent observation, UI attention and actions.
-4. A host-owned UI posting gateway invoking the signing provider for every Send,
-   including quick replies, forms and extension replies. This is planned UI work.
+```sh
+python boardctl.py post --path PROJECT --from ID --to all --scope room \
+  --room general --thread T001 --slug update --body 'Update' \
+  --signing-key-file /private/key.json --signing-state-dir /private/board-state
+python boardctl.py signing inspect --path PROJECT --message rooms/general/FILE.txt
+python boardctl.py signing trust --path PROJECT --participant ID \
+  --profile SHA256 --fingerprint urn:ietf:params:oauth:jwk-thumbprint:sha-256:VALUE
+python boardctl.py signing adopt --path PROJECT
+```
 
-For the UI, **automatic signing means automatic after explicit unlock**: select
-an available private key/provider, prove the participant/profile binding, then
-each actual Send finalizes and signs its exact message bytes. Recheck the draft,
-board, profile and lock generation after async signing. Lock, expiry, reload or
-board switch discards the signing capability; failure preserves the draft and
-never silently sends unsigned. A public profile cannot unlock signing. No shell
-hook/tool path from shared board files is executed. The smallest browser provider
-uses explicit private JWK import into tab memory only; an external typed request/
-response provider is also designed. Neither UI provider is implemented yet.
+The explicit private JWK has exactly `kty`, `crv`, `x`, `d`; Ed25519 x/d are32-byte
+canonical base64url. The key must be outside PROJECT. Never put a private key in
+a board, extension, snapshot or repository. Signing state defaults to
+`.agent-board.local/signing/` (ignored local data); set
+`AGENT_FILE_BOARD_STATE_DIR` to a private location outside synced checkouts.
+Use the same state directory for CLI and board-loop when sharing local trust.
 
-Agents need not use this CLI. Their libraries/tools must implement the same
-portable envelope/sidecar/context contract, independently verifiable by receivers.
-The convention and room/topic guidance should state the requirement and clients
-must advertise/check their capabilities before participating. A prose hint alone
-does not enforce anything. Under the planned trusted-only policy, strict
-receivers will keep unsigned/invalid/unsupported input inspectable but exclude it
-from actionable coordination. Clients that cannot enforce required signing must
-report unsupported participation rather than pretend compliance. That enforcement
-is not present today; profile enable/import must not be used to announce an
-already secured board or an automatically signing UI.
+For an external signer, `post ... --prepare-signing /private/request.json`
+exports a typed exact-byte request without publishing. `signing respond --request
+REQUEST --key-file KEY --output RESPONSE` signs explicitly; `signing publish
+--request REQUEST --response RESPONSE` verifies response, exact bytes, current
+profile and requirements before sidecar-first publication. No executable signer
+configuration is read from shared files. This contract is portable to other
+clients; use the frozen fixtures for independent conformance.
 
-**Caller obligations:** establish lifecycle and local trust; use the profile-bound
-helper for authenticated profile/key association, or establish that association
-independently when calling the lower-level message verifier;
-derive the expected board UUID, FROM and physical path from actual board data;
-validate the board-message format and routing; pass final raw bytes; decide local
-trust/policy separately. This module treats the message as opaque bytes and does
-not parse headers, resolve profile history, check permissions or publish/read files.
-Its success proves key possession over those bytes and supplied context. It
-does not establish registration, human identity, trust, encryption or consent.
+`signing profile`, `transition`, `update` and `revoke` provide explicit profile
+lifecycle operations; consult each command's `--help`. Update uses
+`--expect-profile` and exact new-envelope SHA256; rotation requires a dual-key
+transition. Revocation is signed by the target key and records retired or
+compromised status. Rollback/conflict/incomplete history is refused; no automatic
+recovery or new-key trust. Learned revocations survive shared event removal.
+Uncooperative shared writers can still race final filesystem checks; coordinate
+registry edits. An orphan sidecar after a failed message write is inert.
 
-Existing CLI commands do not import this module or require its dependencies.
-The CI test environment installs the optional dependencies explicitly. Profile
-head updates/lifecycle, signed board publication, browser key handling, policy and
-viewer integration remain future implementation steps, before a signing release.
-Both cryptography and PyNaCl are required when using this experimental core:
-OpenSSL supplies ordinary Ed25519 signing/verification, and libsodium supplies
-strict public-point validation as well as the independent conformance backend.
+`recent` and `inbox` exclude ineligible coordination, keep pending observations
+for later evidence and offer explicit inspection. Board-loop preserves pending
+obligations as review-required and does not treat excluded traffic as activity.
+Policy adoption is explicit and monotonic unless an operator deliberately uses
+`adopt --replace-floor`. Removing shared policy never weakens an adopted floor.
+
+The offline UI uses the same exact-byte verification contract and maintained
+Noble Ed25519 validation. Tools → Signing explicitly imports selected private JWKs
+into non-extractable, tab-only WebCrypto signing handles, proves fresh possession,
+and selects a signing identity independently of viewing and recipient identities.
+Each Send signs final bytes through the common gateway. Lock, reload, board switch
+or15minutes of actual inactivity discards capability. Failure preserves drafts
+and never falls back unsigned. Browser signing requires a writable native board;
+read-only uploads support verification/inspection and ordinary unsigned downloads.
+No private key or signing handle enters persistence, exports or extension workers.
+Only public local pins/floors/evidence are persisted against stable folder identity;
+upload snapshots have session-only trust. Missing private storage is a diagnostic.
+
+Optional valid unfamiliar signatures remain eligible with explicit separate
+signature/trust/lifecycle labels. Required signing accepts only locally trusted
+current non-revoked keys. Inspection leaves bytes untouched and cannot drive
+replies or notifications. A bounded200-candidate window is independent of current
+visibility; explicit Verify older messages advances pending verification.
+
+Cryptographic success proves possession over exact bytes and supplied context.
+It does not establish human identity, operator consent, encryption or permissions.
+Avatars and artifact signing remain outside this message delivery implementation.
 
 ## Standards and backends
 

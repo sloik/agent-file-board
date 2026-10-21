@@ -204,7 +204,7 @@ def session_command(args):
         return result
 
 
-def messages(root, board, config, known, participant, ctl_path=None):
+def messages(root, board, config, known, participant, ctl_path=None, signing_state_dir=None):
     import importlib.util
     script = Path(__file__).resolve().parents[3] / "boardctl.py"
     if not script.is_file() and ctl_path: script = Path(ctl_path).expanduser().resolve()
@@ -213,7 +213,10 @@ def messages(root, board, config, known, participant, ctl_path=None):
         spec = importlib.util.spec_from_file_location("_board_loop_reader", script)
         standard = importlib.util.module_from_spec(spec)
         sys.path.insert(0, str(script.parent))
-        try: spec.loader.exec_module(standard)
+        try:
+            spec.loader.exec_module(standard)
+            import signing_runtime
+            signing = signing_runtime.Session(root, config, standard.load_json(root / config["participant_identity"]["registry_file"]), signing_state_dir)
         finally: sys.path.pop(0)
     if not standard or not hasattr(standard, "check_message"):
         raise LoopError("Update canonical boardctl and pass --ctl to use the shared strict message reader")
@@ -268,8 +271,13 @@ def messages(root, board, config, known, participant, ctl_path=None):
                 else:
                     ordering = path.stat().st_mtime_ns // 1_000_000
                 rel = str(path.relative_to(root))
+                decision = signing.evaluate(signing.board / path.relative_to(board), headers, raw)
                 result[rel] = {"path": rel, "sha256": digest(raw), "headers": headers, "body": body,
                                "addressed": participant in to or "all" in to, "ordering_timestamp": ordering}
+                if decision["signature"] != "unsigned" or decision["minimum"] != "optional":
+                    result[rel]["signing"] = decision
+                    if decision["eligibility"] != "eligible":
+                        result[rel]["body"] = ""
             except (LoopError, ValueError, OSError, KeyError, TypeError) as exc:
                 invalid_count += 1
                 if invalid_count <= 10: print(f"board-loop: invalid message skipped: {path}: {exc}", file=sys.stderr)
@@ -280,6 +288,7 @@ def messages(root, board, config, known, participant, ctl_path=None):
             if record["replacement"]:
                 key = str((board / record["replacement"]).relative_to(root))
                 if key in result: result[key]["repair"] = {"original": record["target"], "by": record["by"], "record": "repairs/" + record["record"]}
+    signing.save()
     return dict(sorted(result.items(), key=lambda row: (row[1]["headers"]["DATE"], row[1]["ordering_timestamp"], row[0])))
 
 
@@ -300,6 +309,10 @@ def summary(message, action=None):
                             "evidence": [p[:240] for p in action["evidence"][:3]],
                             "note_truncated": len(action["note"]) > 300, "evidence_total": len(action["evidence"])}
     if "repair" in message: result["repair"] = message["repair"]
+    if "signing" in message:
+        result["signing"] = message["signing"]
+        if message["signing"]["eligibility"] != "eligible":
+            result["review_required"] = True
     return result
 
 
@@ -322,6 +335,7 @@ def routine_notice(message):
 
 
 def relevant(message, args, authored, engaged):
+    if message.get("signing", {}).get("eligibility", "eligible") != "eligible": return False
     h = message["headers"]
     if h.get("FROM") == args.participant: return False
     if args.participant in re.split(r"[,\s]+", h.get("TO", "")): return True
@@ -347,7 +361,7 @@ def adaptive_plan(args, data, found, timestamp):
     engaged = {(str(Path(path).parent), found[path]["headers"].get("THREAD", "").split("-", 1)[0])
                for path, action in data["messages"].items() if path in found and action["disposition"] in PENDING}
     relevant_paths = {path for path, message in found.items() if relevant(message, args, authored, engaged)}
-    observed = {path: message["sha256"] for path, message in found.items()}
+    observed = {path: digest((message["sha256"] + json.dumps(message["signing"], sort_keys=True)).encode()) if "signing" in message else message["sha256"] for path, message in found.items()}
     new_relevant = {path for path in relevant_paths if old is not None and old["seen"].get(path) != observed[path]}
     pending = digest(json.dumps({path: action for path, action in data["messages"].items() if action["disposition"] in PENDING}, sort_keys=True).encode())
     pending_changed = old is not None and old["pending"] != pending
@@ -382,7 +396,7 @@ def snapshot(args, *, timestamp=None):
             if args.mode != "OPPORTUNISTIC" and (args.interval or MODES[args.mode]) > 300:
                 raise LoopError("Attached action loops require an interval of at most 300 seconds")
             attachment = renew(args, data)
-        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None))
+        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None), args.state_dir)
         repair_review = []
         for path, record in data["messages"].items():
             if path not in found and (root / path).is_file() and digest((root / path).read_bytes()) == record["sha256"]:
@@ -391,7 +405,7 @@ def snapshot(args, *, timestamp=None):
                 raise LoopError(f"Immutable recorded message changed or disappeared: {path}")
         recent = list(reversed(list(found.values())))
         all_paths = [m["path"] for m in recent]
-        unseen = [m for m in recent if m["path"] not in data["messages"]]
+        unseen = [m for m in recent if m["path"] not in data["messages"] and m.get("signing", {}).get("eligibility", "eligible") == "eligible"]
         pending = [m for m in recent if data["messages"].get(m["path"], {}).get("disposition") in PENDING]
         unread_total, pending_total = len(unseen), len(pending)
         adaptive = None
@@ -440,10 +454,12 @@ def snapshot(args, *, timestamp=None):
 def read_message(args):
     root, board, config, known, identity, state = binding(args)
     with locked(state):
-        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None))
+        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None), args.state_dir)
         message = found.get(args.message)
         if not message or (args.sha256 and args.sha256 != message["sha256"]):
             raise LoopError("Message not visible or snapshot changed; poll again")
+        if message.get("signing", {}).get("eligibility", "eligible") != "eligible" and not args.action and not getattr(args, "inspect_excluded", False):
+            raise LoopError("Message excluded by signing requirements; explicit --inspect-excluded is non-actionable inspection")
         data = ledger(state, identity)
         record = data["messages"].get(args.message)
         if record and record["sha256"] != message["sha256"]:
@@ -476,10 +492,12 @@ def record_message(args):
     root, board, config, known, identity, state = binding(args)
     with locked(state):
         data = ledger(state, identity)
-        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None))
+        found = messages(root, board, config, known, args.participant, getattr(args, "ctl", None), args.state_dir)
         message = found.get(args.message)
         if not message or message["sha256"] != args.sha256:
             raise LoopError("Record only an exact message path and SHA256 returned by poll; source missing/changed")
+        if message.get("signing", {}).get("eligibility", "eligible") != "eligible":
+            raise LoopError("Excluded signing evidence cannot drive an action disposition; retained obligations require review")
         previous = data["messages"].get(args.message)
         if previous and previous["sha256"] != args.sha256:
             raise LoopError("Previously recorded immutable message changed")
@@ -575,6 +593,7 @@ def parser():
             p.add_argument("--sha256")
             p.add_argument("--offset", type=natural, default=0)
             p.add_argument("--action", action="store_true", help="Read saved action notes/evidence instead of message text")
+            p.add_argument("--inspect-excluded", action="store_true", help="explicit non-actionable inspection of signing exclusions")
         elif cmd == "record":
             p.add_argument("--message", required=True)
             p.add_argument("--sha256", required=True)

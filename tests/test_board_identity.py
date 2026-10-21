@@ -127,8 +127,9 @@ class BoardIdentityTests(unittest.TestCase):
         status = json.loads(result.stdout)
         self.assertEqual((status["status"], status["mirror"], status["signature"]), ("verified", "match", "valid"))
         self.assertEqual((status["trust"], status["lifecycle"]), ("not-evaluated", "not-evaluated"))
-        for field in ("messageSigning", "scopedSigningPolicy", "uiSigning"):
-            self.assertIs(status["capabilities"][field], False)
+        for field in ("messageSigning", "scopedSigningPolicy"):
+            self.assertIs(status["capabilities"][field], True)
+        self.assertIs(status["capabilities"]["uiSigning"], False)
         self.assertEqual(self.snapshot(), before)
 
     def test_unsigned_inspection_and_old_post_work_without_crypto_dependencies(self):
@@ -364,15 +365,15 @@ class BoardIdentityTests(unittest.TestCase):
             self.assertEqual((code, json.loads(out)["status"]), (2, "unavailable"))
             self.assertEqual(self.snapshot(), before)
 
-    def test_declared_signing_policy_is_never_reported_as_enforced(self):
+    def test_identity_discovery_reports_policy_support_without_claiming_evaluation(self):
         config = json.loads(self.config_path.read_bytes())
         config["message_signing"] = {"version": 1, "minimum": "trusted"}
         self.config_path.write_text(json.dumps(config))
         code, out, _ = self.cli("inspect")
         self.assertEqual(code, 0)
         result = json.loads(out)
-        self.assertEqual(result["messageSigningPolicy"], "unsupported")
-        self.assertIs(result["capabilities"]["scopedSigningPolicy"], False)
+        self.assertEqual(result["messageSigningPolicy"], "supported")
+        self.assertIs(result["capabilities"]["scopedSigningPolicy"], True)
 
 
 if __name__ == "__main__":

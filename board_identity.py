@@ -1,4 +1,4 @@
-"""Opt-in public profile storage. No private keys, message signing or local trust."""
+"""Opt-in public profile storage. Public profile registration and capability discovery."""
 from contextlib import contextmanager
 import hashlib
 import json
@@ -14,8 +14,8 @@ from board_upgrade import safe_path
 
 
 CAPABILITIES = {"boardIdentity": True, "profileRegistration": True,
-                "profileVerification": True, "messageSigning": False,
-                "scopedSigningPolicy": False, "uiSigning": False}
+                "profileVerification": True, "messageSigning": True,
+                "scopedSigningPolicy": True, "uiSigning": False}
 
 
 def _core():
@@ -179,8 +179,8 @@ def _verify(raw, digest, board_id, participant):
 def _base(board_id, config):
     return {"version": 1, "boardId": board_id, "capabilities": dict(CAPABILITIES),
             "trust": "not-evaluated", "lifecycle": "not-evaluated",
-            "messageSigningPolicy": "unsupported" if "message_signing" in config else "not-configured",
-            "agentGuidance": "Profiles do not sign messages. A client unable to verify and enforce required signing must not act in signing-required scopes."}
+            "messageSigningPolicy": "supported" if "message_signing" in config else "not-configured",
+            "agentGuidance": "Use signing inspect/recent for receiver eligibility. Sign exact final bytes with post --signing-key-file or portable signing requests. A client unable to enforce required signing must not act in those scopes."}
 
 
 def enable(root, requested=None):

@@ -60,7 +60,7 @@ def _float(text):
     return value
 
 
-def strict_json(raw, *, limit=MAX_ENVELOPE_BYTES, allow_floats=False):
+def strict_json(raw, *, limit=MAX_ENVELOPE_BYTES, allow_floats=False, max_nodes=MAX_JSON_NODES):
     """Bounded UTF-8 JSON, with duplicate/scalar/numeric checks at every depth."""
     if not isinstance(raw, bytes) or len(raw) > limit:
         _fail("JSON must be bounded bytes")
@@ -73,7 +73,7 @@ def strict_json(raw, *, limit=MAX_ENVELOPE_BYTES, allow_floats=False):
         while pending:
             item, depth = pending.pop()
             nodes += 1
-            if depth > MAX_JSON_DEPTH or nodes > MAX_JSON_NODES:
+            if depth > MAX_JSON_DEPTH or nodes > max_nodes:
                 _fail("JSON structure exceeds budget")
             if isinstance(item, str):
                 item.encode("utf-8")  # Reject escaped unpaired surrogates too.
@@ -206,7 +206,7 @@ class MessageContext:
         if not re.fullmatch(r"[a-f0-9]{64}", self.profile):
             _fail("invalid profile SHA-256")
         if (len(self.path) > 1024 or not re.fullmatch(
-                r"(?:rooms|direct)/[a-z0-9_-]+/[A-Za-z0-9_.-]+\.txt", self.path)
+                r"[a-z][a-z0-9-]*/[a-z0-9_-]+/[A-Za-z0-9_.-]+\.txt", self.path)
                 or any(p in (".", "..") for p in self.path.split("/"))):
             _fail("invalid physical board-relative message path")
 

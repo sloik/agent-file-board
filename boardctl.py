@@ -280,6 +280,33 @@ def command_post(args: argparse.Namespace) -> int:
     extension_state.validate_message(board, path, header_map, body, active=True)
     headers.extend(f"{key}: {value}" for key, value in extra.items())
     payload = ("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n").encode("utf-8")
+    import signing_commands
+    signing = signing_commands.session(root, getattr(args, "signing_state_dir", None))
+    key_file = getattr(args, "signing_key_file", None)
+    request_file = getattr(args, "prepare_signing", None)
+    minimum = signing.minimum(path.relative_to(board).as_posix(), args.thread)
+    if "ANSWER" in extra or "EXTENSION-ANSWER" in extra:
+        source_headers = check_message(target, board, config, known)
+        if signing.evaluate(target, source_headers)["eligibility"] != "eligible":
+            raise BoardError("reply source is not eligible under signing requirements; inspect it separately")
+    if key_file or request_file:
+        from signing_runtime import private_key
+        packet, envelope = signing_commands.signed_packet(signing, path.relative_to(board).as_posix(), payload,
+                                                           private_key(key_file, root) if key_file else None)
+        if request_file:
+            request_path = Path(request_file).expanduser().resolve()
+            if request_path.is_relative_to(board):
+                raise BoardError("pending signing requests must stay outside the shared board")
+            import board_identity
+            board_identity._publish(request_path, json.dumps(packet).encode())
+            print(json.dumps({"signingRequest": str(request_path), "published": False}))
+            return 0
+        published = signing_commands.publish(signing, packet, envelope)
+        print(published.relative_to(root))
+        warn_agent_presence(root, board, registry, args.sender, known)
+        return 0
+    if minimum == "trusted":
+        raise BoardError("trusted signature required; provide an explicit --signing-key-file or --prepare-signing")
     temporary = directory / (".message-" + uuid.uuid4().hex + ".tmp")
     try:
         with temporary.open("xb") as handle:
@@ -473,19 +500,43 @@ def command_inbox(args: argparse.Namespace) -> int:
     if args.participant_id not in ids(registry):
         raise BoardError("participant must be registered")
     state = state_path(root, config, args.participant_id, args.state_dir)
-    markers = load_json(state).get("read_markers", {}) if state.exists() else {}
+    stored = load_json(state) if state.exists() else {}
+    markers = stored.get("read_markers", {})
+    signing_pending = stored.get("signing_pending", {})
     paths = sorted((board / "rooms").glob("**/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("**/*.txt"))
     paths = [path for path in paths if ".DS_Store" not in path.relative_to(board).parts]
-    unread = [path for path in paths if path.name > markers.get(str(path.parent.relative_to(board)), "")]
+    import signing_commands
+    signing = signing_commands.session(root, args.state_dir)
+    eligible = []
+    for path in paths:
+        if path.parent.parent.name == config["board"]["direct_directory"] and args.participant_id not in path.parent.name.split("--"):
+            continue
+        relative = path.relative_to(board).as_posix()
+        try:
+            decision = signing.evaluate(path, parse_message(path))
+        except (ValueError, OSError, KeyError, TypeError):
+            decision = {"eligibility": "excluded"}
+        if decision["eligibility"] == "eligible":
+            eligible.append(path)
+        else:
+            signing_pending[relative] = decision["eligibility"]
+    unread = [path for path in eligible if path.name > markers.get(str(path.parent.relative_to(board)), "") or path.relative_to(board).as_posix() in signing_pending]
     for path in unread:
         print(path.relative_to(root))
     if args.mark_read:
         new_markers = dict(markers)
-        for path in paths:
+        for path in eligible:
             key = str(path.parent.relative_to(board))
             new_markers[key] = max(new_markers.get(key, ""), path.name)
+            signing_pending.pop(path.relative_to(board).as_posix(), None)
         state.parent.mkdir(parents=True, exist_ok=True)
-        state.write_text(json.dumps({"participant_id": args.participant_id, "read_markers": new_markers}, indent=2) + "\n", encoding="utf-8")
+        stored.update(participant_id=args.participant_id, read_markers=new_markers, signing_pending=signing_pending)
+        state.write_text(json.dumps(stored, indent=2) + "\n", encoding="utf-8")
+    elif signing_pending:
+        stored.update(participant_id=args.participant_id, read_markers=markers, signing_pending=signing_pending)
+        state.parent.mkdir(parents=True, exist_ok=True)
+        state.write_text(json.dumps(stored, indent=2) + "\n", encoding="utf-8")
+    signing.save()
     return 0
 
 
@@ -525,6 +576,8 @@ def command_session(args: argparse.Namespace) -> int:
         slug = "session-" + action + "-" + uuid.uuid4().hex
         body = f"Session {action}: identifier {record['participant']}; session {record['session']}; runtime {record['runtime']}.\n{record['summary']}"
         post = argparse.Namespace(path=str(root), sender=record["participant"], recipient="all", scope="room", room=room, thread=thread, slug=slug, status="INFO", language=None, body=body, body_file=None, reply_to=None, runtime=record["runtime"], at=args.at, content_type=None, question_file=None, answer_file=None, thread_label="session-presence", presence_notice=True)
+        post.signing_key_file = getattr(args, "signing_key_file", None)
+        post.signing_state_dir = getattr(args, "signing_state_dir", None)
         import contextlib
         import io
         with contextlib.redirect_stdout(io.StringIO()):
@@ -608,11 +661,26 @@ def command_recent(args: argparse.Namespace) -> int:
         if args.topic and headers["THREAD"].split("-", 1)[0] != args.topic: continue
         rows.append((message_order(headers, path, config), {"path": str(path.relative_to(root)), "from": headers["FROM"], "to": headers["TO"], "scope": headers["SCOPE"], "room": headers.get("ROOM"), "topic": headers["THREAD"].split("-", 1)[0], "thread": headers["THREAD"], "status": headers["STATUS"], "date": headers["DATE"], "posted_at": headers.get("POSTED-AT")}))
     rows.sort(key=lambda row: row[0], reverse=True)
+    import signing_commands
+    signing = signing_commands.session(root, getattr(args, "signing_state_dir", None))
+    checked, excluded = [], []
+    for order, row in rows[:200]:
+        source = root / row["path"]
+        decision = signing.evaluate(source, parse_message(source))
+        if decision["signature"] != "unsigned" or decision["minimum"] != "optional":
+            row = dict(row, signing=decision)
+        if decision["eligibility"] == "eligible" or args.inspect_excluded:
+            if decision["eligibility"] != "eligible": row["inspection_only"] = True
+            checked.append((order, row))
+        if decision["eligibility"] != "eligible":
+            excluded.append({"path": row["path"], **decision})
     result = {"messages": [], "total_matching": len(rows), "truncated": len(rows) > args.limit, "invalid_count": len(invalid), "invalid_messages": [], "repair_error_count": len(repair_errors)}
+    if excluded:
+        result.update(excluded_count=len(excluded), pending_verification_count=sum(x["eligibility"] == "pending-verification" for x in excluded))
     for issue in invalid[:10]:
         candidate = dict(result, invalid_messages=[*result["invalid_messages"], issue])
         if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 <= args.max_bytes: result = candidate
-    for _, row in rows[:args.limit]:
+    for _, row in checked[:args.limit]:
         source = root / row["path"]
         digest = hashlib.sha256()
         with source.open("rb") as handle:
@@ -631,6 +699,7 @@ def command_recent(args: argparse.Namespace) -> int:
             result["truncated"] = True
             break
         result = candidate
+    signing.save()
     print(json.dumps(result, ensure_ascii=False))
     return 0
 
@@ -695,6 +764,9 @@ def parser() -> argparse.ArgumentParser:
     join = commands.add_parser("join"); join.add_argument("participant_id"); join.add_argument("--path", default="."); join.add_argument("--kind", default="agent"); join.add_argument("--language", default="en"); join.add_argument("--operator", help="optional registered human ID; informational agent claim only"); join.set_defaults(func=command_join)
     post = commands.add_parser("post"); post.add_argument("--path", default="."); post.add_argument("--from", dest="sender", required=True); post.add_argument("--to", dest="recipient", required=True); post.add_argument("--scope", choices=("room", "direct"), required=True); post.add_argument("--room"); post.add_argument("--thread", required=True); post.add_argument("--slug", required=True); post.add_argument("--status", default="INFO"); post.add_argument("--language"); post.add_argument("--body", default=""); post.add_argument("--body-file"); post.add_argument("--reply-to"); post.add_argument("--runtime"); post.add_argument("--at"); post.set_defaults(func=command_post)
     post.add_argument("--topic-title", help="Explicit current topic title; ordinary messages preserve it")
+    post.add_argument("--signing-key-file", help="explicit private Ed25519 JWK outside the shared project")
+    post.add_argument("--signing-state-dir", help="private local trust/policy directory")
+    post.add_argument("--prepare-signing", help="export exact portable signing request instead of publishing")
     post.add_argument("--content-type", choices=sorted(CONTENT_TYPES))
     post.add_argument("--question-file", help="JSON legacy choice or version2/3 form question file")
     post.add_argument("--ui-file", help="board-report JSON data file; requires readable body fallback")
@@ -724,11 +796,15 @@ def parser() -> argparse.ArgumentParser:
             if action in {"start", "release"}:
                 sub.add_argument("--announce", action="store_true", help="Post an optional routine arrival/departure notice")
         sub.set_defaults(func=command_session)
+        sub.add_argument("--signing-key-file", help="explicit private signer for optional announcement messages")
+        sub.add_argument("--signing-state-dir", help="private signing trust/policy directory")
     recent = commands.add_parser("recent")
     recent.add_argument("--path", default="."); recent.add_argument("--participant", dest="participant_id", required=True)
     recent.add_argument("--from", dest="sender"); recent.add_argument("--room"); recent.add_argument("--topic")
     recent.add_argument("--limit", type=int, default=20); recent.add_argument("--max-bytes", type=int, default=16384)
     recent.set_defaults(func=command_recent)
+    recent.add_argument("--inspect-excluded", action="store_true", help="explicit non-actionable signing inspection")
+    recent.add_argument("--signing-state-dir", help="private local trust/policy directory")
     guidance = commands.add_parser("guidance")
     guidance.add_argument("--path", default=".")
     route = guidance.add_mutually_exclusive_group(required=True)
@@ -742,6 +818,8 @@ def parser() -> argparse.ArgumentParser:
     post.add_argument("--information-file", help="INFORMATION JSON: inert provenance and optional pinned shared state")
     extension_packages.add_parser(commands)
     extension_state.add_parser(commands)
+    import signing_commands
+    signing_commands.add_parser(commands)
     identity = commands.add_parser("identity", help="Opt-in public profile registration; does not sign messages")
     identity_actions = identity.add_subparsers(dest="identity_action", required=True)
     for action in ("enable", "import", "inspect"):
