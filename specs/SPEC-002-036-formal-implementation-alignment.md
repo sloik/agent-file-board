@@ -10,7 +10,7 @@ nfrs: []
 
 ## Scope
 
-Extend private-state crash/stale-lock modeling and executable conformance for actual private saves and signed publication.
+Extend private-state crash/stale-lock modeling and executable trace conformance for actual private saves while retaining mapped signed-publication regressions.
 Adopt the useful parts of Nightshift's formal/runtime source registry and trace
 conformance checks without claiming that source hashes prove refinement. Changes
 to modeled implementation, models, configs or their executable tests must trigger

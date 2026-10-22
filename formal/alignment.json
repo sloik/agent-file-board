@@ -1,0 +1,1186 @@
+{
+  "schemaVersion": 1,
+  "maintenance": "The maintainer changing modeled code owns semantic alignment review. See formal/ALIGNMENT.md; no automatic refresh.",
+  "anchors": {
+    "formal/check.py": {
+      "path": "formal/check.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ba22d49e0c1560921156dbe356659ce6be50109b9de81d0e9f7ec77eccab2297"
+    },
+    "formal/check_alignment.py": {
+      "path": "formal/check_alignment.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c94835bae7238abe9fdfae183458a2f3d32cee48d7fb8d6caeced8e442161f4f"
+    },
+    "formal/check_traces.py": {
+      "path": "formal/check_traces.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "eb025b40c777bb17e4ec33ae5d1131fd68364490ac440f38b3e5b708fbe35978"
+    },
+    "formal/test_check.py": {
+      "path": "formal/test_check.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "406691768fb23c91bae9c88dec6720a14ff7194082bc2f561d41be091abf6801"
+    },
+    "formal/test_alignment.py": {
+      "path": "formal/test_alignment.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "b6beb29e543f62c2da70fb70a6422692cf6fbad6f881324649bf48eaf4d517af"
+    },
+    "formal/test_traces.py": {
+      "path": "formal/test_traces.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4c085551fe5d96a9fe891aad21282ef36ce441570440c405ed5a2f5f081ef5be"
+    },
+    "formal/suite.json": {
+      "path": "formal/suite.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "84205209069fd21af740c4dcfaaad4453778d0cd69e53c8c4c9d5d97e01a3f9b"
+    },
+    "formal/README.md": {
+      "path": "formal/README.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "22d8cdf4e88df32c598db66f0edbf0c6a2f6ceb4d80973e15f1b0706fc7bb81a"
+    },
+    "formal/ALIGNMENT.md": {
+      "path": "formal/ALIGNMENT.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c68d3b8246748ca4de21d2bd5d9a6d78b56e8c4bfd35e54590bfc469963df439"
+    },
+    ".github/workflows/formal.yml": {
+      "path": ".github/workflows/formal.yml",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "7b3c58317d63d543ddfdbc823d2ae4e689858068d16490392ffba659f79b3d62"
+    },
+    "signing_runtime.py": {
+      "path": "signing_runtime.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "7b8c86563eeb559363e31cf8c89ce4fedf2a5c7dba481aa523aace540c4ba636"
+    },
+    "signing_commands.py": {
+      "path": "signing_commands.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0baa3d8a1d9d80396ff31c166ef16bd4c56d85361d18a6532389c5e49da1a14f"
+    },
+    "signing_core.py": {
+      "path": "signing_core.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ad70e35b939def7521cf7da5c6a292af2c12d5ca15575f4aee43a23d989a4cb9"
+    },
+    "board_identity.py": {
+      "path": "board_identity.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "40b844a68a72b9a3bf7e8ac09dced800bf8eb6f5ecd02940f7a465c2f5a6d9b8"
+    },
+    "session-save": {
+      "path": "signing_runtime.py",
+      "selector": {
+        "kind": "python",
+        "name": "Session.save"
+      },
+      "sha256": "ca41f23bff9a22f3a8fed391f76f8c3d938e8db686da87e2fb6577105f079143"
+    },
+    "private-lock": {
+      "path": "signing_runtime.py",
+      "selector": {
+        "kind": "python",
+        "name": "_state_write_lock"
+      },
+      "sha256": "d6212e31788f86d1fc2523aff61b8d420ef2b4d0cdcf6d29e645f2d414daf3a5"
+    },
+    "expected-byte-replace": {
+      "path": "board_identity.py",
+      "selector": {
+        "kind": "python",
+        "name": "_atomic_replace"
+      },
+      "sha256": "6a1304caa606b0e7ca136ca512c6753dea52263ac509a4c875c728ee7b920fd7"
+    },
+    "signed-publish": {
+      "path": "signing_commands.py",
+      "selector": {
+        "kind": "python",
+        "name": "publish"
+      },
+      "sha256": "ccb4e85400dabf8003a5b9c0679c46636e1a882923a78d312891b355bdb2f991"
+    },
+    "immutable-publish": {
+      "path": "signing_commands.py",
+      "selector": {
+        "kind": "python",
+        "name": "publish_atomic"
+      },
+      "sha256": "79e7c363e2ab03a899e162394c4db63f37e21ba020414f6c62fd72f1e78f9e9d"
+    },
+    "tests/test_signing_runtime.py": {
+      "path": "tests/test_signing_runtime.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c20ce80825df71fc52d1ac186991ad76a61bb0b763a24cfcca337268096b2fde"
+    },
+    "tests/test_signing_core.py": {
+      "path": "tests/test_signing_core.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "45b6faf53a5a59431800d16d174e9468b1f06bb6ecf4e1bfeca501198c2f1fca"
+    },
+    "tests/test_formal_alignment.py": {
+      "path": "tests/test_formal_alignment.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "d6fdc9ee084fca9306dfe860961cf9ba3a6bdd111bbacae8d51a13a49bfde047"
+    },
+    "requirements-signing.txt": {
+      "path": "requirements-signing.txt",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "e375e3f2835444adea265e6df5e2bdedc7a42a1bdbb7bb96ddb7d04b13029983"
+    },
+    "formal/PrivateState.tla": {
+      "path": "formal/PrivateState.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "74c002374958e11aab61c7ffb33664900a23185511d39cd169e6a803b43a30b0"
+    },
+    "formal/PrivateState.cfg": {
+      "path": "formal/PrivateState.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "a839b06deb147dd56bb897299ea410725dbc91a01996e82d89017ed0a5ddd42e"
+    },
+    "formal/PrivateStateBad.cfg": {
+      "path": "formal/PrivateStateBad.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "48dd0c230a49e20f523af369eb3afe154fe19829203114dd6ae534bdc8a1cdfe"
+    },
+    "formal/Publication.tla": {
+      "path": "formal/Publication.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9d40e351a27cc136510b0ea01fb1aaf67dcf2730d1b974a18c2690d2d10eae76"
+    },
+    "formal/Publication.cfg": {
+      "path": "formal/Publication.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "500e31f9e030e9448bf1cbecd85a2010b77a8f75d0b4cb3413e8dcc58e320b6d"
+    },
+    "formal/PublicationBad.cfg": {
+      "path": "formal/PublicationBad.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "af7f3271bb01d8448f3e220dadcd221607740c8327e33d1ed7336b65f3b33f77"
+    },
+    "formal/PublicationBadUnsigned.cfg": {
+      "path": "formal/PublicationBadUnsigned.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c9ae64053225deb26c288337047bd79bf3492f00fdb93b1eb9422de8a741a5e1"
+    },
+    "formal/PublicationReachable.cfg": {
+      "path": "formal/PublicationReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ee708bdfeaa7481953f1a7342b67d03f79affb8657bac81ffc68ef8aee4c627a"
+    },
+    "formal/collect_traces.py": {
+      "path": "formal/collect_traces.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0577d76498a6cb0d0c0a51f9f5b509f47626c23adcf2796ce6cae9b7cae5d624"
+    },
+    "formal/PrivateRecovery.tla": {
+      "path": "formal/PrivateRecovery.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0abd11d854a61bca6a4ca87a028559c49b6cbd41f8b80f16b84c4cc42e52fec4"
+    },
+    "formal/PrivateRecovery.cfg": {
+      "path": "formal/PrivateRecovery.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "f1de0788a9b25efc6cdc8b5ac40945f3dd0d2bf222ac28d6c9554637d0095e4e"
+    },
+    "formal/PrivateRecoveryBadCompare.cfg": {
+      "path": "formal/PrivateRecoveryBadCompare.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "09eadb83149903e75230b3c2a55bf54c7273f16d6342fbe32e5f956c583a825a"
+    },
+    "formal/PrivateRecoveryBadLock.cfg": {
+      "path": "formal/PrivateRecoveryBadLock.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "2f16c67e245f7dd2f98f57eb28517aa1ac9973a6b8874362aa840d200f5ce54f"
+    },
+    "formal/PrivateRecoveryReachable.cfg": {
+      "path": "formal/PrivateRecoveryReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0e9c7ea92df7ce14acee76a3c59ff3f034683e2f39e28eed7b6a99fe7db2789c"
+    }
+  },
+  "models": [
+    {
+      "module": "PrivateState.tla",
+      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks.",
+      "states": {
+        "disk": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
+        },
+        "expected": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
+        },
+        "proposed": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
+        },
+        "pc": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
+        },
+        "lock": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
+        },
+        "adopted": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
+        },
+        "untrusted": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
+        },
+        "learned": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
+        },
+        "revoke": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
+        }
+      },
+      "operators": {
+        "Read": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
+        },
+        "Acquire": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
+        },
+        "Compare": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
+        },
+        "Replace": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
+        },
+        "Release": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
+        },
+        "Client": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
+        },
+        "NoLostSecurityState": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "private-lock",
+            "expected-byte-replace",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
+        },
+        "Revoke": {
+          "anchors": [
+            "signing_runtime.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Bounded environmental compromise observation, persisted only after learning and saving."
+        },
+        "Clients": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "Initial": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "vars": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "Init": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "Next": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "Spec": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "FairSpec": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "TypeOK": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        },
+        "Terminates": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "tests/test_formal_alignment.py",
+        "requirements-signing.txt",
+        "formal/PrivateState.tla",
+        "formal/PrivateState.cfg",
+        "formal/PrivateStateBad.cfg"
+      ],
+      "conformance": [
+        "tests/test_signing_runtime.py",
+        "tests/test_signing_core.py"
+      ],
+      "limits": "Two-writer CAS/trust/floor model with mapped runtime regressions. Coarse actual save traces live in PrivateRecovery. Arbitrary writers and intentional floor replacement excluded."
+    },
+    {
+      "module": "Publication.tla",
+      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation.",
+      "states": {
+        "policy": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
+        },
+        "head": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
+        },
+        "revoked": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
+        },
+        "revision": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
+        },
+        "trusted": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
+        },
+        "snapshot": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
+        },
+        "observations": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
+        },
+        "pc": {
+          "anchors": [
+            "signing_commands.py",
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
+        },
+        "sidecar": {
+          "anchors": [
+            "signing_commands.py",
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
+        },
+        "message": {
+          "anchors": [
+            "signing_commands.py",
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
+        },
+        "authorized": {
+          "anchors": [
+            "signing_commands.py",
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
+        },
+        "authorization": {
+          "anchors": [
+            "signing_commands.py",
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
+        },
+        "failed": {
+          "anchors": [
+            "signing_commands.py",
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
+        },
+        "attempt": {
+          "anchors": [
+            "signing_commands.py",
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
+        }
+      },
+      "operators": {
+        "Read": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py",
+            "tests/test_signing_core.py"
+          ],
+          "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
+        },
+        "Sign": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py",
+            "tests/test_signing_core.py"
+          ],
+          "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
+        },
+        "ObserveConfig": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py",
+            "tests/test_signing_core.py"
+          ],
+          "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
+        },
+        "ObserveProfile": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py",
+            "tests/test_signing_core.py"
+          ],
+          "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
+        },
+        "FinishGuard": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py",
+            "tests/test_signing_core.py"
+          ],
+          "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
+        },
+        "Valid": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py",
+            "tests/test_signing_core.py"
+          ],
+          "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
+        },
+        "AuthorizationValid": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_core.py",
+            "signed-publish",
+            "tests/test_signing_runtime.py",
+            "tests/test_signing_core.py"
+          ],
+          "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
+        },
+        "Commit": {
+          "anchors": [
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Immutable sidecar precedes guarded message commit; no unsigned fallback."
+        },
+        "NoUnboundMessage": {
+          "anchors": [
+            "signed-publish",
+            "immutable-publish",
+            "board_identity.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Immutable sidecar precedes guarded message commit; no unsigned fallback."
+        },
+        "Crash": {
+          "anchors": [
+            "signing_runtime.py",
+            "signed-publish",
+            "immutable-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Bounded metadata changes and interrupted/retried publication; exact identity/byte conflicts retain runtime checks."
+        },
+        "Retry": {
+          "anchors": [
+            "signing_runtime.py",
+            "signed-publish",
+            "immutable-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Bounded metadata changes and interrupted/retried publication; exact identity/byte conflicts retain runtime checks."
+        },
+        "Change": {
+          "anchors": [
+            "signing_runtime.py",
+            "signed-publish",
+            "immutable-publish",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Bounded metadata changes and interrupted/retried publication; exact identity/byte conflicts retain runtime checks."
+        },
+        "Clients": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "Empty": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "NoAuthorization": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "Current": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "Client": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "vars": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "Init": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "Next": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "Spec": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        },
+        "NoPublicationYet": {
+          "anchors": [
+            "signing_runtime.py",
+            "signing_commands.py",
+            "tests/test_signing_runtime.py"
+          ],
+          "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "tests/test_formal_alignment.py",
+        "requirements-signing.txt",
+        "formal/Publication.tla",
+        "formal/Publication.cfg",
+        "formal/PublicationBad.cfg",
+        "formal/PublicationBadUnsigned.cfg",
+        "formal/PublicationReachable.cfg"
+      ],
+      "conformance": [
+        "tests/test_signing_runtime.py",
+        "tests/test_signing_core.py"
+      ],
+      "limits": "Source/test-mapped publication model, not complete per-action trace refinement. Arbitrary writers, parsing/crypto arithmetic and global metadata transactions excluded."
+    },
+    {
+      "module": "PrivateRecovery.tla",
+      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh.",
+      "states": {
+        "state": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Actual save/lock projection over an existing baseline private state."
+        },
+        "state.disk": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Byte-derived disk revision and request expected bytes until explicit review/reload."
+        },
+        "state.expected": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Byte-derived disk revision and request expected bytes until explicit review/reload."
+        },
+        "state.badWrite": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Byte-derived disk revision and request expected bytes until explicit review/reload."
+        },
+        "state.locked": {
+          "anchors": [
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock directory and owned-child crash observation; recovery is explicit owner inspection."
+        },
+        "state.orphaned": {
+          "anchors": [
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock directory and owned-child crash observation; recovery is explicit owner inspection."
+        },
+        "state.badSteal": {
+          "anchors": [
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock directory and owned-child crash observation; recovery is explicit owner inspection."
+        },
+        "state.phase": {
+          "anchors": [
+            "session-save",
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Observed real context entry, completion, exception cleanup and terminal result."
+        },
+        "state.result": {
+          "anchors": [
+            "session-save",
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Observed real context entry, completion, exception cleanup and terminal result."
+        }
+      },
+      "operators": {
+        "Acquire": {
+          "anchors": [
+            "private-lock",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock entry/refusal/death, with explicit removal only after the owned child is confirmed dead."
+        },
+        "Busy": {
+          "anchors": [
+            "private-lock",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock entry/refusal/death, with explicit removal only after the owned child is confirmed dead."
+        },
+        "Orphan": {
+          "anchors": [
+            "private-lock",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock entry/refusal/death, with explicit removal only after the owned child is confirmed dead."
+        },
+        "Crash": {
+          "anchors": [
+            "private-lock",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock entry/refusal/death, with explicit removal only after the owned child is confirmed dead."
+        },
+        "Inspect": {
+          "anchors": [
+            "private-lock",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock entry/refusal/death, with explicit removal only after the owned child is confirmed dead."
+        },
+        "NoStolenLock": {
+          "anchors": [
+            "private-lock",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real lock entry/refusal/death, with explicit removal only after the owned child is confirmed dead."
+        },
+        "Commit": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real CAS, unchanged no-op, competing save and fresh-session review. No-op performs no changing write."
+        },
+        "NoopCommit": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real CAS, unchanged no-op, competing save and fresh-session review. No-op performs no changing write."
+        },
+        "Compete": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real CAS, unchanged no-op, competing save and fresh-session review. No-op performs no changing write."
+        },
+        "Review": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real CAS, unchanged no-op, competing save and fresh-session review. No-op performs no changing write."
+        },
+        "NoStaleSave": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "expected-byte-replace",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Real CAS, unchanged no-op, competing save and fresh-session review. No-op performs no changing write."
+        },
+        "Failure": {
+          "anchors": [
+            "session-save",
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Handled error unwinds the real context manager; completion releases its owned lock."
+        },
+        "Release": {
+          "anchors": [
+            "session-save",
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Handled error unwinds the real context manager; completion releases its owned lock."
+        },
+        "ErrorReleases": {
+          "anchors": [
+            "session-save",
+            "private-lock",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Handled error unwinds the real context manager; completion releases its owned lock."
+        },
+        "vars": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "Initial": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "Init": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "Next": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "Spec": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "Step": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "Safe": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "TypeOK": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        },
+        "NeverSaves": {
+          "anchors": [
+            "signing_runtime.py",
+            "session-save",
+            "formal/collect_traces.py"
+          ],
+          "reason": "Finite initial/step/safety predicates reused by observed trace validation, plus a successful save witness."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "tests/test_formal_alignment.py",
+        "requirements-signing.txt",
+        "formal/PrivateRecovery.tla",
+        "formal/PrivateRecovery.cfg",
+        "formal/PrivateRecoveryBadCompare.cfg",
+        "formal/PrivateRecoveryBadLock.cfg",
+        "formal/PrivateRecoveryReachable.cfg"
+      ],
+      "conformance": [
+        "formal/collect_traces.py",
+        "tests/test_signing_runtime.py"
+      ],
+      "limits": "One save client, one external competitor, two new revisions and an existing baseline file. No automatic orphan recovery/liveness or arbitrary filesystem proof."
+    }
+  ]
+}

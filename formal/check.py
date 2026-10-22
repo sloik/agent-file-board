@@ -63,6 +63,10 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--jar", help="existing jar (still checksum-verified)")
     args = parser.parse_args()
+    from check_alignment import check as check_alignment
+    alignment = check_alignment(ROOT.parent)
+    if not alignment['ok']:
+        raise ValueError('Formal alignment review required:\n' + '\n'.join(alignment['errors']))
     suite = json.loads((ROOT / "suite.json").read_text())
     java = os.environ.get("JAVA") or shutil.which("java")
     if not java:

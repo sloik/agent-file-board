@@ -9,11 +9,12 @@ permissions:
 jobs:
   bounded-models:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+          submodules: recursive
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
@@ -21,7 +22,15 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.12'
+      - name: Require reviewed implementation/model alignment
+        run: python3 formal/check_alignment.py
       - name: Test fail-closed runner
         run: python3 -m unittest discover -s formal -p "test_*.py"
-      - name: Check bounded signing models and mutation controls
+      - name: Install signing dependencies and check mapped runtime behavior
+        run: |
+          python3 -m pip install -r requirements-signing.txt
+          python3 -m unittest discover -s tests -p "test_signing_runtime.py"
+      - name: Check observed private-save traces and implementation mutants
+        run: python3 formal/check_traces.py
+      - name: Check bounded signing and recovery models with mutation controls
         run: python3 formal/check.py

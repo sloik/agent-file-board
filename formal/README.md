@@ -112,3 +112,40 @@ transactions differ from the CLI's filesystem operations.
 Tool documentation: [TLA+ tools](https://github.com/tlaplus/tlaplus),
 [TLC command line](https://docs.tlapl.us/using:tlc:start),
 [safety/liveness and fairness](https://lamport.azurewebsites.net/tla/tutorial/session9.html).
+
+## PrivateRecovery and maintained alignment
+
+[Alignment maintenance and CI gates](ALIGNMENT.md) describe the source mappings,
+review trigger and executable trace bridge. Normal unit runs and formal CI refuse
+stale mappings. The lane also runs actual signing-runtime regressions, observed
+private-save traces, implementation-only mutants and all existing TLC controls.
+
+`PrivateRecovery` extends coverage to normal/no-op saves, expected-byte conflict,
+handled write error, orphaned lock refusal, process death while holding the lock,
+and explicit inspected recovery followed by a reviewed retry. It abstracts one
+save client and an external competing commit, up to two distinct disk revisions.
+A baseline private state already exists; initial-file publication remains covered
+by the existing runtime tests and `PrivateState` abstraction. Byte equality is
+represented by revision identity; the collector derives identities from actual
+private-file bytes, rather than predicting which save should win.
+
+`NoStaleSave` forbids a changing write based on a stale revision. No-op saves do
+not write anything and may legitimately finish without a fresh expected-byte
+comparison. `NoStolenLock` forbids automatic acquisition over an existing lock;
+`ErrorReleases` checks handled failures release their owned lock. A crash may leave
+an orphaned lock indefinitely: there is no automatic-progress or lock-stealing
+claim. `Inspect` is an explicit test-owner environment action after confirming its
+owned child has exited, not an automatic runtime recovery feature.
+
+The collector drives real `Session.save`, the real lock context manager and real
+private files in owned temporary directories. Its crash scenario exits only its
+own disposable child process. Runtime mutants bypass expected-byte comparison or
+steal an orphaned lock; both must fail TLC conformance independently of hashes.
+Model mutants remove those same protections, and a reachability witness finds a
+successful save. Existing two-writer floor/trust concurrency and publication
+models are retained; the new coarse save relation does not replace them.
+
+Cryptographic semantics, arbitrary filesystems, remote machines, uncooperative
+writers, unlimited retries, all crash instruction boundaries and owner inspection
+correctness are outside this finite model. No production recovery behavior is
+changed by these tests.

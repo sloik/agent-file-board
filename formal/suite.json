@@ -33,6 +33,25 @@
       "module": "Publication.tla",
       "config": "PublicationReachable.cfg",
       "counterexample": "NoPublicationYet"
+    },
+    {
+      "module": "PrivateRecovery.tla",
+      "config": "PrivateRecovery.cfg"
+    },
+    {
+      "module": "PrivateRecovery.tla",
+      "config": "PrivateRecoveryBadCompare.cfg",
+      "counterexample": "NoStaleSave"
+    },
+    {
+      "module": "PrivateRecovery.tla",
+      "config": "PrivateRecoveryBadLock.cfg",
+      "counterexample": "NoStolenLock"
+    },
+    {
+      "module": "PrivateRecovery.tla",
+      "config": "PrivateRecoveryReachable.cfg",
+      "counterexample": "NeverSaves"
     }
   ]
 }
