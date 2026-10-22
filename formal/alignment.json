@@ -285,7 +285,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "0da5e72515f3674b12d8497b27f1a05eaf742060a90fb399aae4836425f722a5"
+      "sha256": "d13b75a955e32aa386bac8191d524b71895597789681910b5ce0bcf76c0e7956"
     },
     "formal/STATUS.md": {
       "path": "formal/STATUS.md",
@@ -363,12 +363,33 @@
         "kind": "file"
       },
       "sha256": "29adebfbf74636750da3a3716d0cdb10b582423f7288650626bbe230757fb4ef"
+    },
+    "scripts/ci_retry.py": {
+      "path": "scripts/ci_retry.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "34a69ad57afb7e605dd3c2b846d3ce695e7c4b4abf98213dee16f66544e2db5f"
+    },
+    "tests/test_ci_retry.py": {
+      "path": "tests/test_ci_retry.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "718db9dc259e07c56fe9773c0bdcea85c6757ebe422d04526e9948dd220ee602"
+    },
+    ".github/workflows/test.yml": {
+      "path": ".github/workflows/test.yml",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "d3942cfee19bf7b3a3d20b971fc9f4ecd742c5d0714d5f29c59cdaecda30cbb2"
     }
   },
   "models": [
     {
       "module": "PrivateState.tla",
-      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries.",
+      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory.",
       "states": {
         "disk": {
           "anchors": [
@@ -656,7 +677,10 @@
         "formal/watchdog.py",
         "formal/test_watchdog.py",
         "formal/test_generation.py",
-        ".github/workflows/formal-watchdog.yml"
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml"
       ],
       "conformance": [
         "tests/test_signing_runtime.py",
@@ -667,7 +691,7 @@
     },
     {
       "module": "Publication.tla",
-      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries.",
+      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory.",
       "states": {
         "policy": {
           "anchors": [
@@ -1066,7 +1090,10 @@
         "formal/watchdog.py",
         "formal/test_watchdog.py",
         "formal/test_generation.py",
-        ".github/workflows/formal-watchdog.yml"
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml"
       ],
       "conformance": [
         "tests/test_signing_runtime.py",
@@ -1077,7 +1104,7 @@
     },
     {
       "module": "PrivateRecovery.tla",
-      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries.",
+      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory.",
       "states": {
         "state": {
           "anchors": [
@@ -1372,7 +1399,10 @@
         "formal/watchdog.py",
         "formal/test_watchdog.py",
         "formal/test_generation.py",
-        ".github/workflows/formal-watchdog.yml"
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml"
       ],
       "conformance": [
         "formal/collect_traces.py",

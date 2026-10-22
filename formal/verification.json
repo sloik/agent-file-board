@@ -11,11 +11,20 @@
       "commands": [
         [
           "{python}",
+          "scripts/ci_retry.py",
+          "--seconds",
+          "60",
+          "--",
+          "{python}",
           "-m",
           "pip",
           "install",
           "-r",
-          "requirements-signing.txt"
+          "requirements-signing.txt",
+          "--timeout",
+          "15",
+          "--retries",
+          "1"
         ]
       ],
       "timeout": 180
