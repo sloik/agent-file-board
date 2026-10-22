@@ -46,6 +46,9 @@ def run(command, seconds=180, attempts=2, execute=attempt):
 
 
 if __name__ == '__main__':
+    def stop(signum, frame):
+        raise SystemExit(128 + signum)
+    signal.signal(signal.SIGTERM, stop)
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--seconds', type=int, default=180)
     parser.add_argument('--attempts', type=int, default=2)

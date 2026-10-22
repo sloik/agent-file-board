@@ -369,14 +369,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "34a69ad57afb7e605dd3c2b846d3ce695e7c4b4abf98213dee16f66544e2db5f"
+      "sha256": "552ec02b29c59832df8c7f7a286d1f11a2a8dbd8c154b36bdb0a869cc2a19f51"
     },
     "tests/test_ci_retry.py": {
       "path": "tests/test_ci_retry.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "718db9dc259e07c56fe9773c0bdcea85c6757ebe422d04526e9948dd220ee602"
+      "sha256": "6ec46df0ca347cca4933e3b3218f0526b7ccb08a7c7655f2d778fdbd429d1a0a"
     },
     ".github/workflows/test.yml": {
       "path": ".github/workflows/test.yml",
