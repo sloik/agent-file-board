@@ -1,5 +1,12 @@
 # Release notes
 
+## Unreleased
+
+- Record first accepted answers in shared immutable messages; retain later replies
+  as history, expose offline conflicts and explicit question-author resolution.
+- Verify acceptance with unit/browser regressions, bounded TLA+ exploration, real
+  resolver trace conformance and implementation mutation controls in formal CI.
+
 ## 2.11.1 — 2026-10-22
 
 - Serialize private-state expected-byte comparison and atomic replacement under

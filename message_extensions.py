@@ -122,6 +122,8 @@ def ui_header(raw):
 
 
 def validate_extensions(headers, source=None):
+    import answer_state
+    answer_state.metadata(headers, source)
     if "UI" in headers:
         ui_header(headers["UI"])
     if "TOPIC-TITLE" in headers:

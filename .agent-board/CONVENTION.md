@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.11.1
+Version: 2.12.0
 
 ## Purpose and authority
 
@@ -481,6 +481,59 @@ download the reply for placement in the question's directory; do not claim it is
 already on the shared board. An answer expresses a selection, not automatic
 permission for every action described by a label. Apply the shared glossary and
 the project's actual authority rules before acting on it.
+
+## Recorded answer acceptance
+
+Updated writers record first acceptance in the first normal answer message with
+`ANSWER-STATE: {"version":1,"questionDigest":"<sha256>","parents":[],"winner":null}`.
+The SHA-256 binds the exact original question file bytes. The claim is included
+before signing; there is no second acceptance-file write that can be lost after
+the answer is committed. `null` means this message's answer. Later ordinary
+answers carry no new claim and remain history, even if backdated. Never choose
+an accepted answer by timestamp, filename, filesystem enumeration or local storage.
+Reading a question never emits a claim.
+
+A reference is exactly `{"file":"<same-directory-message.txt>","sha256":"<sha256>"}`.
+Parent records and an explicit winner use those exact-byte references. A state
+with a non-null winner is a separate normal reply to the question, without an
+`ANSWER` header, and only the question author may publish it. It names all
+reviewed head records as `parents`; its winner must be inherited from one of
+those parents. An empty-parent explicit record is allowed only to anchor a
+previously unrecorded legacy answer. The normal question, answer, sender,
+routing, readable-body and signing eligibility validators still apply. State
+metadata is closed, version 1, at most16KiB, at most32 distinct parents; reference
+filenames are ASCII letters/digits/underscores/hyphens followed by `.txt` and at
+most255characters; digests are64lowercase hex characters. A self claim has no
+parents and requires an `ANSWER`; an explicit choice requires no `ANSWER`.
+
+Project the complete shared snapshot as an immutable DAG. A head is a record
+not referenced by another record. If every head inherits the same eligible
+answer, display it everywhere. Different surviving winners mean **conflict**,
+including disconnected first claims, concurrent contradictory resolutions, or
+an unseen offline claim arriving after a resolution. The question author must
+explicitly resolve that conflict; nothing is overwritten. Two concurrent
+resolutions choosing the same answer converge without conflict. Missing parent
+or winner bytes, changed question bytes, cyclic/deep history or signing-excluded
+acceptance evidence mean **blocked**; never promote a later ordinary reply.
+Resolution does not bypass unavailable/untrusted evidence. Readers with different
+local trust or incomplete sync may truthfully show blocked while another reader
+shows accepted; equal complete evidence and eligibility produce the same result.
+
+Legacy replies have no recorded historical acceptance. Show **unrecorded**, keep
+all replies inspectable, and let the question author explicitly anchor a choice.
+Do not invent an acceptance order during migration. An updated writer only
+creates an automatic first claim if there is no eligible answer/history or state.
+Old writers can continue posting ordinary history but cannot establish the new
+shared acceptance fact. The read-only download path publishes nothing until the
+normal message (and required signature evidence) is placed on the shared board.
+
+This is cooperative append-only file synchronization, not a global online lock.
+A stale offline snapshot can produce another first claim; sync exposes that
+conflict instead of silently replacing a winner. Projections support4096related
+messages,32heads and128parent levels; exceeding a bound is visibly blocked.
+Uncooperative mutation/deletion and permanent sync failures are outside this
+contract. Acceptance records carry the same signature/trust authority as normal
+messages, not extra authorization to act on an answer.
 
 ## Participant identity and private state
 

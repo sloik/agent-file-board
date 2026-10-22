@@ -119,6 +119,11 @@ def publish(s, packet, envelope):
             source_headers = boardctl.check_message(source, fresh.board, fresh.config, boardctl.ids(fresh.registry))
             if fresh.evaluate(source, source_headers)["eligibility"] != "eligible":
                 raise ValueError("reply source excluded by signing requirements")
+            if "ANSWER-STATE" in headers:
+                import answer_state
+                claim = answer_state.metadata(headers, source_headers)
+                if hashlib.sha256(source.read_bytes()).hexdigest() != claim['questionDigest']:
+                    raise ValueError("ANSWER-STATE question bytes changed")
         latest[0] = fresh
     publish_atomic(sidecar, envelope, guard=recheck)
     # A failed message publication may leave an immutable harmless orphan sidecar.

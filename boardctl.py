@@ -243,7 +243,7 @@ def command_post(args: argparse.Namespace) -> int:
         extra["TOPIC-TITLE"] = explicit_title
     if args.content_type:
         extra["CONTENT-TYPE"] = args.content_type
-    for name, file in (("QUESTION", args.question_file), ("ANSWER", args.answer_file), ("UI", getattr(args, "ui_file", None)), ("EXTENSION", getattr(args, "extension_file", None)), ("EXTENSION-ANSWER", getattr(args, "extension_answer_file", None)), ("INFORMATION", getattr(args, "information_file", None))):
+    for name, file in (("ANSWER-STATE", getattr(args, "answer_state_file", None)), ("QUESTION", args.question_file), ("ANSWER", args.answer_file), ("UI", getattr(args, "ui_file", None)), ("EXTENSION", getattr(args, "extension_file", None)), ("EXTENSION-ANSWER", getattr(args, "extension_answer_file", None)), ("INFORMATION", getattr(args, "information_file", None))):
         if file:
             try:
                 raw = Path(file).read_text(encoding="utf-8")
@@ -257,7 +257,7 @@ def command_post(args: argparse.Namespace) -> int:
     if ("UI" in extra or ("QUESTION" in extra and object_header(extra["QUESTION"], "QUESTION").get("version") in (2,3))) and not body.strip():
         raise BoardError("UI reports require a nonblank readable body fallback")
     source = None
-    if "ANSWER" in extra or "EXTENSION-ANSWER" in extra:
+    if "ANSWER" in extra or "ANSWER-STATE" in extra or "EXTENSION-ANSWER" in extra:
         reply = args.reply_to or "-"
         if "/" in reply or "\\" in reply or reply in {"-", ".", ".."}:
             raise BoardError("ANSWER requires a question filename in --reply-to")
@@ -278,6 +278,17 @@ def command_post(args: argparse.Namespace) -> int:
         raise BoardError(str(exc)) from exc
     extension_packages.validate_message(board, path, header_map, body, active=True)
     extension_state.validate_message(board, path, header_map, body, active=True)
+    if "ANSWER" in extra and "ANSWER-STATE" not in extra:
+        import answer_workflow
+        _, _, acceptance = answer_workflow.scan(root, target, getattr(args, "signing_state_dir", None))
+        if acceptance['status'] == 'none':
+            extra['ANSWER-STATE'] = json.dumps(dict(version=1, questionDigest=acceptance['questionDigest'], parents=[], winner=None), separators=(",", ":"))
+    if "ANSWER-STATE" in extra:
+        import hashlib
+        import answer_state
+        claim = answer_state.metadata({**header_map, **extra}, source)
+        if claim['questionDigest'] != hashlib.sha256(target.read_bytes()).hexdigest():
+            raise BoardError("ANSWER-STATE question bytes changed")
     headers.extend(f"{key}: {value}" for key, value in extra.items())
     payload = ("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n").encode("utf-8")
     import signing_commands
@@ -285,7 +296,7 @@ def command_post(args: argparse.Namespace) -> int:
     key_file = getattr(args, "signing_key_file", None)
     request_file = getattr(args, "prepare_signing", None)
     minimum = signing.minimum(path.relative_to(board).as_posix(), args.thread)
-    if "ANSWER" in extra or "EXTENSION-ANSWER" in extra:
+    if "ANSWER" in extra or "ANSWER-STATE" in extra or "EXTENSION-ANSWER" in extra:
         source_headers = check_message(target, board, config, known)
         if signing.evaluate(target, source_headers)["eligibility"] != "eligible":
             raise BoardError("reply source is not eligible under signing requirements; inspect it separately")
@@ -376,7 +387,7 @@ def check_message(path, board, config, known, source_path=None, require_semantic
     else:
         raise BoardError(f"{path}: SCOPE must be ROOM or DIRECT")
     source = None
-    if "ANSWER" in headers:
+    if "ANSWER" in headers or "ANSWER-STATE" in headers:
         reply = headers["REPLY-TO"]
         if "/" in reply or "\\" in reply or reply in {"-", ".", ".."}:
             raise BoardError(f"{path}: ANSWER requires a question filename")
@@ -762,6 +773,21 @@ def parser() -> argparse.ArgumentParser:
     commands = cli.add_subparsers(dest="command", required=True)
     init = commands.add_parser("init"); init.add_argument("path"); init.add_argument("--project-id", required=True); init.add_argument("--project-name", required=True); init.add_argument("--force", action="store_true"); init.set_defaults(func=command_init)
     join = commands.add_parser("join"); join.add_argument("participant_id"); join.add_argument("--path", default="."); join.add_argument("--kind", default="agent"); join.add_argument("--language", default="en"); join.add_argument("--operator", help="optional registered human ID; informational agent claim only"); join.set_defaults(func=command_join)
+    import answer_workflow
+    answers = commands.add_parser("answers", help="Inspect shared acceptance or explicitly resolve an offline conflict")
+    actions = answers.add_subparsers(dest="action", required=True)
+    for action in ("inspect", "accept"):
+        ap = actions.add_parser(action)
+        ap.add_argument("--path", default=".")
+        ap.add_argument("--question", required=True, help="Question path relative to .agent-board")
+        ap.add_argument("--signing-state-dir")
+        ap.set_defaults(func=answer_workflow.command)
+        if action == "accept":
+            ap.add_argument("--from", dest="sender", required=True)
+            ap.add_argument("--winner", required=True, help="Reviewed eligible answer filename")
+            ap.add_argument("--expected-heads", required=True, help="Exact JSON heads from answers inspect")
+            ap.add_argument("--signing-key-file")
+            ap.add_argument("--prepare-signing")
     post = commands.add_parser("post"); post.add_argument("--path", default="."); post.add_argument("--from", dest="sender", required=True); post.add_argument("--to", dest="recipient", required=True); post.add_argument("--scope", choices=("room", "direct"), required=True); post.add_argument("--room"); post.add_argument("--thread", required=True); post.add_argument("--slug", required=True); post.add_argument("--status", default="INFO"); post.add_argument("--language"); post.add_argument("--body", default=""); post.add_argument("--body-file"); post.add_argument("--reply-to"); post.add_argument("--runtime"); post.add_argument("--at"); post.set_defaults(func=command_post)
     post.add_argument("--topic-title", help="Explicit current topic title; ordinary messages preserve it")
     post.add_argument("--signing-key-file", help="explicit private Ed25519 JWK outside the shared project")
@@ -770,6 +796,7 @@ def parser() -> argparse.ArgumentParser:
     post.add_argument("--content-type", choices=sorted(CONTENT_TYPES))
     post.add_argument("--question-file", help="JSON legacy choice or version2/3 form question file")
     post.add_argument("--ui-file", help="board-report JSON data file; requires readable body fallback")
+    post.add_argument("--answer-state-file", help="Explicit shared acceptance record JSON; normally use answers accept")
     post.add_argument("--answer-file", help="JSON legacy choice or version2/3 typed answer file; requires --reply-to")
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)

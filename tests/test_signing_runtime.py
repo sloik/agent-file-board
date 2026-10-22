@@ -300,4 +300,33 @@ class SigningRuntimeTests(unittest.TestCase):
         self.post("bad-pair",expected=2)
 
 
+
+    def test_portable_answer_claim_is_signed_and_source_change_refuses_publication(self):
+        self.trust()
+        question = self.private / 'question.json'
+        question.write_text(json.dumps(dict(id='decision', type='single', prompt='Choose', options=[dict(id='a',label='A'),dict(id='b',label='B')])))
+        answer = self.private / 'answer.json'
+        answer.write_text('{"question":"decision","selected":["a"]}')
+        common = ['--to','human-owner-01','--scope','room','--room','general','--thread','T001','--body','Readable question or answer']
+        relative = self.ctl('post',*common,'--from','human-owner-01','--slug','question','--question-file',str(question))
+        source = self.root / relative
+        original = source.read_bytes()
+        request, response = self.private / 'answer-request.json', self.private / 'answer-response.json'
+        self.ctl('post',*common,'--from',self.participant,'--slug','answer','--reply-to',source.name,'--answer-file',str(answer),'--prepare-signing',str(request))
+        packet = json.loads(request.read_bytes())
+        raw = core._decode64(packet['message'])
+        self.assertIn(b'ANSWER-STATE: ', raw)
+        self.assertIn(hashlib.sha256(original).hexdigest().encode(), raw)
+        self.ctl('signing','respond','--request',str(request),'--key-file',str(self.key_file),'--output',str(response))
+        source.write_bytes(original + b'Changed while signer reviewed.\n')
+        self.ctl('signing','publish','--request',str(request),'--response',str(response),expected=2)
+        self.assertFalse((self.board / packet['path']).exists())
+        source.write_bytes(original)
+        published=json.loads(self.ctl('signing','publish','--request',str(request),'--response',str(response)))
+        import answer_workflow
+        _,_,result=answer_workflow.scan(self.root,source)
+        self.assertEqual(result['status'],'accepted')
+        self.assertEqual((self.board / packet['path']).read_bytes(),raw)
+
+
 if __name__=="__main__":unittest.main()

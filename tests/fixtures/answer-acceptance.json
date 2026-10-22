@@ -1,0 +1,348 @@
+{
+  "version": 1,
+  "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+  "author": "owner",
+  "records": {
+    "a": {
+      "file": "a.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000061",
+      "author": "respondent",
+      "answer": true,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [],
+        "winner": null
+      }
+    },
+    "b": {
+      "file": "b.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000062",
+      "author": "respondent",
+      "answer": true,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [],
+        "winner": null
+      }
+    },
+    "c": {
+      "file": "c.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000063",
+      "author": "respondent",
+      "answer": true,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [],
+        "winner": null
+      }
+    },
+    "h": {
+      "file": "h.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000068",
+      "author": "respondent",
+      "answer": true,
+      "eligible": true,
+      "state": null
+    },
+    "legacy": {
+      "file": "legacy.txt",
+      "sha256": "00000000000000000000000000000000000000000000000000006c6567616379",
+      "author": "owner",
+      "answer": false,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [],
+        "winner": {
+          "file": "h.txt",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000068"
+        }
+      }
+    },
+    "ra": {
+      "file": "ra.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000007261",
+      "author": "owner",
+      "answer": false,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [
+          {
+            "file": "a.txt",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000061"
+          },
+          {
+            "file": "b.txt",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000062"
+          }
+        ],
+        "winner": {
+          "file": "a.txt",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000061"
+        }
+      }
+    },
+    "rb": {
+      "file": "rb.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000007262",
+      "author": "owner",
+      "answer": false,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [
+          {
+            "file": "a.txt",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000061"
+          },
+          {
+            "file": "b.txt",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000000062"
+          }
+        ],
+        "winner": {
+          "file": "b.txt",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000062"
+        }
+      }
+    },
+    "merge": {
+      "file": "merge.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000006d65726765",
+      "author": "owner",
+      "answer": false,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [
+          {
+            "file": "ra.txt",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000007261"
+          },
+          {
+            "file": "rb.txt",
+            "sha256": "0000000000000000000000000000000000000000000000000000000000007262"
+          }
+        ],
+        "winner": {
+          "file": "a.txt",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000061"
+        }
+      }
+    },
+    "u": {
+      "file": "u.txt",
+      "sha256": "0000000000000000000000000000000000000000000000000000000000000075",
+      "author": "intruder",
+      "answer": false,
+      "eligible": true,
+      "state": {
+        "version": 1,
+        "questionDigest": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        "parents": [],
+        "winner": {
+          "file": "a.txt",
+          "sha256": "0000000000000000000000000000000000000000000000000000000000000061"
+        }
+      }
+    }
+  },
+  "cases": [
+    {
+      "name": "empty",
+      "visible": [],
+      "status": "none",
+      "winner": null
+    },
+    {
+      "name": "unrecorded history",
+      "visible": [
+        "h"
+      ],
+      "status": "legacy",
+      "winner": null
+    },
+    {
+      "name": "first recorded response",
+      "visible": [
+        "a"
+      ],
+      "status": "accepted",
+      "winner": "a"
+    },
+    {
+      "name": "later ordinary history",
+      "visible": [
+        "a",
+        "h"
+      ],
+      "status": "accepted",
+      "winner": "a"
+    },
+    {
+      "name": "backdated arrival order",
+      "visible": [
+        "h",
+        "a"
+      ],
+      "status": "accepted",
+      "winner": "a"
+    },
+    {
+      "name": "independent offline roots",
+      "visible": [
+        "a",
+        "b"
+      ],
+      "status": "conflict",
+      "winner": null
+    },
+    {
+      "name": "owner chooses first",
+      "visible": [
+        "a",
+        "b",
+        "ra"
+      ],
+      "status": "accepted",
+      "winner": "a"
+    },
+    {
+      "name": "owner chooses second offline claim",
+      "visible": [
+        "a",
+        "b",
+        "rb"
+      ],
+      "status": "accepted",
+      "winner": "b"
+    },
+    {
+      "name": "parallel contradictory resolutions",
+      "visible": [
+        "a",
+        "b",
+        "ra",
+        "rb"
+      ],
+      "status": "conflict",
+      "winner": null
+    },
+    {
+      "name": "merge parallel resolutions",
+      "visible": [
+        "a",
+        "b",
+        "ra",
+        "rb",
+        "merge"
+      ],
+      "status": "accepted",
+      "winner": "a"
+    },
+    {
+      "name": "late offline root after resolution",
+      "visible": [
+        "a",
+        "b",
+        "ra",
+        "c"
+      ],
+      "status": "conflict",
+      "winner": null
+    },
+    {
+      "name": "resolution before evidence",
+      "visible": [
+        "ra",
+        "a"
+      ],
+      "status": "blocked",
+      "winner": null
+    },
+    {
+      "name": "missing inherited winner",
+      "visible": [
+        "ra",
+        "b"
+      ],
+      "status": "blocked",
+      "winner": null
+    },
+    {
+      "name": "legacy anchor awaits bytes",
+      "visible": [
+        "legacy"
+      ],
+      "status": "blocked",
+      "winner": null
+    },
+    {
+      "name": "explicit legacy anchor",
+      "visible": [
+        "h",
+        "legacy"
+      ],
+      "status": "accepted",
+      "winner": "h"
+    },
+    {
+      "name": "ordinary history cannot bypass exclusion",
+      "visible": [
+        "a",
+        "h"
+      ],
+      "excluded": [
+        "a"
+      ],
+      "status": "blocked",
+      "winner": null
+    },
+    {
+      "name": "resolution cannot bypass excluded root",
+      "visible": [
+        "a",
+        "b",
+        "ra"
+      ],
+      "excluded": [
+        "b"
+      ],
+      "status": "blocked",
+      "winner": null
+    },
+    {
+      "name": "untrusted resolution",
+      "visible": [
+        "a",
+        "b",
+        "ra"
+      ],
+      "excluded": [
+        "ra"
+      ],
+      "status": "blocked",
+      "winner": null
+    },
+    {
+      "name": "unauthorized explicit claim",
+      "visible": [
+        "a",
+        "u"
+      ],
+      "status": "blocked",
+      "winner": null
+    }
+  ]
+}

@@ -92,6 +92,27 @@
         "implementation mutant: orphan"
       ],
       "collector": "formal/collect_traces.py"
+    },
+    "AnswerAcceptance": {
+      "mode": "record",
+      "collector": "formal/collect_answers.py",
+      "positive": [
+        "answer: first and backdated history survive reload",
+        "answer: offline fork and explicit resolution",
+        "answer: concurrent resolutions and merge",
+        "answer: out-of-order missing evidence",
+        "answer: trust exclusion blocks promotion",
+        "answer: unauthorized acceptance blocked",
+        "answer: legacy history and reordered convergence",
+        "answer: late offline claim reopens conflict",
+        "answer: explicit legacy anchoring"
+      ],
+      "mutants": [
+        "answer mutant: ignores offline conflict",
+        "answer mutant: later history replaces first",
+        "answer mutant: accepts excluded claim",
+        "answer mutant: unauthorized resolution"
+      ]
     }
   }
 }

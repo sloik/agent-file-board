@@ -49,14 +49,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "84205209069fd21af740c4dcfaaad4453778d0cd69e53c8c4c9d5d97e01a3f9b"
+      "sha256": "e76d4bf36cc1ceff168c5a4da25cfaaf24bfc87c3c29e16beb039116ff480d97"
     },
     "formal/README.md": {
       "path": "formal/README.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "90688cd61998a86bb80452da317db557c7b6519b88d634567ba1953a38a27ec5"
+      "sha256": "2d49fd85aa73daf68fd9e64eaad1bcd20f5ca2dc4497cede6955c631e3037ef5"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
@@ -84,7 +84,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "0baa3d8a1d9d80396ff31c166ef16bd4c56d85361d18a6532389c5e49da1a14f"
+      "sha256": "b4f121fe2d1349651abce0e0edf273ddcea837968f4296bd1a6d8197004b1e88"
     },
     "signing_core.py": {
       "path": "signing_core.py",
@@ -130,7 +130,7 @@
         "kind": "python",
         "name": "publish"
       },
-      "sha256": "ccb4e85400dabf8003a5b9c0679c46636e1a882923a78d312891b355bdb2f991"
+      "sha256": "4314f7c8451b270b73dd5caf8bfd4bc056abcd4a1704b527e33f9603baebf6ca"
     },
     "immutable-publish": {
       "path": "signing_commands.py",
@@ -145,7 +145,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "c20ce80825df71fc52d1ac186991ad76a61bb0b763a24cfcca337268096b2fde"
+      "sha256": "4afa2345833e876985427819112a77b7ef1673a9b399b073d468523d238de031"
     },
     "tests/test_signing_core.py": {
       "path": "tests/test_signing_core.py",
@@ -229,7 +229,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "aeaef21d10f07a9dbbaf940961914f505f447f421eb0cb8c90fd1962207a0a62"
+      "sha256": "4db30d10071d0b3304707e740e3b4fe93f3b1d2efaed97976538211757a3b545"
     },
     "formal/PrivateRecovery.tla": {
       "path": "formal/PrivateRecovery.tla",
@@ -285,7 +285,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "d13b75a955e32aa386bac8191d524b71895597789681910b5ce0bcf76c0e7956"
+      "sha256": "cce44ea063339ca4a31046d63281dd35efeb9683944f949cb437b2bd7dd03383"
     },
     "formal/STATUS.md": {
       "path": "formal/STATUS.md",
@@ -299,7 +299,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "4812cf27125e8331088c820203f0e8c39d3427d598c96b8464cd3d6fd4cac1be"
+      "sha256": "c6df1cf914153ec889c7991241b3d1e9c020d9207a06747c78ba100e1c803b28"
     },
     "formal/collect_private_state.py": {
       "path": "formal/collect_private_state.py",
@@ -384,6 +384,104 @@
         "kind": "file"
       },
       "sha256": "d3942cfee19bf7b3a3d20b971fc9f4ecd742c5d0714d5f29c59cdaecda30cbb2"
+    },
+    "formal/AnswerAcceptance.tla": {
+      "path": "formal/AnswerAcceptance.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "805fb0e34930b93d37ec48b61c84cda8ca12be52c22fbf1cbe9f11c0b95cb122"
+    },
+    "formal/AnswerAcceptance.cfg": {
+      "path": "formal/AnswerAcceptance.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9d9d1f79d2bad46f1d21af3013e3927cb22479561830d94e5fddc2468bbdd418"
+    },
+    "formal/AnswerAcceptanceBadConflict.cfg": {
+      "path": "formal/AnswerAcceptanceBadConflict.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "eb95687e8c6c3514e6462951d0eb85302963946be667cbd147799acb0336d562"
+    },
+    "formal/AnswerAcceptanceBadFirst.cfg": {
+      "path": "formal/AnswerAcceptanceBadFirst.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0d46e908c1fcf84d2f167ab41963ec52e3da0b8dde1b086cfac7983bb5d0a0ff"
+    },
+    "formal/AnswerAcceptanceBadTrust.cfg": {
+      "path": "formal/AnswerAcceptanceBadTrust.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "df0473a4b09237618d0ecec5b040d3f94c6748dcf613ea4400b4536cbef68c55"
+    },
+    "formal/AnswerAcceptanceReachable.cfg": {
+      "path": "formal/AnswerAcceptanceReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "084804151494255d8bf00e55d06b4898e4615f363357586ad59a3bfeb7bf35fb"
+    },
+    "answer_state.py": {
+      "path": "answer_state.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "441bb9ceadc1d309092deebadc8ddda92c666b92f39366cc16e088a2fa991719"
+    },
+    "answer_workflow.py": {
+      "path": "answer_workflow.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "bad26635795867414a0bef5add29ff235fe6100b91018fac38e4a884feda93dd"
+    },
+    "message_extensions.py": {
+      "path": "message_extensions.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4de453d27cb78f423c0639a0023b0470403d5d62297b419b21e071050540eca9"
+    },
+    "boardctl.py": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "afd7eb73a02760a0c32fa769ba837915d646aac5a9d07b7f0625e90b34190ddc"
+    },
+    "tests/test_answer_state.py": {
+      "path": "tests/test_answer_state.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "098fa020b5327989b355850158a619b6f4e821c8ca95cb30c64e2da1c176bfab"
+    },
+    "formal/collect_answers.py": {
+      "path": "formal/collect_answers.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "93f269198e7a3e8e4e44cfa4991d127a2350e7a46f98d49c1cbacee22179c85c"
+    },
+    "formal/AnswerAcceptanceBadAuthority.cfg": {
+      "path": "formal/AnswerAcceptanceBadAuthority.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "9e5e56ab99153dfd35d70a807b1ecbc067c4177b8341781d2774506c84bde69d"
+    },
+    "tests/fixtures/answer-acceptance.json": {
+      "path": "tests/fixtures/answer-acceptance.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "42a0e2bec2d2b23fee2394e91a158cd32ed03928f1ffc3a4b59b54423e9ef97a"
     }
   },
   "models": [
@@ -1409,6 +1507,269 @@
         "tests/test_signing_runtime.py"
       ],
       "limits": "One save client, one external competitor, two new revisions and an existing baseline file. No automatic orphan recovery/liveness or arbitrary filesystem proof."
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit, preserving current signing authorization guards.",
+      "states": {
+        "state": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Shared immutable snapshot and actual resolver result; no viewer-local winner cache."
+        },
+        "state.denied": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Eligibility exclusion of first claim; production resolver must block rather than promote history."
+        },
+        "state.status": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Observed none/legacy/accepted/conflict/blocked projection of shared records."
+        },
+        "state.visible": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Named normalized messages/claims/resolutions supplied to the production resolver in all orders."
+        },
+        "state.winner": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Observed exact referenced answer, abstracted to a bounded message symbol."
+        }
+      },
+      "operators": {
+        "Claims": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "History is excluded from acceptance heads and cannot displace an accepted answer."
+        },
+        "FirstWins": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Safety checks later history cannot overwrite a recorded winner and offline forks remain visible."
+        },
+        "Heads": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "A state record supersedes only its explicitly referenced parents; unrelated offline claims survive."
+        },
+        "Init": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Faithful initial shared-snapshot projection."
+        },
+        "Initial": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "No evidence, no recorded acceptance; legacy replies alone do not invent a historical winner."
+        },
+        "Missing": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Missing referenced parent/winner evidence blocks acceptance, with no timestamp fallback."
+        },
+        "NeverResolved": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Reachability control requires an accepted choice after explicit merge of concurrent resolutions."
+        },
+        "Next": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "The same arrival/trust transition relation is used by TLC and actual observed trace checks."
+        },
+        "Nodes": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Three roots, one history reply and its explicit owner anchor, two concurrent owner resolutions, one merge and unauthorized evidence."
+        },
+        "Observe": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Arrival/reload schedule adds one immutable record; timestamp and arrival order do not arbitrate."
+        },
+        "Parents": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Exact-byte parent references validated and traversed by the resolver; missing evidence blocks."
+        },
+        "Projection": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Independent bounded specification of the production DAG projection and eligibility rules."
+        },
+        "Safe": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Actual status/winner must equal the faithful projection, including blocked and conflict states."
+        },
+        "Spec": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Bounded safety over shared-snapshot transitions; no claim of distributed online linearizability."
+        },
+        "Step": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "One observed arrival or trust change; repeated snapshots are permitted stuttering in trace checks."
+        },
+        "Trust": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Changed local eligibility reruns projection; it cannot promote later ordinary history."
+        },
+        "TypeOK": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Finite message identities, trust flag, statuses and winner symbols constrain the explored abstraction."
+        },
+        "Winner": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Root self claims and author resolutions inherit an eligible claimed answer."
+        },
+        "Winners": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "Distinct inherited head answers expose conflict; identical concurrent choices converge."
+        },
+        "vars": {
+          "anchors": [
+            "answer_state.py",
+            "answer_workflow.py",
+            "formal/collect_answers.py"
+          ],
+          "reason": "All modeled shared projection fields are observed by runtime trace collectors."
+        }
+      },
+      "artifacts": [
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/test_check.py",
+        "formal/test_alignment.py",
+        "formal/test_traces.py",
+        "formal/suite.json",
+        "formal/README.md",
+        "formal/ALIGNMENT.md",
+        ".github/workflows/formal.yml",
+        "tests/test_formal_alignment.py",
+        "requirements-signing.txt",
+        "formal/PrivateState.tla",
+        "formal/PrivateState.cfg",
+        "formal/PrivateStateBad.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_private_state.py",
+        "tests/test_board_identity.py",
+        "tests/fixtures/signing-core/profiles.json",
+        "formal/trace_fixtures.py",
+        "formal/collect_traces.py",
+        "formal/watchdog.py",
+        "formal/test_watchdog.py",
+        "formal/test_generation.py",
+        ".github/workflows/formal-watchdog.yml",
+        "scripts/ci_retry.py",
+        "tests/test_ci_retry.py",
+        ".github/workflows/test.yml",
+        "formal/AnswerAcceptance.tla",
+        "formal/AnswerAcceptance.cfg",
+        "formal/AnswerAcceptanceBadConflict.cfg",
+        "formal/AnswerAcceptanceBadFirst.cfg",
+        "formal/AnswerAcceptanceBadTrust.cfg",
+        "formal/AnswerAcceptanceReachable.cfg",
+        "answer_state.py",
+        "answer_workflow.py",
+        "message_extensions.py",
+        "boardctl.py",
+        "tests/test_answer_state.py",
+        "formal/collect_answers.py",
+        "formal/AnswerAcceptanceBadAuthority.cfg",
+        "tests/fixtures/answer-acceptance.json",
+        "tests/test_signing_runtime.py",
+        "signing_commands.py"
+      ],
+      "conformance": [
+        "tests/test_answer_state.py",
+        "formal/collect_traces.py"
+      ],
+      "limits": "Nine named immutable records, three root answers, one ordinary history message, one explicit legacy anchor, two concurrent resolutions and one merge; one reversible eligibility flag. Crypto, parsing/hash/source binding, UI/storage writes, arbitrary graph depth and general implementation refinement remain executable tests. Equal complete snapshots plus eligibility converge; disconnected first acceptance has explicit forks, never a global lock."
     }
   ]
 }
