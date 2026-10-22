@@ -432,7 +432,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "441bb9ceadc1d309092deebadc8ddda92c666b92f39366cc16e088a2fa991719"
+      "sha256": "8e529677eeaa9f731af8bd43d33544940b9a5ae89647229ed3848aa10b0b3972"
     },
     "answer_workflow.py": {
       "path": "answer_workflow.py",
@@ -460,7 +460,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "098fa020b5327989b355850158a619b6f4e821c8ca95cb30c64e2da1c176bfab"
+      "sha256": "b5a0ca862ae4ea218bf1a75961aa86e1253c9717486a1b65ad4d93a20f44b7b3"
     },
     "formal/collect_answers.py": {
       "path": "formal/collect_answers.py",
@@ -1510,7 +1510,7 @@
     },
     {
       "module": "AnswerAcceptance.tla",
-      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit, preserving current signing authorization guards.",
+      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit, preserving current signing authorization guards. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions.",
       "states": {
         "state": {
           "anchors": [

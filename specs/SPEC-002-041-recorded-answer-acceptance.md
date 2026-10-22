@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-041
 title: Persist first answer acceptance and explicit offline conflict resolution
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-22
@@ -33,17 +33,36 @@ offline claims can reopen a conflict. Equal complete snapshots converge.
 
 ## Acceptance Criteria
 
-- [ ] AC1: Closed bounded metadata validation, source/routing/hash binding,
+- [x] AC1: Closed bounded metadata validation, source/routing/hash binding,
   authorized resolution and deterministic shared reducer cover legacy/v2/v3.
-- [ ] AC2: CLI automatically embeds the first claim before signing/publication;
+- [x] AC2: CLI automatically embeds the first claim before signing/publication;
   exposes inspection and explicit guarded author resolution, retains history and
   refuses stale/missing/ineligible evidence. Portable signing remains exact-byte.
-- [ ] AC3: Unit/interoperability regressions cover backdating, arrival order,
+- [x] AC3: Unit/interoperability regressions cover backdating, arrival order,
   reload-equivalent reconstruction, duplicates, genuine forks, concurrent and
   late resolutions, malformed data, wrong source, trust changes and legacy data.
-- [ ] AC4: A bounded TLA+ model checks persistence, convergence, explicit conflict
+- [x] AC4: A bounded TLA+ model checks persistence, convergence, explicit conflict
   and authorized resolution, with reachability and deliberate broken controls.
   Actual reducer traces and implementation mutants are checked against it;
   source/model/test changes trigger alignment review in PR/main/weekly CI.
-- [ ] AC5: Durable protocol/user/formal guidance states compatibility, limits,
+- [x] AC5: Durable protocol/user/formal guidance states compatibility, limits,
   freshness and scope; no generated validation receipts enter the public repo.
+
+
+## Implementation
+
+`answer_state.py` is the data-only shared DAG projection; `answer_workflow.py`
+binds physical source identity, real CLI validators, signing and repair eligibility.
+First claims are embedded before signing. `answers inspect/accept` provides an
+explicit question-author choice with reviewed expected heads. Portable signed
+publication rechecks question bytes. Legacy history is never timestamp-sorted
+into an invented acceptance. Graph depth uses cached ancestor heights so the
+128-level bound is independent of enumeration order.
+
+Maintained model/trace inventories, nineteen shared contract cases, CLI roundtrips,
+portable signing and boundary/permutation tests exercise the protocol. Full formal
+status passes four models, including1,024faithful acceptance states, nine actual
+acceptance traces and four deliberate implementation/model faults. Required PR
+and main Python3.10–3.13/formal jobs and weekly verification remain enabled. Public
+results belong in Actions artifacts; runtime receipts and scratch paths are not
+repository documentation. Coordinated UI041 consumes this protocol.

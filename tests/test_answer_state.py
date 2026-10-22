@@ -40,6 +40,20 @@ class AnswerStateTests(unittest.TestCase):
             self.assertEqual(result['winner']['file'] if result['winner'] else None,
                              fixture['records'][case['winner']]['file'] if case['winner'] else None,case['name'])
 
+    def test_graph_limits_are_independent_of_enumeration_and_memoization(self):
+        import hashlib
+        a = records()['a']
+        self.assertEqual(A.resolve(DIGEST,[a]*4097,AUTHOR)['status'],'blocked')
+        deep = [a]
+        for i in range(130):
+            deep.append(dict(file='depth'+str(i)+'.txt',sha256=hashlib.sha256(str(i).encode()).hexdigest(),
+                             author=AUTHOR,answer=False,eligible=True,state=dict(version=1,questionDigest=DIGEST,
+                             parents=[A.reference(deep[-1])],winner=A.reference(a))))
+        for rows in [deep,list(reversed(deep))]:
+            self.assertEqual(A.resolve(DIGEST,rows,AUTHOR)['status'],'blocked')
+        for rows in [deep[:129],list(reversed(deep[:129]))]:
+            self.assertEqual(A.resolve(DIGEST,rows,AUTHOR)['status'],'accepted')
+
     def test_closed_metadata_refusals(self):
         s = records()['a']['state']
         for invalid in [{**s, 'version': True}, {**s, 'extra': 1}, {**s, 'parents': [dict(file='../bad.txt',sha256=DIGEST)]},

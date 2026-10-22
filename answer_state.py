@@ -77,17 +77,19 @@ def resolve(question_digest, records, author):
         if not nodes:
             result['status'] = 'legacy' if result['history'] else 'none'
             return result
-        memo, visiting, parents = {}, set(), set()
+        memo, levels, visiting, parents = {}, {}, set(), set()
 
         def visit(r, depth=0):
             identity = key(r)
             if identity in memo:
+                require(depth + levels[identity] <= 128, 'cyclic/deep acceptance history')
                 return memo[identity]
             require(depth <= 128 and identity not in visiting, 'cyclic/deep acceptance history')
             visiting.add(identity)
             s = validate(r['state'])
             require(s['questionDigest'] == question_digest, 'question bytes changed')
             require(r.get('eligible'), 'acceptance evidence is unavailable or signing-excluded')
+            height = 0
             if s['winner'] is None:
                 require(r.get('answer') and not s['parents'], 'invalid self claim')
                 winner = reference(r)
@@ -103,9 +105,11 @@ def resolve(question_digest, records, author):
                     require(parent and parent.get('state'), 'missing immutable parent')
                     parents.add(key(p))
                     inherited.append(visit(parent, depth + 1))
+                    height = max(height, 1 + levels[key(p)])
                 require(not s['parents'] or any(key(w) == key(winner) for w in inherited),
                         'resolution must retain a claimed winner')
             visiting.remove(identity)
+            levels[identity] = height
             memo[identity] = winner
             return winner
 
