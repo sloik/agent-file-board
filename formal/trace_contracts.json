@@ -7,7 +7,15 @@
         "private-state: stale untrust",
         "private-state: stale adopt",
         "private-state: sequential merge",
-        "private-state: learned compromise survives stale save"
+        "private-state: learned compromise survives stale save",
+        "generated private schedule 0",
+        "generated private schedule 1",
+        "generated private schedule 2",
+        "generated private schedule 3",
+        "generated private schedule 4",
+        "generated private schedule 5",
+        "generated busy acquire",
+        "generated busy compare"
       ],
       "mutants": [
         "private-state mutant: missing compare",

@@ -58,15 +58,15 @@ states the maintained abstraction and the remaining correspondence boundary.
 | Project / model | Bounded behavior | Implementation correspondence |
 | --- | --- | --- |
 | UI / Signer | Unlock generations, authorization, guarded writes and draft preservation | Ten production action traces, four implementation mutants, six TLC configs |
-| UI / ViewerUpdate | Two daily windows, manual checks, opt-out and aggregate reload blockers | Three production runtime traces, two implementation mutants, four TLC configs |
-| Canonical / PrivateState | Two writers, compare/replace exclusion, trust/floor preservation | Four actual two-writer action traces, two implementation mutants, two TLC configs |
+| UI / ViewerUpdate | Two daily windows, manual checks, opt-out and aggregate reload blockers | Three fixed + eight generated runtime traces, two implementation mutants, four TLC configs |
+| Canonical / PrivateState | Two writers, compare/replace exclusion, trust/floor preservation | Four fixed + eight generated two-writer traces, two implementation mutants, two TLC configs |
 | Canonical / Publication | Bounded two-client publication authorization, retries and crash windows | Eight actual prepare/guard/commit traces, two implementation mutants, four TLC configs |
 | Canonical / PrivateRecovery | Normal/no-op/stale/error saves, orphan/crash refusal and inspected retry | Seven actual runtime/filesystem traces, two implementation mutants, four TLC configs |
 
 Across the two projects there are five models and twenty TLC configurations,
 including faithful safety checks, deliberate model faults and positive
 reachability controls. These are exhaustive finite models within their configured
-bounds. Thirty-two sampled production traces and twelve implementation mutation
+bounds. Forty-eight sampled production traces and twelve implementation mutation
 controls additionally test correspondence for all five models; neither technique proves all implementation executions refine TLA+.
 See [README.md](README.md) for each model's precise bounds and invariant semantics.
 
@@ -109,3 +109,56 @@ repository activity. A weekly schedule is not an external availability monitor.
 If the latest report is over eight days old, inspect the workflow history, enable
 a disabled workflow if necessary, and run it manually. A green old badge alone
 cannot establish current verification.
+
+## Generated schedules and evidence boundaries
+
+The original 32 fixed positive traces and all 12 implementation mutants remain
+mandatory. Sixteen additional generated schedules run on PR/main/manual/weekly
+formal CI. Their names are explicit in `trace_contracts.json`; removal or an
+unexpected scenario fails the lane. Model/config semantics remain unchanged.
+
+- ViewerUpdate enumerates seeds 0..7: automatic/manual order, draft/write blocker
+  order, and opt-out/re-enable. Each schedule has one day tick, one manual check,
+  repeated automatic attempts and three reload attempts, ending with a permitted
+  reload. At most 18 input events, two windows and two aggregate blocker flags.
+- PrivateState enumerates all six read-before-save linear extensions for two
+  clients, plus competing save attempts while the real lock is held at acquisition
+  and after comparison. These are deterministic nested method calls with actual
+  filesystem exclusion, not a claim to enumerate OS thread schedules.
+
+To reproduce, run `python3 formal/check_traces.py`; failure names identify the
+exact seed/order. The normal runtime unit suite separately exercises a paused
+threaded compare/replace race. Generated wrappers and raw trace data stay temporary.
+
+| Scope | Real evidence in formal traces | Doubles / sampled boundary |
+| --- | --- | --- |
+| Signer | Production Provider/delivery/writer/composer functions, Node WebCrypto and signature verification | VM observation hooks, controlled clock, DOM and writable-stream doubles; native browser I/O is covered separately by Chromium/Firefox tests |
+| ViewerUpdate | Production claim/reload functions and their observed effects | In-memory metadata and aggregate draft/write flags; actual IndexedDB tab serialization is a separate Playwright test |
+| PrivateState | Session.save, lock directories, expected-byte reads, fsync/replace, authenticated compromise evidence | Two clients and bounded calls in owned storage; six generated orders/two lock-held probes do not exhaust OS scheduling |
+| Publication | Real signed packets, guards, config/profile/private reads, os.link commits | Synthetic boards; model crash windows use injected OSError; two-client overlap is controlled nested execution |
+| PrivateRecovery | Real private files, lock manager and an owned child exiting while holding a lock | One sampled process-death boundary and explicit test-owner recovery; no automatic lock stealing or recovery guarantee |
+| TLC | Exhaustive exploration within the unchanged finite configurations | Temporal fairness/liveness applies to the model; sampled runtime traces do not establish universal refinement |
+
+## Overdue verification watchdog
+
+A separate **Formal verification watchdog** workflow runs daily at **07:43 UTC**
+(`43 7 * * *`) and on manual dispatch. It reads the formal workflow state and
+trusted `main` push/schedule/manual runs through GitHub's read-only API. It fails
+for an inactive workflow, no successful main verification, a pass older than eight
+days, a failed current-main attempt, missing current-head evidence, invalid API
+responses or a current-main attempt pending over two hours. A fresh pending
+current-head run is reported as pending, never as verified. A fresh successful
+main run satisfies freshness even if a push/manual run replaced a weekly run.
+
+The failed daily job uses normal GitHub workflow notifications; select **Watch →
+Custom → Actions** and check your account notification preferences. JSON/Markdown
+artifacts and the job summary explain the alert. No issues or outbound messages
+are created. A network/API failure is an alert, not a fabricated healthy result.
+
+This is a separate schedule, not an external availability service. GitHub-wide
+outages or simultaneous inactivity disabling both workflows can prevent both from
+running; an outside monitor would be required to detect that. The source and
+fixtures are covered by the formal drift gate; no automatic baseline refresh.
+
+[GitHub workflow-run API](https://docs.github.com/en/rest/actions/workflow-runs#list-workflow-runs-for-a-workflow)
+and [schedule limitations](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule).

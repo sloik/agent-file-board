@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 2.11.0
+Version: 2.11.1
 
 ## Purpose and authority
 
@@ -514,20 +514,23 @@ human ID, or show that the association is unknown. It describes the current
 registry only; it does not establish the operator at the time of an old message.
 Preserve unrelated registration fields and namespaced metadata when editing.
 
-### Optional public identity profiles (unreleased)
+<a id="optional-public-identity-profiles-unreleased"></a>
+
+### Optional public identity profiles (2.11)
 
 Profile registration is opt-in and does not sign messages. Explicitly enabling
 identity adds `identity.boardId` to config: a canonical UUID, independent of the
 project name/ID. Copies retain it; independent boards need a different UUID.
 Never silently replace it. Existing unsigned boards require no identity fields.
 
-The experimental CLI provides `boardctl identity enable --path <project-root>`,
+The CLI provides `boardctl identity enable --path <project-root>`,
 `boardctl identity import <id> --path <project-root> --profile-file <public-envelope>
 --sha256 <expected-envelope-hash>`, and read-only `boardctl identity inspect [id]
 --path <project-root>`. Envelopes are public evidence, never private-key files.
 The importer first checks a registered participant's complete snapshot; it does
 not create or rekey a participant. A first profile requires `previous: null`.
-Replacing an existing profile locator requires later lifecycle support.
+Updates, rotations and revocations use the explicit signing lifecycle commands;
+`identity import` does not silently replace an existing locator.
 
 Store immutable exact envelope bytes at
 `identity/profiles/<lowercase-envelope-SHA-256>.json`, relative to the board. Add

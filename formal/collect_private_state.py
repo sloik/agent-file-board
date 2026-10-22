@@ -12,7 +12,15 @@ import signing_runtime as runtime
 CONFIG = {'identity': {'boardId': '00000000-0000-4000-8000-000000000001'}}
 
 
-def scenario(kind, mutant=False):
+def schedules():
+    """Every linear extension of read-before-save for two clients (six orders)."""
+    from itertools import permutations
+    events = ('read:adopt', 'save:adopt', 'read:untrust', 'save:untrust')
+    return [list(order) for order in permutations(events)
+            if all(order.index('read:' + c) < order.index('save:' + c) for c in ('adopt', 'untrust'))]
+
+
+def scenario(kind, mutant=False, schedule=None):
     with tempfile.TemporaryDirectory(prefix='afb-two-client-trace-') as temporary, ExitStack() as cleanup:
         base = Path(temporary)
         project = base / 'project'
@@ -46,10 +54,14 @@ def scenario(kind, mutant=False):
              'adopted': False, 'untrusted': False, 'learned': False, 'revoke': False}
         states = [copy.deepcopy(s)]
         clients = {}
+        active = [None]
         def record():
             states.append(copy.deepcopy(s))
         def read(c):
+            previous = active[0]
+            active[0] = None  # constructor reads are not the active save's CAS
             client = session()
+            active[0] = previous
             if kind == 'learned compromise survives stale save':
                 client.resolve(pin)
             if c == 'adopt':
@@ -64,7 +76,7 @@ def scenario(kind, mutant=False):
         original_lock = runtime._state_write_lock
         original_read = runtime.identity._read
         original_replace = runtime.identity.os.replace
-        active = [None]
+        injected = [False]
         @contextmanager
         def observed_lock(path):
             c = active[0]
@@ -76,6 +88,10 @@ def scenario(kind, mutant=False):
                 s['lock'] = c if lock_path.is_dir() else 'none'
                 s['pc'][c] = 'compare'
                 record()
+                if kind == 'generated busy acquire' and not injected[0]:
+                    injected[0] = True
+                    read('untrust')
+                    assert save('untrust'), 'real held lock must refuse the competing save'
                 yield
             s['lock'] = 'none' if not lock_path.exists() else c
             s['pc'][c] = 'done'
@@ -86,6 +102,10 @@ def scenario(kind, mutant=False):
             if c and path == target and s['pc'][c] == 'compare':
                 s['pc'][c] = 'replace' if raw == clients[c].before else 'release'
                 record()
+                if kind == 'generated busy compare' and not injected[0]:
+                    injected[0] = True
+                    read('untrust')
+                    assert save('untrust'), 'real held lock must remain exclusive after comparison'
             return raw
         def observed_replace(source, destination):
             original_replace(source, destination)
@@ -107,6 +127,7 @@ def scenario(kind, mutant=False):
         exec(source, namespace)
         unsafe_atomic = namespace['_atomic_replace']
         def save(c):
+            previous = active[0]
             active[0] = c
             failed = False
             with patch.object(runtime, '_state_write_lock', observed_lock), \
@@ -118,11 +139,28 @@ def scenario(kind, mutant=False):
                 except ValueError:
                     failed = True
                     # A failed comparison still releases the actual owned lock.
-                    s['lock'] = 'none' if not lock_path.exists() else c
-                    s['pc'][c] = 'done'
+                    if s['pc'][c] != 'acquire':
+                        s['lock'] = 'none' if not lock_path.exists() else c
+                        s['pc'][c] = 'done'
                     record()
-            active[0] = None
+            active[0] = previous
             return failed
+        if schedule is not None:
+            saved = 0
+            for event in schedule:
+                action, client = event.split(':')
+                if action == 'read':
+                    read(client)
+                else:
+                    saved += not save(client)
+            assert saved >= 1 and all(v == 'done' for v in s['pc'].values()), 'generated saves must complete/refuse'
+            return {'model': 'PrivateState', 'scenario': kind, 'states': states}
+        if kind in ('generated busy acquire', 'generated busy compare'):
+            read('adopt')
+            assert not save('adopt')
+            assert save('untrust'), 'the competitor must then reject its now-stale proposal'
+            assert injected[0] and s['disk']['floor'] == 1
+            return {'model': 'PrivateState', 'scenario': kind, 'states': states}
         first = 'untrust' if kind == 'stale adopt' else 'adopt'
         second = 'adopt' if first == 'untrust' else 'untrust'
         if kind == 'learned compromise survives stale save':
@@ -154,4 +192,8 @@ def scenario(kind, mutant=False):
 
 
 def traces(mutant=False):
-    return [scenario(k, mutant) for k in (['missing compare', 'missing lock'] if mutant else ['stale untrust', 'stale adopt', 'sequential merge', 'learned compromise survives stale save'])]
+    fixed = [scenario(k, mutant) for k in (['missing compare', 'missing lock'] if mutant else ['stale untrust', 'stale adopt', 'sequential merge', 'learned compromise survives stale save'])]
+    if mutant:
+        return fixed
+    return fixed + [scenario('generated private schedule ' + str(i), schedule=order) for i, order in enumerate(schedules())] + [
+        scenario('generated busy acquire'), scenario('generated busy compare')]

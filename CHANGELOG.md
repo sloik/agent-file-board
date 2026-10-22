@@ -1,5 +1,18 @@
 # Release notes
 
+## 2.11.1 — 2026-10-22
+
+- Serialize private-state expected-byte comparison and atomic replacement under
+  an exclusive lock, preserving trust, adopted requirements and learned revocations
+  across cooperating CLI writers. Refuse orphaned locks pending explicit review.
+- Add bounded formal signing/publication/recovery models, real implementation
+  trace bridges and independent mutation controls, with reviewed source drift gates.
+- Run formal verification for PRs/main and weekly; publish commit-bound coverage
+  reports and add a separate daily stale/disabled-verification watchdog.
+- Add reproducible bounded runtime schedules and precise real-versus-double
+  coverage documentation. Preserve unsigned stdlib use and signing dependency pins.
+- Include the 2.11.0 template in supported upgrade baselines.
+
 ## 2.11.0 — 2026-10-21
 
 - Add exact-byte Ed25519/JWK/DSSE message signing with immutable profile-bound

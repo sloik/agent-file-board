@@ -95,3 +95,8 @@ ignored JSON/Markdown evidence bound to its source commit and actual reviewed
 inputs. `--inspect REPORT.json` refuses stale, aged, failed or incomplete results.
 Report tooling/configuration and the workflow are reviewed anchors too. Reports
 are CI artifacts, never a baseline-refresh mechanism or committed session log.
+
+Generated schedules, the real/double boundary matrix and daily freshness alert
+semantics are documented in [STATUS.md](STATUS.md). Watchdog/generator source,
+tests and workflow are reviewed artifacts; fixed witnesses and mutants remain
+mandatory alongside generated schedules.

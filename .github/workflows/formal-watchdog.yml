@@ -1,0 +1,44 @@
+name: Formal verification watchdog
+on:
+  schedule:
+    - cron: '43 7 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  freshness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.12'
+      - name: Test freshness monitor
+        run: python3 -m unittest discover -s formal -p test_watchdog.py
+      - name: Check main verification freshness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 formal/watchdog.py
+      - name: Publish watchdog summary
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f .formal-status/watchdog.md ]]; then
+            cat .formal-status/watchdog.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'Formal watchdog did not complete; no freshness status established.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: formal-watchdog-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            .formal-status/watchdog.json
+            .formal-status/watchdog.md
+          include-hidden-files: true
+          retention-days: 30
+          if-no-files-found: warn
