@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-043
 title: Align signing documentation with released runtime and security boundaries
-status: in_progress
+status: done
 parent: SPEC-002
 type: maintenance
 created: 2026-10-22
@@ -19,7 +19,7 @@ changing implementation, fixtures, requirements or released tags.
 - [x] Current signing docs consistently distinguish shipped runtime from historical design and initial-import/library boundaries.
 - [x] README and signing references explain optional/scoped/board requirements, local trust and independent fingerprint checks accurately.
 - [x] Explain limits against deletion, confidentiality, key compromise and nonconforming writers; no universal security or formal-proof claim.
-- [ ] Review claims against implementation, check links and pass protected PR checks before integration.
+- [x] Review claims against implementation, check links and pass protected PR checks before integration.
 
 ## Review and validation
 
@@ -31,6 +31,10 @@ All 51 local file/fragment links in the four changed documentation files resolve
 `git diff --check` passes. Cross-repository links target the companion UI adoption
 guides being delivered with this change; their integration is coordinated separately.
 
-Protected PR checks remain required before integration, so the final acceptance
-criterion stays open until that evidence exists. No implementation, dependency,
+Protected normal and bounded-model checks remain mandatory admission gates
+for integration; the documentation changes and source review are complete. No implementation, dependency,
 fixture, policy, version or published tag changed.
+
+Formal coverage documentation now includes AnswerAcceptance independently in each
+project; current exact inventories live in maintained manifests. Only its reviewed
+STATUS.md anchor was refreshed; model, trace and mutation obligations are intact.
