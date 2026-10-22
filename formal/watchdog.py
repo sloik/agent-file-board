@@ -50,7 +50,8 @@ def assess(workflow, main, successes, attempts, now):
         if recent['conclusion'] != 'success':
             reasons.append('latest current-main attempt did not succeed')
     else:
-        age = now - timestamp(recent['created_at'])
+        # Re-running an older run keeps its creation time; use this attempt's start.
+        age = now - timestamp(recent.get('run_started_at') or recent['created_at'])
         if not timedelta(0) <= age <= timedelta(hours=2):
             reasons.append('current-main verification has been pending over two hours or has an invalid clock')
         else:

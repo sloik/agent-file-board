@@ -49,6 +49,8 @@ class WatchdogTests(unittest.TestCase):
         current['created_at'] = (self.now-timedelta(hours=2, seconds=1)).isoformat()
         self.assertEqual(self.result([old], [current])['result'], 'alert')
         self.assertEqual(self.result([], [{**current, 'created_at': self.now.isoformat()}])['result'], 'alert')
+        rerun = {**current, 'created_at': (self.now-timedelta(days=7)).isoformat(), 'run_started_at': self.now.isoformat()}
+        self.assertEqual(self.result([old], [rerun])['result'], 'pending')
 
     def test_latest_rerun_outcome_wins_and_old_green_does_not_hide_failure(self):
         old = {**self.run, 'created_at': (self.now-timedelta(seconds=3)).isoformat(), 'updated_at': (self.now-timedelta(seconds=1)).isoformat()}
