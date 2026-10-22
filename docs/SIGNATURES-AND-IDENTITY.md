@@ -1,13 +1,12 @@
 # Signatures and participant metadata — architecture proposal
 
-Message delivery is implemented in2.11.0; see [runtime setup and limits](SIGNING-CORE.md). This document retains the broader architecture; avatars/artifacts and external browser vaults remain separate.
-
-Status: reviewed design for SPEC-002-024, 2026-10-20. SPEC-002-030/031 add the
-[message/profile signing core](SIGNING-CORE.md); SPEC-002-033 adds explicit public
-profile storage/registration. Message publication and viewer signing remain pending.
-Released 2.10.0 retains unsigned behavior; its optional informational operator
-field is implemented separately. This is the proposed
-contract for a future additive convention version, with matching CLI/viewer work.
+Status: retained reviewed design for SPEC-002-024 (2026-10-20). Message/profile
+cryptography, signed publication, local trust/lifecycle, scoped requirements and
+offline browser signing have shipped since 2.11.0. Use [current setup and limits](SIGNING-CORE.md)
+for operation. SPEC-002-030/031 supplied the core, SPEC-002-033 initial public
+registration, and SPEC-002-034 runtime delivery. This broader architecture also
+covers artifact/avatar signing and external key vaults, which remain outside the
+released message feature. Earlier 2.10.0 release assets remain unsigned and unchanged.
 
 Follow-up [scoped policy and sender proof](SIGNING-POLICY-AND-POSSESSION.md)
 (SPEC-002-025) adds owner-requested trusted-only scopes and explicit ephemeral
@@ -477,11 +476,12 @@ not break the core unsigned stdlib-only reader.
 
 SPEC-002-030/031 implement the message/profile core and independent fixtures;
 SPEC-002-033 adds explicit first-profile registration/storage and read-only CLI
-inspection. See [the guide and delivery sequence](SIGNING-CORE.md). Profile head
-updates, full lifecycle, signed-message publication, policy and viewer work remain pending.
+inspection. SPEC-002-034 supplies profile updates/lifecycle, signed-message
+publication, scoped requirements and browser signing. See [the current runtime](SIGNING-CORE.md).
 
-No runtime implementation is authorized by this design artifact. Next work should
-be split into reviewable deliverables:
+The original delivery breakdown below is historical design context, not a pending
+runtime queue or proof that every broader artifact surface is implemented. Further
+implementation needs its own reviewed specification:
 
 1. Canonical draft schema/capability, documented exact bytes, key format/fingerprint
    and portable conformance vectors. Strict parsing and context resolution first.

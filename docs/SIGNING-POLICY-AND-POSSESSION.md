@@ -1,22 +1,17 @@
 # Scoped signing requirements and sender proof — architecture follow-up
 
-Message delivery is implemented in2.11.0; see [runtime setup and limits](SIGNING-CORE.md). This document retains the broader architecture; avatars/artifacts and external browser vaults remain separate.
+Status: retained architecture for SPEC-002-025 (2026-10-20). Signed message
+delivery, scoped receiver requirements and the offline tab signer shipped in
+2.11.0 through SPEC-002-034. Use [current setup, policy examples and limits](SIGNING-CORE.md)
+for operation. This design also discusses broader/future surfaces; it is not a
+claim that artifact/avatar signing or an external browser key vault shipped.
 
-Status: proposed implementation contract, SPEC-002-025, 2026-10-20. Extends
-[SPEC-002-024's signature design](SIGNATURES-AND-IDENTITY.md). No runtime feature
-is implemented here; released 2.10.0 has no scoped signing policy or possession checks.
-
-Owner requests filtering unsigned messages, board/room/thread requirements for
-agents, and private-key possession checks in the sender picker. Owner selected
-**locally trusted keys** for required-signing areas. Several participants with
-separate keys on one machine do not require multiple active keys per participant;
-retain the existing linear profile/key-rotation model.
-
-Implementation boundary (SPEC-002-033): the CLI now supports optional board UUIDs
-and verified first-profile registration/inspection. It exposes message signing,
-scoped policy and UI signing as unsupported. The [delivery sequence](SIGNING-CORE.md#delivery-plan-ui-signing-and-agents-that-bypass-the-cli)
-keeps automatic UI per-post signing and non-CLI receiver enforcement explicit;
-profile enable/import is not implementation of the policy or provider below.
+Extends [SPEC-002-024’s signature design](SIGNATURES-AND-IDENTITY.md). Owner chose
+**locally trusted keys** for required-signing areas. The initial SPEC-002-033
+profile-import boundary did not implement these requirements; the released runtime
+does. A UUID/public profile alone still does not enable a requirement or approve
+any key. Several participants with separate keys on one machine do not require
+multiple active keys per participant; retain the linear profile/key-rotation model.
 
 ## Three separate mechanisms
 
@@ -34,7 +29,7 @@ filesystem access-control system.
 
 ## Canonical scoped policy
 
-Proposed config field:
+Implemented config field (example):
 
 ```json
 {
@@ -290,7 +285,7 @@ trusted signature without a key, but can suppress content, change unsigned confi
 or write unsigned files. Local floors and receiver verification address only the
 stated authenticity/acceptance guarantees.
 
-## Plan and review checklist
+## Original implementation plan and review checklist
 
 1. Canonical policy schema/resolution, private adoption floor and eligibility
    result. Include board-loop/CLI contracts and strict unsupported-capability behavior.
