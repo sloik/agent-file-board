@@ -515,7 +515,7 @@ explicitly resolve that conflict; nothing is overwritten. Two concurrent
 resolutions choosing the same answer converge without conflict. Missing parent
 or winner bytes, changed question bytes, cyclic/deep history or signing-excluded
 acceptance evidence mean **blocked**; never promote a later ordinary reply.
-Resolution does not bypass unavailable/untrusted evidence. Readers with different
+Resolution does not bypass unavailable or signing-excluded evidence. Readers with different
 local trust or incomplete sync may truthfully show blocked while another reader
 shows accepted; equal complete evidence and eligibility produce the same result.
 

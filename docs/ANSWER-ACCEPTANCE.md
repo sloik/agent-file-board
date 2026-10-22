@@ -9,8 +9,8 @@ If disconnected copies accept different responses, the question displays a
 conflict. The question author reviews the choices and selects **Accept this
 answer**. This appends a normal reply recording the reviewed heads and choice;
 it never deletes either response. An unseen offline claim can reopen a conflict.
-Missing or untrusted evidence displays blocked until that evidence is restored
-or its trust is reviewed. A blocked answer never causes a later reply to take over.
+Missing evidence or evidence excluded by the configured signing rules displays
+blocked until that evidence is restored or its eligibility is reviewed. A blocked answer never causes a later reply to take over.
 
 Older answers without acceptance metadata remain unrecorded history. The
 question author can explicitly record a choice; historical arrival order cannot
