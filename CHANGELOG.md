@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 2.12.0 — 2026-10-22
 
 - Record first accepted answers in shared immutable messages; retain later replies
   as history, expose offline conflicts and explicit question-author resolution.
