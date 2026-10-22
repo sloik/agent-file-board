@@ -1,5 +1,11 @@
 # Release notes
 
+## 2.12.2 — 2026-10-22
+
+- Explain opt-in and scoped trusted signing, local key approval and shared-folder security limits.
+- Align historical signing design/library descriptions with the released runtime.
+- Correct formal coverage documentation and include 2.12.1 upgrade support.
+
 ## 2.12.1 — 2026-10-22
 
 - Load acceptance validation dependencies during canonical module import, so
