@@ -52,6 +52,35 @@
       "module": "PrivateRecovery.tla",
       "config": "PrivateRecoveryReachable.cfg",
       "counterexample": "NeverSaves"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptance.cfg"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadConflict.cfg",
+      "counterexample": "FirstWins"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadFirst.cfg",
+      "counterexample": "FirstWins"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadTrust.cfg",
+      "counterexample": "FirstWins"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceReachable.cfg",
+      "counterexample": "NeverResolved"
+    },
+    {
+      "module": "AnswerAcceptance.tla",
+      "config": "AnswerAcceptanceBadAuthority.cfg",
+      "counterexample": "FirstWins"
     }
   ]
 }

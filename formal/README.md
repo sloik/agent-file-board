@@ -182,3 +182,28 @@ fairness/termination remains a model-checking obligation, not a finite runtime
 trace proof. Metadata observations are not a transaction across shared files;
 all-instruction crash coverage, arbitrary external writers, parser/crypto proofs
 and universal implementation refinement remain outside these samples.
+
+
+## AnswerAcceptance
+
+`AnswerAcceptance.tla` models nine named messages: three disconnected first claims, an explicit legacy anchor,
+one later ordinary history reply, two concurrent owner resolutions, a resolution
+of those resolutions and an unauthorized record. Every arrival permutation and
+one reversible trust-exclusion flag is explored (1024distinct faithful states).
+The head projection must preserve recorded winners, expose multiple winners,
+block missing/unauthorized/excluded evidence and converge independently of arrival
+order. `NeverResolved` is a successful explicit-resolution reachability witness.
+Four broken controls must fail: ignoring conflict, replacing first with later
+history, ignoring excluded evidence and accepting an unauthorized resolution.
+
+The trace collector invokes the production data-only resolver and records its
+actual output for incremental snapshots, repeated reads and trust changes.
+Matching implementation mutations must be rejected by the same model predicates.
+Unit/CLI/browser tests separately exercise exact source identity/bytes, closed
+metadata validation, question versions1/2/3, signing, publication, reconstruction
+and explicit conflict controls. The model abstracts hashes as collision-free
+identities and real validators/signing as eligibility. It does not prove crypto,
+filesystem durability, UI rendering, global offline linearizability or all possible
+implementation executions. Readers must receive the same complete evidence and
+eligibility to claim convergence. See the answer-acceptance guide and reviewed
+alignment registry; PR/main and weekly formal jobs use the existing status runner.

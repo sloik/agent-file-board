@@ -567,3 +567,5 @@ do not prove cryptography or implementation refinement.
 Formal verification: [coverage, current-run status and weekly checks](formal/STATUS.md).
 
 CI: [required checks and bounded dependency setup](docs/CI.md).
+
+Recorded first answers, offline conflicts and explicit owner resolution: [Answer acceptance](docs/ANSWER-ACCEPTANCE.md).

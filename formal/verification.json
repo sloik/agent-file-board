@@ -3,7 +3,8 @@
   "traceModels": [
     "PrivateState.tla",
     "Publication.tla",
-    "PrivateRecovery.tla"
+    "PrivateRecovery.tla",
+    "AnswerAcceptance.tla"
   ],
   "phases": [
     {
@@ -57,6 +58,16 @@
           "tests",
           "-p",
           "test_signing_runtime.py"
+        ],
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_answer_state.py"
         ]
       ],
       "timeout": 180
