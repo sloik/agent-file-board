@@ -563,3 +563,5 @@ of private-state concurrency and signed publication. The checksum-pinned runner
 checks safety and named counterexample controls on PRs and main alongside the
 existing unit and crypto conformance tests. Models complement those tests; they
 do not prove cryptography or implementation refinement.
+
+Formal verification: [coverage, current-run status and weekly checks](formal/STATUS.md).

@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "traceModels": [
+    "PrivateRecovery.tla"
+  ],
+  "phases": [
+    {
+      "name": "prepare",
+      "commands": [
+        [
+          "{python}",
+          "-m",
+          "pip",
+          "install",
+          "-r",
+          "requirements-signing.txt"
+        ]
+      ],
+      "timeout": 180
+    },
+    {
+      "name": "harness",
+      "commands": [
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "formal",
+          "-p",
+          "test_*.py"
+        ]
+      ],
+      "timeout": 60
+    },
+    {
+      "name": "regressions",
+      "commands": [
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_signing_runtime.py"
+        ]
+      ],
+      "timeout": 180
+    },
+    {
+      "name": "traces",
+      "commands": [
+        [
+          "{python}",
+          "formal/check_traces.py"
+        ]
+      ],
+      "timeout": 180
+    },
+    {
+      "name": "models",
+      "commands": [
+        [
+          "{python}",
+          "formal/check.py"
+        ]
+      ],
+      "timeout": 360
+    }
+  ]
+}

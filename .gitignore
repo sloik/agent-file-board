@@ -1,3 +1,6 @@
 .DS_Store
 .agent-board.local/
 __pycache__/
+
+# Generated formal status is a CI artifact, never source documentation.
+/.formal-status/

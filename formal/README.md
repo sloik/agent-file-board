@@ -149,3 +149,8 @@ Cryptographic semantics, arbitrary filesystems, remote machines, uncooperative
 writers, unlimited retries, all crash instruction boundaries and owner inspection
 correctness are outside this finite model. No production recovery behavior is
 changed by these tests.
+
+## Verification status and weekly checks
+
+See [status, coverage and remaining gaps](STATUS.md) for the live Actions summary,
+commit/input freshness inspection, local full-lane command and weekly schedule.

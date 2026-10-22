@@ -56,21 +56,21 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "22d8cdf4e88df32c598db66f0edbf0c6a2f6ceb4d80973e15f1b0706fc7bb81a"
+      "sha256": "25f03435ad343ee57da51478540969c9ab296e804b5f29a9e8022b173d3b71b8"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "c68d3b8246748ca4de21d2bd5d9a6d78b56e8c4bfd35e54590bfc469963df439"
+      "sha256": "48b8c6351851061232a5bcc970501861548d5e1ded01a22405491eefa430c798"
     },
     ".github/workflows/formal.yml": {
       "path": ".github/workflows/formal.yml",
       "selector": {
         "kind": "file"
       },
-      "sha256": "7b3c58317d63d543ddfdbc823d2ae4e689858068d16490392ffba659f79b3d62"
+      "sha256": "3056fcf1d0acaad62b44f8601bc4ad75557d26d84a3c41215e2d5ada2bf2131f"
     },
     "signing_runtime.py": {
       "path": "signing_runtime.py",
@@ -265,12 +265,40 @@
         "kind": "file"
       },
       "sha256": "0e9c7ea92df7ce14acee76a3c59ff3f034683e2f39e28eed7b6a99fe7db2789c"
+    },
+    "formal/status.py": {
+      "path": "formal/status.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1d32232494d1d75748657fd3067448741eb634373ec9cee88cef4d391cdb306c"
+    },
+    "formal/test_status.py": {
+      "path": "formal/test_status.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "7680d0c2aed426e97b484853a3543acab1777cfe0302351851019ace1cdf1c52"
+    },
+    "formal/verification.json": {
+      "path": "formal/verification.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "42c91b8ffd5bd40f561f874f092bbe01170db151cb5d9f521c0c20d1dccaa233"
+    },
+    "formal/STATUS.md": {
+      "path": "formal/STATUS.md",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "53413020b4f8852af077f5770b703d15c1f3f5f257d51863e04def3b0065fa91"
     }
   },
   "models": [
     {
       "module": "PrivateState.tla",
-      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks.",
+      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
       "states": {
         "disk": {
           "anchors": [
@@ -521,7 +549,11 @@
         "requirements-signing.txt",
         "formal/PrivateState.tla",
         "formal/PrivateState.cfg",
-        "formal/PrivateStateBad.cfg"
+        "formal/PrivateStateBad.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md"
       ],
       "conformance": [
         "tests/test_signing_runtime.py",
@@ -531,7 +563,7 @@
     },
     {
       "module": "Publication.tla",
-      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation.",
+      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
       "states": {
         "policy": {
           "anchors": [
@@ -881,7 +913,11 @@
         "formal/Publication.cfg",
         "formal/PublicationBad.cfg",
         "formal/PublicationBadUnsigned.cfg",
-        "formal/PublicationReachable.cfg"
+        "formal/PublicationReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md"
       ],
       "conformance": [
         "tests/test_signing_runtime.py",
@@ -891,7 +927,7 @@
     },
     {
       "module": "PrivateRecovery.tla",
-      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh.",
+      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
       "states": {
         "state": {
           "anchors": [
@@ -1174,7 +1210,11 @@
         "formal/PrivateRecovery.cfg",
         "formal/PrivateRecoveryBadCompare.cfg",
         "formal/PrivateRecoveryBadLock.cfg",
-        "formal/PrivateRecoveryReachable.cfg"
+        "formal/PrivateRecoveryReachable.cfg",
+        "formal/status.py",
+        "formal/test_status.py",
+        "formal/verification.json",
+        "formal/STATUS.md"
       ],
       "conformance": [
         "formal/collect_traces.py",

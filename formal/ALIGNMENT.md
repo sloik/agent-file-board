@@ -74,3 +74,12 @@ or CI baseline-writing step. Generated wrappers, state stores, crash-test data a
 raw traces use owned temporary directories and are never public repo receipts.
 Finite model checking plus sampled runtime traces is not a general proof that all
 implementation executions refine the specification.
+
+## Generated verification status
+
+[STATUS.md](STATUS.md) explains coverage, remaining refinement gaps and weekly
+operation. `python3 formal/status.py` runs every existing formal gate and writes
+ignored JSON/Markdown evidence bound to its source commit and actual reviewed
+inputs. `--inspect REPORT.json` refuses stale, aged, failed or incomplete results.
+Report tooling/configuration and the workflow are reviewed anchors too. Reports
+are CI artifacts, never a baseline-refresh mechanism or committed session log.
