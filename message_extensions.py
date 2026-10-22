@@ -3,6 +3,7 @@ import json
 import math
 import re
 import unicodedata
+import answer_state
 from static_reports import validate_report
 from extended_static_reports import extension_validator
 from form_contract import validate_form, validate_answer
@@ -122,7 +123,6 @@ def ui_header(raw):
 
 
 def validate_extensions(headers, source=None):
-    import answer_state
     answer_state.metadata(headers, source)
     if "UI" in headers:
         ui_header(headers["UI"])

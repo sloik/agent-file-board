@@ -52,6 +52,22 @@ class BoardLoopTests(unittest.TestCase):
         return loop.record_message(self.args("record", "--message", message["path"], "--sha256", message["sha256"],
             "--disposition", disposition, "--note", note, *extra))
 
+    def test_extracted_reader_loads_acceptance_dependency_after_restoring_import_path(self):
+        import shutil
+        import subprocess
+        import sys
+        self.post()
+        portable = Path(self.tmp.name) / 'portable/skills/board-loop/scripts/board_loop.py'
+        portable.parent.mkdir(parents=True)
+        shutil.copyfile(ROOT / 'skills/board-loop/scripts/board_loop.py',portable)
+        before={str(p):p.read_bytes() for p in self.root.rglob("*") if p.is_file()}
+        result=subprocess.run([sys.executable,'-I','-B',str(portable),'poll',*self.common,
+                               '--ctl',str(ROOT/'boardctl.py'),'--mode','OPPORTUNISTIC'],cwd=self.tmp.name,
+                              capture_output=True,text=True,timeout=20)
+        self.assertEqual(result.returncode,0,result.stderr)
+        self.assertTrue(json.loads(result.stdout)['observation']['startup_baseline'])
+        self.assertEqual({str(p):p.read_bytes() for p in self.root.rglob("*") if p.is_file()},before)
+
     def test_required_signing_excludes_new_work_without_busy_poll_and_retains_obligations(self):
         self.post()
         initial = self.poll()

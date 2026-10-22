@@ -285,7 +285,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "cce44ea063339ca4a31046d63281dd35efeb9683944f949cb437b2bd7dd03383"
+      "sha256": "bac54e2eec940e5aba2a271c18ed59d63ec8c9f7ab2470c4ae48adc75cb4620f"
     },
     "formal/STATUS.md": {
       "path": "formal/STATUS.md",
@@ -446,7 +446,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "4de453d27cb78f423c0639a0023b0470403d5d62297b419b21e071050540eca9"
+      "sha256": "258a9a7678228497b11869e4ce32973170d0294f7786e225dd6b5f74cf36013b"
     },
     "boardctl.py": {
       "path": "boardctl.py",
@@ -482,6 +482,13 @@
         "kind": "file"
       },
       "sha256": "42a0e2bec2d2b23fee2394e91a158cd32ed03928f1ffc3a4b59b54423e9ef97a"
+    },
+    "tests/test_board_loop.py": {
+      "path": "tests/test_board_loop.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c6d2ed32cfa74eb712b8ed8c8e4ac043db675c7ad1efad8d27b88bc35b06fce4"
     }
   },
   "models": [
@@ -1510,7 +1517,7 @@
     },
     {
       "module": "AnswerAcceptance.tla",
-      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit, preserving current signing authorization guards. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions.",
+      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit, preserving current signing authorization guards. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions. SPEC-002-042: acceptance dependency is imported eagerly with the canonical metadata module for isolated extracted readers. Data-only resolver/model/trace semantics are unchanged; a real isolated-interpreter consumer regression runs in the formal dependency phase.",
       "states": {
         "state": {
           "anchors": [
@@ -1763,11 +1770,13 @@
         "formal/AnswerAcceptanceBadAuthority.cfg",
         "tests/fixtures/answer-acceptance.json",
         "tests/test_signing_runtime.py",
-        "signing_commands.py"
+        "signing_commands.py",
+        "tests/test_board_loop.py"
       ],
       "conformance": [
         "tests/test_answer_state.py",
-        "formal/collect_traces.py"
+        "formal/collect_traces.py",
+        "tests/test_board_loop.py"
       ],
       "limits": "Nine named immutable records, three root answers, one ordinary history message, one explicit legacy anchor, two concurrent resolutions and one merge; one reversible eligibility flag. Crypto, parsing/hash/source binding, UI/storage writes, arbitrary graph depth and general implementation refinement remain executable tests. Equal complete snapshots plus eligibility converge; disconnected first acceptance has explicit forks, never a global lock."
     }
