@@ -68,6 +68,16 @@
           "tests",
           "-p",
           "test_answer_state.py"
+        ],
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_board_loop.py"
         ]
       ],
       "timeout": 180

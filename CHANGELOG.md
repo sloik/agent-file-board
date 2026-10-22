@@ -1,5 +1,13 @@
 # Release notes
 
+## 2.12.1 — 2026-10-22
+
+- Load acceptance validation dependencies during canonical module import, so
+  extracted board-loop readers work after restoring their temporary import path.
+- Exercise the portable reader in a clean isolated interpreter and include that
+  consumer regression in formal verification dependency checks.
+
+
 ## 2.12.0 — 2026-10-22
 
 - Record first accepted answers in shared immutable messages; retain later replies
