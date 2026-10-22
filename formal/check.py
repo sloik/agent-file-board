@@ -39,7 +39,7 @@ def verified_jar(pin, explicit=None):
 def run_case(java, jar, case):
     with tempfile.TemporaryDirectory(prefix="afb-tlc-") as temporary:
         result = subprocess.run(
-            [java, "-XX:+UseParallelGC", "-Xmx1g", "-cp", str(jar), "tlc2.TLC",
+            [java, "-XX:+UseParallelGC", "-Xmx1g", "-Djava.io.tmpdir=" + temporary, "-cp", str(jar), "tlc2.TLC",
              "-workers", "1", "-metadir", temporary, "-config", str(ROOT / case["config"]),
              str(ROOT / case["module"])],
             cwd=temporary, capture_output=True, text=True, timeout=case.get("timeout", 90))

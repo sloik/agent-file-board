@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "models": {
+    "PrivateState": {
+      "mode": "action",
+      "positive": [
+        "private-state: stale untrust",
+        "private-state: stale adopt",
+        "private-state: sequential merge",
+        "private-state: learned compromise survives stale save"
+      ],
+      "mutants": [
+        "private-state mutant: missing compare",
+        "private-state mutant: missing lock"
+      ],
+      "variables": [
+        "disk",
+        "expected",
+        "proposed",
+        "pc",
+        "lock",
+        "adopted",
+        "untrusted",
+        "learned",
+        "revoke"
+      ],
+      "invariants": [
+        "TypeOK",
+        "NoLostSecurityState"
+      ],
+      "collector": "formal/collect_private_state.py"
+    },
+    "Publication": {
+      "mode": "action",
+      "positive": [
+        "publication: successful two clients",
+        "publication: private revision changes between commits",
+        "publication: profile changes between commits",
+        "publication: policy changes between commits",
+        "publication: revocation between commits",
+        "publication: policy changes after final authorization",
+        "publication: crash before sidecar then retry",
+        "publication: orphan sidecar after failed message"
+      ],
+      "mutants": [
+        "publication mutant: skipped guard",
+        "publication mutant: missing sidecar"
+      ],
+      "variables": [
+        "policy",
+        "head",
+        "revoked",
+        "revision",
+        "trusted",
+        "snapshot",
+        "observations",
+        "pc",
+        "sidecar",
+        "message",
+        "authorized",
+        "authorization",
+        "failed",
+        "attempt"
+      ],
+      "invariants": [
+        "NoUnboundMessage",
+        "AuthorizationValid"
+      ],
+      "collector": "formal/collect_publication.py"
+    },
+    "PrivateRecovery": {
+      "mode": "record",
+      "positive": [
+        "saved",
+        "noop",
+        "failure",
+        "stale",
+        "stale-noop",
+        "orphan",
+        "crash"
+      ],
+      "mutants": [
+        "implementation mutant: stale",
+        "implementation mutant: orphan"
+      ],
+      "collector": "formal/collect_traces.py"
+    }
+  }
+}

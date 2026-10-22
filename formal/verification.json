@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
   "traceModels": [
+    "PrivateState.tla",
+    "Publication.tla",
     "PrivateRecovery.tla"
   ],
   "phases": [

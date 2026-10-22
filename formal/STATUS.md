@@ -57,25 +57,27 @@ states the maintained abstraction and the remaining correspondence boundary.
 
 | Project / model | Bounded behavior | Implementation correspondence |
 | --- | --- | --- |
-| UI / Signer | Unlock generations, authorization, guarded writes and draft preservation | Reviewed source/test mappings and executable signing regressions; per-action runtime traces remain a gap |
+| UI / Signer | Unlock generations, authorization, guarded writes and draft preservation | Ten production action traces, four implementation mutants, six TLC configs |
 | UI / ViewerUpdate | Two daily windows, manual checks, opt-out and aggregate reload blockers | Three production runtime traces, two implementation mutants, four TLC configs |
-| Canonical / PrivateState | Two writers, compare/replace exclusion, trust/floor preservation | Reviewed source/test mappings and executable save regressions; per-action runtime traces remain a gap |
-| Canonical / Publication | Bounded two-client publication authorization, retries and crash windows | Reviewed source/test mappings and executable signing regressions; per-action runtime traces remain a gap |
+| Canonical / PrivateState | Two writers, compare/replace exclusion, trust/floor preservation | Four actual two-writer action traces, two implementation mutants, two TLC configs |
+| Canonical / Publication | Bounded two-client publication authorization, retries and crash windows | Eight actual prepare/guard/commit traces, two implementation mutants, four TLC configs |
 | Canonical / PrivateRecovery | Normal/no-op/stale/error saves, orphan/crash refusal and inspected retry | Seven actual runtime/filesystem traces, two implementation mutants, four TLC configs |
 
 Across the two projects there are five models and twenty TLC configurations,
 including faithful safety checks, deliberate model faults and positive
 reachability controls. These are exhaustive finite models within their configured
-bounds. Sampled production traces additionally test correspondence for the two
-new models; neither technique proves all implementation executions refine TLA+.
+bounds. Thirty-two sampled production traces and twelve implementation mutation
+controls additionally test correspondence for all five models; neither technique proves all implementation executions refine TLA+.
 See [README.md](README.md) for each model's precise bounds and invariant semantics.
 
 ## Remaining gaps and maintenance priorities
 
-1. Add observed per-action runtime trace bridges for Signer, PrivateState and
-   Publication. Their source/test mapping coverage is useful but weaker than the
-   existing ViewerUpdate/PrivateRecovery trace bridges. Preserve actual positive
-   witnesses and implementation-only mutations when extending them.
+1. Expand sampled scenarios when modeled behavior changes; all five models now
+   have runtime action bridges. The finite sample does not cover every execution
+   or establish universal refinement. `trace_contracts.json` inventories required
+   positives and mutants, with all original multi-variable model fields and safety
+   invariants checked directly. Preserve real positive witnesses and independent
+   implementation-only mutations when extending that inventory.
 2. Extend crash/concurrency scenarios when implementation changes demand them.
    PrivateRecovery samples an owned process dying while holding a lock; it does
    not cover every instruction boundary, arbitrary filesystems, remote/cloud

@@ -7,7 +7,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "ba22d49e0c1560921156dbe356659ce6be50109b9de81d0e9f7ec77eccab2297"
+      "sha256": "f550888a62911e609c47ba0de9c95e9f84193e2cba10cb5e81820ba302e48147"
     },
     "formal/check_alignment.py": {
       "path": "formal/check_alignment.py",
@@ -21,14 +21,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "eb025b40c777bb17e4ec33ae5d1131fd68364490ac440f38b3e5b708fbe35978"
+      "sha256": "74a7056438d5018bac695979c71ae9fe84b3815c667b08237e49dbbd8755bc95"
     },
     "formal/test_check.py": {
       "path": "formal/test_check.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "406691768fb23c91bae9c88dec6720a14ff7194082bc2f561d41be091abf6801"
+      "sha256": "83d5b4bf2cd54769739b4c255a7548574b89bf720bef3d592356fa44ab45ed18"
     },
     "formal/test_alignment.py": {
       "path": "formal/test_alignment.py",
@@ -42,7 +42,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "4c085551fe5d96a9fe891aad21282ef36ce441570440c405ed5a2f5f081ef5be"
+      "sha256": "86f6ddf1c73fd2a61a5f6f8d0cb85af894de2e8fc006e554e5a3a8676c125c74"
     },
     "formal/suite.json": {
       "path": "formal/suite.json",
@@ -56,14 +56,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "25f03435ad343ee57da51478540969c9ab296e804b5f29a9e8022b173d3b71b8"
+      "sha256": "90688cd61998a86bb80452da317db557c7b6519b88d634567ba1953a38a27ec5"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "48b8c6351851061232a5bcc970501861548d5e1ded01a22405491eefa430c798"
+      "sha256": "c25fc1295d0da15053ba9df438437e95f3f7eda5b32994cf7fa7a447decdb2ec"
     },
     ".github/workflows/formal.yml": {
       "path": ".github/workflows/formal.yml",
@@ -229,7 +229,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "0577d76498a6cb0d0c0a51f9f5b509f47626c23adcf2796ce6cae9b7cae5d624"
+      "sha256": "aeaef21d10f07a9dbbaf940961914f505f447f421eb0cb8c90fd1962207a0a62"
     },
     "formal/PrivateRecovery.tla": {
       "path": "formal/PrivateRecovery.tla",
@@ -278,27 +278,69 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "7680d0c2aed426e97b484853a3543acab1777cfe0302351851019ace1cdf1c52"
+      "sha256": "2f4b8838cdfd7b00c8113e93ed9486df4d17c3961d6c4d7267f3cfa9efa51697"
     },
     "formal/verification.json": {
       "path": "formal/verification.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "42c91b8ffd5bd40f561f874f092bbe01170db151cb5d9f521c0c20d1dccaa233"
+      "sha256": "0da5e72515f3674b12d8497b27f1a05eaf742060a90fb399aae4836425f722a5"
     },
     "formal/STATUS.md": {
       "path": "formal/STATUS.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "53413020b4f8852af077f5770b703d15c1f3f5f257d51863e04def3b0065fa91"
+      "sha256": "4ce71304d1675028b94fab6f922eacf8cd60ed017b62512e1dc8d657ae50c53f"
+    },
+    "formal/trace_contracts.json": {
+      "path": "formal/trace_contracts.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "cb4db657f12274bb6341128d2dabf652d8e3296778e320239aa42a20b8537564"
+    },
+    "formal/collect_private_state.py": {
+      "path": "formal/collect_private_state.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c8445598d2e5a93119795483e455a00ed98b9f699cb89b0690ceffd4c5140e1e"
+    },
+    "formal/collect_publication.py": {
+      "path": "formal/collect_publication.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "0abf3dc3902d4fdccf41da899b760f8fc7b54d460d394acf6365413558280063"
+    },
+    "tests/test_board_identity.py": {
+      "path": "tests/test_board_identity.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "99d24eff37a89c848debdcc66b4868ca1b88e31d6e570a4b84083f0ff430e34f"
+    },
+    "tests/fixtures/signing-core/profiles.json": {
+      "path": "tests/fixtures/signing-core/profiles.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "02d9d89685a7ee0490bdd4e9ec653868be73b7c51036e742862bb2a96cf8a193"
+    },
+    "formal/trace_fixtures.py": {
+      "path": "formal/trace_fixtures.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "abba2ce7feaea05e13b8589b05bd260ee993593fc9e312ac0ea56bbd6b612d45"
     }
   },
   "models": [
     {
       "module": "PrivateState.tla",
-      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
+      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged.",
       "states": {
         "disk": {
           "anchors": [
@@ -306,7 +348,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
         },
@@ -316,7 +359,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
         },
@@ -326,7 +370,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
         },
@@ -336,7 +381,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
         },
@@ -346,7 +392,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Cooperating sessions keep comparison/replacement distinct under the per-state writer lock."
         },
@@ -354,7 +401,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_core.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
         },
@@ -362,7 +410,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_core.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
         },
@@ -370,7 +419,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_core.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
         },
@@ -378,7 +428,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_core.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Monotonic policy/trust/compromise history; intentional owner replacement is outside this scenario."
         }
@@ -390,7 +441,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
         },
@@ -400,7 +452,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
         },
@@ -410,7 +463,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
         },
@@ -420,7 +474,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
         },
@@ -430,7 +485,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
         },
@@ -440,7 +496,8 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
         },
@@ -450,14 +507,16 @@
             "session-save",
             "private-lock",
             "expected-byte-replace",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Actual save/lock/compare/replace/release and the deterministic two-writer preservation regression."
         },
         "Revoke": {
           "anchors": [
             "signing_runtime.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Bounded environmental compromise observation, persisted only after learning and saving."
         },
@@ -465,7 +524,8 @@
           "anchors": [
             "signing_runtime.py",
             "session-save",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
         },
@@ -473,7 +533,8 @@
           "anchors": [
             "signing_runtime.py",
             "session-save",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
         },
@@ -481,7 +542,8 @@
           "anchors": [
             "signing_runtime.py",
             "session-save",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
         },
@@ -489,7 +551,8 @@
           "anchors": [
             "signing_runtime.py",
             "session-save",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
         },
@@ -497,7 +560,8 @@
           "anchors": [
             "signing_runtime.py",
             "session-save",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
         },
@@ -521,7 +585,8 @@
           "anchors": [
             "signing_runtime.py",
             "session-save",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_private_state.py"
           ],
           "reason": "Finite composition and fair termination when storage finishes and no lock holder crashes."
         },
@@ -553,24 +618,32 @@
         "formal/status.py",
         "formal/test_status.py",
         "formal/verification.json",
-        "formal/STATUS.md"
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_private_state.py",
+        "tests/test_board_identity.py",
+        "tests/fixtures/signing-core/profiles.json",
+        "formal/trace_fixtures.py",
+        "formal/collect_traces.py"
       ],
       "conformance": [
         "tests/test_signing_runtime.py",
-        "tests/test_signing_core.py"
+        "tests/test_signing_core.py",
+        "formal/collect_traces.py"
       ],
-      "limits": "Two-writer CAS/trust/floor model with mapped runtime regressions. Coarse actual save traces live in PrivateRecovery. Arbitrary writers and intentional floor replacement excluded."
+      "limits": "Two-client real save/lock/CAS/floor/trust/authenticated-compromise samples. No unlimited writers, intentional floor replacement, uncooperative writers or fairness proof from finite traces."
     },
     {
       "module": "Publication.tla",
-      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
+      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged.",
       "states": {
         "policy": {
           "anchors": [
             "signing_runtime.py",
             "signing_core.py",
             "signed-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
         },
@@ -579,7 +652,8 @@
             "signing_runtime.py",
             "signing_core.py",
             "signed-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
         },
@@ -588,7 +662,8 @@
             "signing_runtime.py",
             "signing_core.py",
             "signed-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
         },
@@ -597,7 +672,8 @@
             "signing_runtime.py",
             "signing_core.py",
             "signed-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
         },
@@ -606,7 +682,8 @@
             "signing_runtime.py",
             "signing_core.py",
             "signed-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
         },
@@ -615,7 +692,8 @@
             "signing_runtime.py",
             "signing_core.py",
             "signed-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
         },
@@ -624,7 +702,8 @@
             "signing_runtime.py",
             "signing_core.py",
             "signed-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Distinct config, verified lifecycle and private-state observations, not a globally atomic file snapshot."
         },
@@ -634,7 +713,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
         },
@@ -644,7 +724,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
         },
@@ -654,7 +735,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
         },
@@ -664,7 +746,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
         },
@@ -674,7 +757,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
         },
@@ -684,7 +768,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
         },
@@ -694,7 +779,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Sidecar/message commits, final-guard observations and bounded interrupted/fresh-identity retries."
         }
@@ -706,7 +792,8 @@
             "signing_core.py",
             "signed-publish",
             "tests/test_signing_runtime.py",
-            "tests/test_signing_core.py"
+            "tests/test_signing_core.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
         },
@@ -716,7 +803,8 @@
             "signing_core.py",
             "signed-publish",
             "tests/test_signing_runtime.py",
-            "tests/test_signing_core.py"
+            "tests/test_signing_core.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
         },
@@ -726,7 +814,8 @@
             "signing_core.py",
             "signed-publish",
             "tests/test_signing_runtime.py",
-            "tests/test_signing_core.py"
+            "tests/test_signing_core.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
         },
@@ -736,7 +825,8 @@
             "signing_core.py",
             "signed-publish",
             "tests/test_signing_runtime.py",
-            "tests/test_signing_core.py"
+            "tests/test_signing_core.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
         },
@@ -746,7 +836,8 @@
             "signing_core.py",
             "signed-publish",
             "tests/test_signing_runtime.py",
-            "tests/test_signing_core.py"
+            "tests/test_signing_core.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
         },
@@ -756,7 +847,8 @@
             "signing_core.py",
             "signed-publish",
             "tests/test_signing_runtime.py",
-            "tests/test_signing_core.py"
+            "tests/test_signing_core.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
         },
@@ -766,7 +858,8 @@
             "signing_core.py",
             "signed-publish",
             "tests/test_signing_runtime.py",
-            "tests/test_signing_core.py"
+            "tests/test_signing_core.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Actual signed request/verification and sequential config/profile/private guard observations."
         },
@@ -775,7 +868,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Immutable sidecar precedes guarded message commit; no unsigned fallback."
         },
@@ -784,7 +878,8 @@
             "signed-publish",
             "immutable-publish",
             "board_identity.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Immutable sidecar precedes guarded message commit; no unsigned fallback."
         },
@@ -793,7 +888,8 @@
             "signing_runtime.py",
             "signed-publish",
             "immutable-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Bounded metadata changes and interrupted/retried publication; exact identity/byte conflicts retain runtime checks."
         },
@@ -802,7 +898,8 @@
             "signing_runtime.py",
             "signed-publish",
             "immutable-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Bounded metadata changes and interrupted/retried publication; exact identity/byte conflicts retain runtime checks."
         },
@@ -811,7 +908,8 @@
             "signing_runtime.py",
             "signed-publish",
             "immutable-publish",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Bounded metadata changes and interrupted/retried publication; exact identity/byte conflicts retain runtime checks."
         },
@@ -819,7 +917,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -827,7 +926,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -835,7 +935,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -843,7 +944,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -851,7 +953,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -859,7 +962,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -867,7 +971,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -875,7 +980,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         },
@@ -891,7 +997,8 @@
           "anchors": [
             "signing_runtime.py",
             "signing_commands.py",
-            "tests/test_signing_runtime.py"
+            "tests/test_signing_runtime.py",
+            "formal/collect_publication.py"
           ],
           "reason": "Finite request composition and positive publication witness, not durable/global filesystem atomicity."
         }
@@ -917,17 +1024,24 @@
         "formal/status.py",
         "formal/test_status.py",
         "formal/verification.json",
-        "formal/STATUS.md"
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_publication.py",
+        "tests/test_board_identity.py",
+        "tests/fixtures/signing-core/profiles.json",
+        "formal/trace_fixtures.py",
+        "formal/collect_traces.py"
       ],
       "conformance": [
         "tests/test_signing_runtime.py",
-        "tests/test_signing_core.py"
+        "tests/test_signing_core.py",
+        "formal/collect_traces.py"
       ],
-      "limits": "Source/test-mapped publication model, not complete per-action trace refinement. Arbitrary writers, parsing/crypto arithmetic and global metadata transactions excluded."
+      "limits": "Two-client prepare/guard/commit, private trust/revision and shared policy/profile/revocation changes, one retry/orphan samples. No global metadata transaction, parser/crypto proof, unlimited failures or universal refinement."
     },
     {
       "module": "PrivateRecovery.tla",
-      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement.",
+      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged.",
       "states": {
         "state": {
           "anchors": [
@@ -1214,7 +1328,11 @@
         "formal/status.py",
         "formal/test_status.py",
         "formal/verification.json",
-        "formal/STATUS.md"
+        "formal/STATUS.md",
+        "formal/trace_contracts.json",
+        "formal/collect_traces.py",
+        "tests/test_board_identity.py",
+        "tests/fixtures/signing-core/profiles.json"
       ],
       "conformance": [
         "formal/collect_traces.py",

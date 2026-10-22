@@ -68,6 +68,20 @@ class FormalRunnerTests(unittest.TestCase):
             check.run_case("java", Path("tools.jar"), case)
         self.assertIn("expected counterexample Security", out.getvalue())
 
+    def test_java_standard_module_extraction_uses_a_distinct_owned_directory_per_case(self):
+        directories = []
+        def invoke(command, **kwargs):
+            temporary = next(a.split('=', 1)[1] for a in command if a.startswith('-Djava.io.tmpdir='))
+            self.assertEqual(temporary, str(kwargs['cwd']))
+            self.assertTrue(Path(temporary).is_dir())
+            directories.append(temporary)
+            return subprocess.CompletedProcess(command, 0, 'Model checking completed. No error has been found.', '')
+        with patch.object(check.subprocess, 'run', side_effect=invoke), contextlib.redirect_stdout(io.StringIO()):
+            for _ in range(2):
+                check.run_case('java', Path('fixture.jar'), {'module': 'ignored.tla', 'config': 'ignored.cfg'})
+        self.assertEqual(len(set(directories)), 2)
+        self.assertTrue(all(not Path(d).exists() for d in directories))
+
 
 if __name__ == "__main__":
     unittest.main()

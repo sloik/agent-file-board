@@ -165,6 +165,7 @@ class StatusTests(unittest.TestCase):
         root = Path(__file__).resolve().parent.parent
         registry = status.load(root / 'formal/alignment.json')
         config = status.configuration(root, registry)
+        self.assertEqual(set(config['traceModels']), {m['module'] for m in registry['models']})
         self.assertEqual([p['name'] for p in config['phases']], list(status.PHASES))
         commands = str(config['phases'])
         for name in ['check.py', 'check_traces.py', 'test_*.py']:

@@ -154,3 +154,31 @@ changed by these tests.
 
 See [status, coverage and remaining gaps](STATUS.md) for the live Actions summary,
 commit/input freshness inspection, local full-lane command and weekly schedule.
+
+## PrivateState and Publication runtime action traces
+
+`collect_private_state.py` observes actual Session.save, owned lock directories,
+expected-byte reads and atomic replacements for two clients. Four samples cover
+both stale-save orders, a fresh floor/trust merge and authenticated compromise
+learning surviving a stale save. Removing the real lock or only the expected-byte
+rejection must yield a TLC conformance counterexample; the CAS mutant actually
+loses the previously adopted floor. Filesystem data is always test-owned.
+
+`collect_publication.py` prepares and publishes actual signed messages on
+synthetic boards. Observation wrappers call the real session/current checks,
+guards and os.link, recording config/profile/private observations and actual
+sidecar/message commits. Eight samples cover two clients committing before either
+saves history, private trust/revision, profile, policy and signed-revocation changes
+between commits, a policy change after final authorization, failure before a sidecar followed by retry, and an orphaned
+sidecar after message failure. Skipping guard execution or sidecar publication in
+disposable source copies must actually publish an invalid message and be rejected
+by TLC. `trace_fixtures.py` publishes authenticated synthetic public revocations
+without pre-learning them in the private state under test.
+
+The wrapper instantiates each unchanged original multi-variable model with every
+observed field, checks Init/Next (or stuttering), and retains every faithful safety
+invariant. No second Python transition oracle exists. PrivateState temporal
+fairness/termination remains a model-checking obligation, not a finite runtime
+trace proof. Metadata observations are not a transaction across shared files;
+all-instruction crash coverage, arbitrary external writers, parser/crypto proofs
+and universal implementation refinement remain outside these samples.

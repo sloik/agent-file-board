@@ -127,7 +127,10 @@ def scenario(kind, mutant=False):
 
 
 def traces(mutant=False):
-    return [scenario(k, mutant) for k in (['stale', 'orphan'] if mutant else ['saved', 'noop', 'failure', 'stale', 'stale-noop', 'orphan', 'crash'])]
+    from collect_private_state import traces as private_traces
+    from collect_publication import traces as publication_traces
+    return ([scenario(k, mutant) for k in (['stale', 'orphan'] if mutant else ['saved', 'noop', 'failure', 'stale', 'stale-noop', 'orphan', 'crash'])]
+            + private_traces(mutant) + publication_traces(mutant))
 
 
 if __name__ == '__main__':

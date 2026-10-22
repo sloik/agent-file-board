@@ -26,7 +26,9 @@ python3 formal/check.py
 ```
 
 Java 17 (or `JAVA` pointing to Java) is required for TLC. The same verified TLC
-jar pin is used for model checking and trace conformance. The UI collector also
+jar pin is used for model checking and trace conformance. Each Java invocation
+also owns its standard-module extraction directory, avoiding collisions between
+parallel TLC processes in different repositories. The UI collector also
 needs Node; canonical Board's mapped signing tests need its pinned optional
 signing dependencies. CI installs these prerequisites. Run the project's normal
 unit/browser suite as well; its gate remains independent of formal CI.
@@ -35,7 +37,7 @@ unit/browser suite as well; its gate remains independent of formal CI.
 
 Collectors call production implementation functions, record their observable
 changes in a finite model vocabulary, and feed those records to TLC. Temporary
-wrapper modules use the **actual model's** `Initial`, `Step` and `Safe` predicates;
+wrapper modules use the **actual model's** initial, transition and safety predicates;
 there is no separately rewritten Python/JavaScript transition oracle. Every
 recorded transition must be a model step or a stutter, and the entire trace must
 start in an allowed initial state and preserve safety. Named positive runtime
@@ -47,12 +49,22 @@ counterexample; parse errors, timeouts or unrelated failures never qualify as a
 successful negative control. These checks still reject the behavioral defects if
 someone refreshes source hashes. They do not exercise every possible execution.
 
-Trace conformance currently covers `ViewerUpdate` in the UI and `PrivateRecovery`
-in canonical Board. Existing `Signer`, `PrivateState` and `Publication` retain
-explicit mappings and executable runtime regressions; they do not yet have full
-per-action implementation trace refinement. Fresh anchors must never be presented
-as closing that distinction. Cryptography, parsing, platform APIs and arbitrary
-external writers retain their own implementation-test boundaries.
+Trace conformance covers all five maintained models: `Signer` and `ViewerUpdate`
+in the UI; `PrivateState`, `Publication` and `PrivateRecovery` in canonical Board.
+For state-record models the wrapper uses `Initial`/`Step`/`Safe`. For the original
+multi-variable models it substitutes every observed variable into the actual
+`Init`/`Next` and all faithful-config safety invariants. A monotone conformance
+monitor rejects a transition outside `Next` or stuttering; safety alone cannot
+hide an invalid step. Sets and integer-keyed functions preserve their TLA+ types.
+
+`trace_contracts.json` requires a reviewed collector and nonempty positive/mutant
+scenario inventories for every model. Missing/extra scenarios, omitted state
+variables, unmapped collectors and safety lists differing from faithful configs
+fail closed. Collectors observe production effects and retain positive witnesses;
+they do not compute a second transition oracle. All are bounded sampled traces,
+not a proof that every implementation execution refines the specification or
+that finite traces establish temporal fairness/liveness. Cryptography, parsing,
+platform APIs and arbitrary external writers retain independent test boundaries.
 
 ## Responding to REVIEW REQUIRED
 
