@@ -14,6 +14,7 @@ jobs:
   test:
     name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -28,7 +29,7 @@ jobs:
       - name: Check syntax
         run: python -m py_compile boardctl.py signing_core.py
       - name: Install optional signing conformance dependencies
-        run: python -m pip install -r requirements-signing.txt
+        run: python scripts/ci_retry.py --seconds 120 -- python -m pip install --timeout 15 --retries 1 -r requirements-signing.txt
       - name: Verify independent signing fixtures
         run: python scripts/check_signing_conformance.py
       - name: Run unit tests
