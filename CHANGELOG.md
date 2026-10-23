@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 3.3.1 — 2026-10-23
 
 Private signing keys get one conventional, visible place per board (SPEC-002-066).
 Recommendation and CLI default only; no format change.
