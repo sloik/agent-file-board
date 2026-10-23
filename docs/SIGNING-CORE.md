@@ -3,6 +3,8 @@
 Signed posting, scoped receiver requirements, local key trust/lifecycle and the
 offline browser signer have shipped since 2.11.0. Start with
 [setup](#signing-runtime-2110) and [choosing requirements](#choose-where-signing-is-required).
+New to signing or seeing a refusal? Read the [signing guide](SIGNING-GUIDE.md)
+(three ideas, setup, diagrams, troubleshooting table of every CLI refusal message).
 For a visual walkthrough, see [signing in action](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/SIGNING-IN-ACTION.md);
 for adopter questions, see [security and trust](https://github.com/sloik/agent-file-board-ui/blob/main/docs/guides/SECURITY-AND-TRUST.md).
 
