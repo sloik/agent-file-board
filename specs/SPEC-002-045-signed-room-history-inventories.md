@@ -25,10 +25,11 @@ format adoption, live board edits, UI changes, release or push in this spec.
   encryption separately without changing current "authenticity, not encryption"
   wording.
 - **Trusted signers establish expectations.** An inventory sets expected content
-  only when its signer is locally trusted for the board and scope under the
-  existing scoped trust model (board -> physical scope -> stable thread, trust
-  pins, revocation and private adoption floors). A valid signature from an
-  untrusted key is displayed as an unverified claim and never creates
+  only when its signer's key is locally trusted and current under the existing
+  trust model: a private board-wide pin for that participant, accepted profile
+  lineage, and no retirement or compromise. Trust pins are per participant, not
+  per scope; scoped policy sets only signing requirements. A valid signature from
+  an untrusted key is displayed as an unverified claim and never creates
   expectations. Each client also retains its own private remembered checkpoints.
 - **Advisory only in v1.** Coverage and mismatch diagnostics appear in the CLI and
   viewer, but missing or changed committed content does not alter coordination
@@ -39,7 +40,7 @@ format adoption, live board edits, UI changes, release or push in this spec.
 ## Acceptance
 
 - [ ] AC1: Trust and bootstrap. Define which inventory signers establish
-  expectations by reusing scoped trust, how independently obtained checkpoints
+  expectations by reusing local trust pins, how independently obtained checkpoints
   are imported, how untrusted or out-of-scope claims are shown, and what a fresh
   client without an anchor can and cannot conclude. Revoked or rotated inventory
   keys follow existing signing trust semantics.
@@ -54,8 +55,9 @@ format adoption, live board edits, UI changes, release or push in this spec.
   concurrent observations without a shared mutable latest file; lineage,
   incomparable observations, rollback and fork handling; private persistence
   location, permissions and capacity with visible coverage loss on eviction;
-  explicit adoption of pre-existing room history. Shared evidence removal or a
-  board UUID conflict never resets private remembered history.
+  explicit adoption of pre-existing room history; who produces inventories and
+  when. Shared evidence removal or a board UUID conflict never resets private
+  remembered history.
 - [ ] AC4: Races and advisory semantics. Define handling of partial sync,
   inventory-before-message delivery, scan/publication races and retries.
   Diagnostics separate coverage, missing committed message, missing signature

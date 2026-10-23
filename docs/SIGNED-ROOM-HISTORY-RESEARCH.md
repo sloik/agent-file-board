@@ -136,7 +136,8 @@ before any claim that both clients implement the same contract.
 signers establish expectations, advisory-only diagnostics in v1). These questions
 are now tracked as the acceptance criteria of
 [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md), still
-architecture only. Confidentiality is a separate track:
+architecture only; the proposed answers are in the
+[inventory and checkpoint design](SIGNED-ROOM-HISTORY.md). Confidentiality is a separate track:
 [folder confidentiality research](FOLDER-CONFIDENTIALITY-RESEARCH.md).
 
 ## Primary sources
