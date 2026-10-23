@@ -91,3 +91,51 @@ format adoption, live board edits, UI changes, release or push in this spec.
 Encryption or confidentiality; Merkle proofs unless measured room sizes justify
 them; witnesses or peer exchange beyond defining how an independently obtained
 checkpoint is imported; blocking policy; changes to existing message signing.
+
+## Design and review record
+
+Design: [docs/SIGNED-ROOM-HISTORY.md](../docs/SIGNED-ROOM-HISTORY.md).
+
+**Round 1 (2026-10-23)**: independent read-only security, protocol and UI reviews of
+the first draft. No blockers; 18 major findings (several shared), all addressed in
+the revision:
+
+- Private state keyed by shared board UUID could be reset by editing config
+  (security, protocol): now keyed by folder path with the UUID recorded inside,
+  refusing on change; explicit `rebind` for moved folders; missing UUID reported.
+- Self-signed compromise revocation could silence a thief's deletions (security):
+  source status is a separate axis and never hides the observed state;
+  `ObservationNeverHidden` and `RevocationHidesLoss` added to the formal scope.
+- Status could be downgraded by hiding shared profiles (security): status derives
+  only from private state; signer facts and envelope bytes stored at verification.
+- Export impossible after shared deletion (security, protocol): envelopes and
+  profiles stored privately; export schema, limits and rotation limit defined.
+- Verification window starvation by junk files (security, protocol): name must
+  equal hash, negative cache, pinned-participant prefilter, byte cap, shared
+  128-envelope budget, incomplete windows reported.
+- `observe` could bless tampering (security, protocol): refuses on existing
+  anomalies, self-contradiction or invalid message signatures without
+  `--accept-anomalies`; conflicting entries never read `available`.
+- Limits inconsistent with node budget and path length (security, protocol):
+  1,000 entries, 512 KiB payload, 768 KiB envelope, 16,384 nodes; per-type
+  verifier limits; paths follow the 1,024-byte message rule.
+- Encoding underspecified (protocol): grammar table, lowercase hex, sidecar path,
+  scope grammar and configured direct directory, whole-inventory rejection,
+  ASCII case-fold aliasing, no reserialization.
+- States not exclusive (protocol, UI): two axes plus a total precedence order.
+- `previous` gaps (protocol): tips rule, overflow to full snapshot, same signer
+  and scope only, `referenced-observation-unavailable` in vocabulary, forget path.
+- Empty or folder-only setups looked protected (UI): `not-set-up`, `uncovered`,
+  bootstrap qualifier with exact text, exit 0 only when fully covered.
+- `observe` with an unpinned key silently protected nothing (UI): `observe`
+  reports whether its output is trusted here; operator quickstart added.
+- Exit 2 mixed problems with sync lag (UI): `summary` and `needsAttention` in JSON.
+
+Minor findings also addressed: per-signer quotas, separate loader limits, lock
+crash behaviour, late-delivered inventories (`accept`), pin change A to B,
+direct-directory rename and name collision, labels and severity tiers, CLI flags
+and exit codes, `forget --yes`, order-independence invariant, replay bad variant,
+backdating before revocation listed in limits, viewer tolerance as a precondition.
+Upgrades verified to touch only manifest files, never messages.
+
+**Round 2**: pending convergence check by the same reviewers.
