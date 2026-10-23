@@ -847,6 +847,8 @@ def parser() -> argparse.ArgumentParser:
     extension_state.add_parser(commands)
     import signing_commands
     signing_commands.add_parser(commands)
+    import room_history
+    room_history.add_parser(commands)
     identity = commands.add_parser("identity", help="Opt-in public profile registration; does not sign messages")
     identity_actions = identity.add_subparsers(dest="identity_action", required=True)
     for action in ("enable", "import", "inspect"):
