@@ -193,7 +193,11 @@ All versions retain their own validation; v3 keeps v2's 64-node, depth 4 and
 contain cards only; visual grids require each card's first child to be an image.
 Modal children cannot contain another modal, including through containers.
 
-Images must be canonical `data:image/png;base64,` strings, at most 65536 decoded
+Viewers let readers enlarge every report image and browse all images of a message
+as a gallery. For two or more related images, prefer one `image-gallery` with a
+meaningful title and alt text for each image over separate `image` components;
+`boardctl post` prints a non-blocking hint when a report has several separate
+images. Images must be canonical `data:image/png;base64,` strings, at most 65536 decoded
 bytes each, maximum 1024 by 1024 pixels and 4194304 combined pixels per report.
 Validate PNG signature, chunk bounds/CRC, IHDR, IDAT, terminal IEND, supported
 color/bit-depth combinations and no trailing bytes. Reject APNG, unknown critical

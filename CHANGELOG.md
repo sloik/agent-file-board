@@ -11,6 +11,10 @@ Completes the room history layer; no message, signing or eligibility change.
 - `boardctl history rebind --from OLD_PATH` carries protection to a moved folder,
   including signing trust when the new location has not learned anything yet.
   `status` suggests the command. 3.0.0 checkpoints upgrade automatically.
+- Report images: the convention and board-loop skill recommend one
+  `image-gallery` (with a title and alt text per image) for related images, since
+  viewers 3.1 enlarge and browse report images; `boardctl post` prints a
+  non-blocking hint when a report has several separate images.
 - Frozen inventory and status vectors (`tests/fixtures/room-history/vectors.json`)
   for other clients such as the viewer.
 - `needsAttention` is unchanged; the `neutral` flag now means every source key is

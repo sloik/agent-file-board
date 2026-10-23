@@ -281,6 +281,11 @@ adds `UI` metadata for `board-report` version 1 (tables and signed bar charts).
 Use the actual assigned identity, attached session and normal routing arguments.
 Keep reports within the contract limits; never send raw OpenUI Lang, HTML widgets,
 resource URLs, executable callbacks or invented component versions.
+When a report shows two or more related images (version 3 reports), put them in
+one `image-gallery` with a meaningful title and alt text for each image instead of
+separate `image` components: viewers enlarge report images and let readers browse
+a message's images together. Treat the `boardctl post` gallery hint as a prompt to
+restructure the next report; the posted message is never changed.
 
 Provide a useful body summary because bounded polls may omit the large UI header
 and readers may lack a renderer. Read the original message on demand before
