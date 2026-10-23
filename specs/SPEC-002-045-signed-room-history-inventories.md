@@ -160,4 +160,22 @@ quota and flooding limits listed, case-only filename differences split into
 separate inventories, uncovered messages exit `2` only with `--strict`,
 `unavailableSince` with agents reading `summary`, rebind hint, stale spec wording.
 
-**Round 3**: pending convergence check.
+**Round 3 (2026-10-23)**: UI converged with three minor notes. Protocol found two
+new majors, both introduced by the round 2 edits, addressed in a third revision:
+
+- `revoked` was shadowed by `unpinned` and best-of combination, reopening the
+  thief scenario (protocol NEW-A): revocation is checked first per key; activity
+  uses best of sources, `needsAttention` uses worst of (any revoked source);
+  `RevokedAlwaysAttention` and `UnpinShadowsRevocation` added to formal scope.
+- Acknowledgement not bound to what was reviewed (protocol NEW-B): stores
+  reviewed state and superseded source set, lapses on any later change, new
+  commitments from other sources do not conflict; overlay defined after the
+  state table; `AckBoundToObserved` and `AckHidesLaterChange` added.
+
+Minors: context-dependent invalid results not cached; `accept` defined for
+unpinned and unfamiliar inventories, refused for revoked or invalid;
+`--accept-anomalies` overrides exactly safeguards 1 and 3, safeguard 2 points to
+`acknowledge`; unscoped status no longer exits `2` for never-observed rooms once
+one scope is set up (`--strict` restores); quickstart mentions `--scope`.
+
+**Round 4**: pending protocol convergence check.

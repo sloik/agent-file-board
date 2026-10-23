@@ -45,8 +45,9 @@ conversion by Git or sync tools, and sync conflicts can also cause it.
 2. Record what is there now: `boardctl history observe --scope rooms/general ...`.
    It runs a status check first and tells you whether its output will create
    expectations on this client.
-3. Check later: `boardctl history status`. "Not set up" means nothing is
-   protected yet; uncovered messages are listed as such.
+3. Check later: `boardctl history status` (or `--scope S` for one room).
+   "Not set up" means nothing is protected yet; uncovered messages are listed as
+   such.
 4. Optional: `boardctl history export` and keep the file elsewhere, so a fresh or
    rebuilt client can import an independent anchor.
 
@@ -86,39 +87,47 @@ scope plus a count:
 | `invalid-inventory` | Malformed, bad signature, wrong board, scope or payload type |
 | `pending-verification` | Evidence unavailable or verification budget reached; retried later |
 
-Only `invalid-inventory` results are cached (section 3). Unpinned and unfamiliar
-inventories are re-evaluated on every scan, so pinning a key later lets its
-existing inventories become trusted.
+Only context-free `invalid-inventory` results are cached (section 3): a file name
+that is not its hash, malformed JSON, a wrong payload type or a bad signature.
+Results that depend on other files or settings (foreign `previous`, scope not
+recognized, missing profile) are re-evaluated, as are unpinned and unfamiliar
+inventories, so pinning a key or restoring a setting later lets existing
+inventories become trusted.
 
-An unfamiliar inventory that was signed before its key was normally rotated or
-retired (for example delivered late) can be accepted explicitly:
-`history accept --observation HASH --reason TEXT`. This is the operator vouching
-for it; the decision is recorded privately.
+An `unfamiliar-signer` or `unpinned-signer` inventory (for example one delivered
+late, signed before its key was normally rotated or retired) can be accepted
+explicitly: `history accept --observation HASH --reason TEXT`. This is the
+operator vouching for it; the decision is recorded privately and the signature
+is checked first. Inventories signed by a key with a learned compromise, and
+`invalid-inventory` results, cannot be accepted.
 
 **Source status after key changes.** Each source key of an expectation has a
 status computed only from this client's private signing state (pins and learned
 revocations) and the fingerprint stored at verification:
 
-| Order | Source key status | Rule |
+Each key's status is the first matching row, so a learned compromise always
+wins, whatever the pins say:
+
+| Check order | Source key status | Rule |
 | --- | --- | --- |
-| 1 | `pinned-current` | The stored fingerprint is the participant's current pin |
-| 2 | `previously-trusted` | The participant still has a pin, but on another key (normal rotation, retirement or pin change A to B), and the stored key has no learned compromise |
-| 3 | `unpinned` | The participant has no pin at all on this client (re-pinning restores) |
-| 4 | `revoked` | The stored key has a learned compromise revocation |
+| 1 | `revoked` | The stored key has a learned compromise revocation |
+| 2 | `pinned-current` | The stored fingerprint is the participant's current pin |
+| 3 | `previously-trusted` | The participant still has a pin, but on another key (normal rotation, retirement or pin change A to B) |
+| 4 | `unpinned` | The participant has no pin at all on this client (re-pinning restores) |
 
-An expectation's source status is the best (lowest order) status among its
-sources. `pinned-current` and `previously-trusted` count as **active**: the key
-was trusted when it observed. A non-active source **never hides the
-observation.** Revocation is signed by the target key itself, so a thief could
-delete messages and then revoke the key; the display therefore remains, for
-example, `message-unavailable` with `revoked`. Effects:
+`pinned-current` and `previously-trusted` count as **active**: the key was trusted
+when it observed. An expectation is active if any of its sources is active. A
+non-active source **never hides the observation.** Revocation is signed by the
+target key itself, so a thief could delete messages, revoke the key and have its
+pin removed; the display therefore remains, for example, `message-unavailable`
+with `revoked`. Effects, applied per expectation:
 
-- Active source: reported normally.
-- `unpinned` only: shown with its observed state, neutral, never counted in
-  `needsAttention`.
-- `revoked` only: a non-`available` observed state counts in `needsAttention`.
-- Any source status with `available` is informational and does not affect the
-  exit code.
+- A non-`available` observed state counts in `needsAttention` if **any** source is
+  `revoked` (worst of), whether or not another source is active.
+- Otherwise, if the expectation is active, it is reported normally.
+- Otherwise (only `unpinned` sources), it is shown with its observed state,
+  neutral, not counted in `needsAttention`, and does not affect the exit code.
+- An `available` observed state is informational whatever the source status.
 
 **Bootstrap.** A fresh client has no checkpoint. On first scan it remembers what
 trusted inventories currently say. That protects against later loss but cannot
@@ -328,13 +337,18 @@ without coverage, so explicit-only production is never mistaken for protection.
 `observe` safeguards, so it cannot quietly bless tampering:
 
 1. It runs `status` for the scope first and refuses if any expectation with an
-   active source is not `available` or acknowledged, listing each one.
+   active or revoked source is not `available` or acknowledged, listing each
+   one. `--accept-anomalies` overrides this refusal.
 2. It refuses to list a path whose current bytes contradict the signer's own
-   existing expectation.
+   existing expectation. No flag overrides this; the refusal message names the
+   path and points to `history acknowledge`.
 3. A message with a `SIGNATURE` header is listed only if its signature verifies
    against the message context (any key; trust is not required). Otherwise
    `observe` refuses unless `--accept-anomalies`, in which case that message is
    listed with its actual sidecar binding and the run reports it.
+
+`--accept-anomalies` overrides exactly safeguards 1 and 3, and prints and records
+each anomaly it accepts.
 4. It prints whether this client will treat the new inventory as trusted (signer
    pinned and current here), and that other clients must pin the same key.
 5. It signs only bytes it read and hashed. Messages posted during the scan are
@@ -343,12 +357,24 @@ without coverage, so explicit-only production is never mistaken for protection.
 **Resolving one anomaly.** The normal way past a refusal is per path:
 `history acknowledge --path P --reason TEXT` records, privately, that the
 operator reviewed the current state of that one path (for example a newline
-conversion or a message known to be lost). It supersedes the existing
-commitments for that path only: status shows `acknowledged` as informational,
-and a later `observe` may list the current bytes as a fresh expectation.
-`--accept-anomalies` remains for bulk cases. It prints and records each anomaly
-it accepts. Without an acknowledgement, a signer that signs bytes contradicting
-its own earlier expectation creates a permanent self-conflict.
+conversion or a message known to be lost). The acknowledgement stores:
+
+- the **reviewed state**: the digest, size and sidecar binding found at that
+  moment, or "absent";
+- the **superseded sources**: the set of source inventory hashes whose
+  commitments for that path it covers.
+
+While the path's current state equals the reviewed state, those superseded
+commitments are reported as `acknowledged`, informational. They stay stored, so
+nothing is lost. If the current state later differs from the reviewed state, the
+acknowledgement **lapses**: the original commitments are reported again, with
+"acknowledgement lapsed". A later `observe` may list the current bytes. That new
+commitment comes from a source outside the superseded set, so it is an ordinary
+expectation and does not conflict with the superseded ones. Superseded sources
+are excluded for that path only.
+
+`--accept-anomalies` remains for bulk cases. Without an acknowledgement, a signer
+cannot sign bytes contradicting its own earlier expectation (safeguard 2).
 
 ## 4. Races, partial sync and advisory semantics (AC4)
 
@@ -365,8 +391,10 @@ so Python and browser clients produce the same answer:
 | 5 | `signature-evidence-unavailable` | Message matches; bound sidecar missing |
 | 6 | `available` | Bytes, size and sidecar binding match |
 
-Acknowledged paths (section 3) are reported as `acknowledged`, informational,
-instead of their superseded commitments.
+**Acknowledgement overlay.** This is applied after the table, per path. If a
+current, non-lapsed acknowledgement exists, the commitments from its superseded
+sources are reported as `acknowledged` instead of their row. Commitments from
+other sources for the same path are evaluated by the table normally.
 
 Scope-level diagnostics: `not-set-up` (no expectations), `uncovered` (count and
 paths), `referenced-observation-unavailable`, `profile-evidence-unavailable`,
@@ -424,21 +452,28 @@ boardctl history rebind  --from OLD_PATH
 
 Exit codes follow existing `boardctl` conventions:
 
-- `status`: `2` when any checked scope is `not-set-up` or `history-unavailable`,
-  any expectation is not `available` or `acknowledged` (except `unpinned`-only
-  sources), `needsAttention` is non-zero, capacity is exhausted or the
-  verification window was incomplete; `0` otherwise; `1` command error.
-  Uncovered messages are normal on an active room and do not cause `2` unless
-  `--strict` is given.
-- Other commands: `0` done; `2` refused (anomalies without
-  `--accept-anomalies`, hash mismatch, board UUID conflict, capacity, `forget`
-  without `--yes`); `1` command error.
+- `status`: `2` when:
+  - any checked scope is `history-unavailable`;
+  - any expectation is not `available` or `acknowledged` (except `unpinned`-only
+    sources);
+  - `needsAttention` is non-zero;
+  - capacity is exhausted;
+  - the verification window was incomplete;
+  - a scope named with `--scope` is `not-set-up`, or no scope is set up at all.
+
+  `0` otherwise; `1` command error. Without `--scope`, rooms that have never been
+  observed are listed as `not-set-up` but do not cause `2` once at least one
+  scope is set up. Uncovered messages are normal on an active room and do not
+  cause `2`. `--strict` makes both cause `2`.
+- Other commands: `0` done; `2` refused (`observe` safeguards, hash mismatch,
+  board UUID conflict, capacity, `accept` of a revoked or invalid inventory,
+  `forget` without `--yes`); `1` command error.
 
 `status --json` per scope: `bootstrap` (`folder-only` or `imported`), `coverage`
 (`expected`, `available`, `uncovered`), `lastObservedLocal`, `summary` (count per
 observed state and per source status), `needsAttention` (count of `changed` and
-`conflicting-commitments`, plus any non-`available` expectation whose sources are
-all `revoked`), `entries` (each with observed state, source status and local
+`conflicting-commitments`, plus any non-`available` expectation with at least
+one `revoked` source), `entries` (each with observed state, source status and local
 `unavailableSince` where relevant), `inventories` (unpinned, unfamiliar, invalid
 and pending, capped at 50 with a total) and the scope-level diagnostics.
 
@@ -497,7 +532,14 @@ Invariants:
 - `AdditionsNeverMismatch`: a message outside every expectation never yields a
   non-`available` observed state.
 - `ObservationNeverHidden`: a non-active source never changes a non-`available`
-  observed state into `available` or removes it from output.
+  observed state into `available` or removes it from output. The only overlay is
+  a non-lapsed acknowledgement (next invariant).
+- `AckBoundToObserved`: a commitment is reported `acknowledged` only while the
+  path's current state equals the acknowledgement's reviewed state and the
+  commitment's source is in its superseded set; superseded commitments remain
+  stored.
+- `RevokedAlwaysAttention`: a non-`available` expectation with any `revoked`
+  source is counted in `needsAttention`, regardless of pins or other sources.
 - `NoResetOnConflict`: a board UUID change at the same path leaves the checkpoint
   unchanged and refuses.
 - `OrderIndependent`: the final checkpoint and reported states do not depend on
@@ -505,7 +547,12 @@ Invariants:
 
 Bad variants that must fail: `TrustUntrusted`, `ResetOnSharedRemoval`,
 `ReplayReplacesCheckpoint`, `SilentEviction`, `AdditionAsMismatch`,
-`RevocationHidesLoss`, `UnlockedCompareReplace`.
+`RevocationHidesLoss`, `UnpinShadowsRevocation`, `AckHidesLaterChange`,
+`UnlockedCompareReplace`.
+
+The model also covers tip consumption with merge observations (lineage never
+dropped, tips eventually reduced to one) and the per-key status order with
+best-of activity and worst-of attention.
 
 ## 7. Acceptance fixtures for the implementation spec (AC7)
 
