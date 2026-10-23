@@ -542,7 +542,7 @@ follow-up of this contract.
 | Checkpoint export and import, `bootstrap: imported` | Planned |
 | `rebind` and the rebind hint | Planned |
 | External signer flow for inventories | Planned |
-| Viewer display | Planned; the 2.12.2 viewer ignores `history/` (native reads walk only room, direct, repair and identity paths; uploads use an allowlist) |
+| Viewer display | Planned. Viewers ignore `history/` (native reads walk only room, direct, repair and identity paths; uploads use an allowlist); use viewer 3.0.0 with 3.0.0 boards, since older viewers warn about the version mismatch |
 | Formal model | Implemented as `formal/RoomHistory.tla` (section 6) |
 
 Unit tests: `tests/test_room_history.py`. Formal: `python3 formal/check.py` and

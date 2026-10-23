@@ -181,15 +181,29 @@ class RoomHistoryTests(unittest.TestCase):
         self.assertGreaterEqual(scope["inventories"]["invalid-inventory"], history.SCAN_CANDIDATES + 7)
 
     def test_candidate_order_ignores_attacker_chosen_names(self):
+        low, high, referenced = "0" * 64, "f" * 64, "8" * 64
+        candidates = [(self.scope, low, None), (self.scope, high, None), (self.scope, referenced, None)]
+        candidates.sort(key=history.candidate_order({referenced}, {low: 5, referenced: 9}))
+        self.assertEqual([c[1] for c in candidates], [referenced, high, low],
+                         "referenced first, then never-attempted, regardless of name order")
+
+    def test_scan_retries_least_recently_attempted_inventories_first(self):
         self.three()
         self.observe()
-        checkpoint = history.Checkpoint(self.sess())
-        checkpoint.state["attempts"] = {"0" * 64: 5}
-        candidates = [("rooms/general", "0" * 64, None), ("rooms/general", "f" * 64, None)]
-        referenced = set()
-        attempts = checkpoint.state["attempts"]
-        candidates.sort(key=lambda c: (c[1] not in referenced, attempts.get(c[1], -1), c[1]))
-        self.assertEqual(candidates[0][1], "f" * 64, "never-attempted inventories come first")
+        folder = self.board / "history" / self.scope
+        names = []
+        for i in range(3):
+            raw = json.dumps({"junk": i}).encode()
+            names.append(hashlib.sha256(raw).hexdigest())
+            (folder / (names[-1] + ".json")).write_bytes(raw)
+        with patch.object(history, "SCAN_CANDIDATES", 1):
+            checkpoint = history.Checkpoint(self.sess())
+            checkpoint._cache_invalid = lambda digest: None  # keep junk eligible to observe ordering
+            checkpoint.scan([self.scope])
+            first = max(checkpoint.state["attempts"], key=checkpoint.state["attempts"].get)
+            checkpoint.scan([self.scope])
+            second = max(checkpoint.state["attempts"], key=checkpoint.state["attempts"].get)
+        self.assertNotEqual(first, second, "a scan must move on to a never-attempted inventory")
 
     # -- key lifecycle -------------------------------------------------------
 

@@ -72,9 +72,10 @@ compatibility.
   local `formal/status.py` lane passed all five phases.
 - Full unit suite: 306 passed. `boardctl release-check --tag v3.0.0` ok; upgrade
   manifest current with 2.12.2 as a supported source.
-- Viewer 2.12.2 compatibility checked in `board.html`: native reads walk only
-  room, direct, legacy, repair and identity paths; uploads use a path allowlist,
-  so `history/` is ignored.
+- Viewer 2.12.2 checked in `board.html`: native reads walk only room, direct,
+  legacy, repair and identity paths and uploads use a path allowlist, so
+  `history/` is ignored; but a 3.0.0 board shows its MAJOR.MINOR mismatch warning
+  and blocks upgrades as newer, so viewer 3.0.0 ships with this release.
 - Major-release consequence, owner decision 2026-10-23: extension ranges ending at
   `<3.0.0` become incompatible for new messages; bundled examples re-released as
   patch versions with `<4.0.0`; migration documented.

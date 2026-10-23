@@ -21,7 +21,8 @@ and coordination eligibility are unchanged; nothing is required to upgrade.
   confidentiality research for later opt-in encryption tiers:
   `docs/FOLDER-CONFIDENTIALITY-RESEARCH.md`.
 - Not yet implemented: checkpoint export/import, `rebind`, external-signer
-  inventories and viewer display; the 2.12.2 viewer ignores `history/`.
+  inventories and viewer display. Use viewer 3.0.0 with 3.0.0 boards; older
+  viewers ignore `history/` but warn about the version mismatch.
 - **Action for extension authors:** packages whose convention range ends at
   `<3.0.0` are incompatible for new messages on 3.0.0 boards; publish a new
   version with a range such as `>=2.4.0 <4.0.0`. Bundled examples were re-released

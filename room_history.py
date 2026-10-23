@@ -156,6 +156,13 @@ def parse(raw):
     return payload, signature, core.strict_json(payload, limit=MAX_PAYLOAD, max_nodes=MAX_NODES)
 
 
+def candidate_order(referenced, attempts):
+    """Sort key for unremembered inventories: referenced first, then least recently
+    attempted (never attempted first), then hash. File names chosen by an attacker
+    cannot move a candidate ahead of others."""
+    return lambda candidate: (candidate[1] not in referenced, attempts.get(candidate[1], -1), candidate[1])
+
+
 def _read_optional(path, limit):
     """None when absent or not a regular file (symlinks refused); raw bytes otherwise."""
     try:
@@ -330,7 +337,7 @@ class Checkpoint:
         attempts = self.state["attempts"]
         # Referenced observations first, then least recently attempted, then hash:
         # an attacker cannot reach the front of the window by choosing file names.
-        candidates.sort(key=lambda c: (c[1] not in referenced, attempts.get(c[1], -1), c[1]))
+        candidates.sort(key=candidate_order(referenced, attempts))
         checked, read = 0, 0
         for scope, digest, item in candidates:
             if checked >= SCAN_CANDIDATES or read >= SCAN_BYTES:

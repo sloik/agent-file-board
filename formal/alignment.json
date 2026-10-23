@@ -495,14 +495,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "38ba63318efaefdc4b572afac0531befb76e820ab12de51827bc08f390ae0edf"
+      "sha256": "4d93cbb91c8cb66008ee128c9f03233d3566bf9b066cbb1157a1241d5b4bce2e"
     },
     "tests/test_room_history.py": {
       "path": "tests/test_room_history.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "9b7d1cc374f9f307709962c628ffb8f0862c0e113b7c5fcc499dcd68c9e88d60"
+      "sha256": "e56108c11ff299587dd14862bd995d9d37552bb9db82d23881835e9f6fadabb2"
     },
     "formal/collect_room_history.py": {
       "path": "formal/collect_room_history.py",
@@ -1873,7 +1873,7 @@
     },
     {
       "module": "RoomHistory.tla",
-      "review": "2026-10-23: Reviewed against room_history.Checkpoint (status, verify, key_status, entry, acknowledgement overlay), observe/acknowledge/forget commands and private save discipline. Bounded production traces drive the real CLI on signed boards; four implementation mutants are rejected by TLC. Private save locking reuses signing_runtime._state_write_lock and the expected-byte replacement already modelled by PrivateState and PrivateRecovery. Documentation review 2026-10-23: README and STATUS describe this model's bounds, invariants, fault variants and traces as implemented.",
+      "review": "2026-10-23: Reviewed against room_history.Checkpoint (status, verify, key_status, entry, acknowledgement overlay), observe/acknowledge/forget commands and private save discipline. Bounded production traces drive the real CLI on signed boards; four implementation mutants are rejected by TLC. Private save locking reuses signing_runtime._state_write_lock and the expected-byte replacement already modelled by PrivateState and PrivateRecovery. Documentation review 2026-10-23: README and STATUS describe this model's bounds, invariants, fault variants and traces as implemented. Review 2026-10-23: candidate ordering moved into room_history.candidate_order (same key) with direct and scan-level tests; modelled expectations, status, trust and acknowledgement behavior unchanged.",
       "states": {
         "state": {
           "anchors": [
