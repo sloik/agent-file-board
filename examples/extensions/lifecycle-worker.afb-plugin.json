@@ -1,11 +1,11 @@
 {
   "format": 1,
   "id": "com.example.lifecycle-worker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "name": "Lifecycle example — worker",
   "compatibility": {
     "convention": {
-      "range": ">=2.4.0 <3.0.0",
+      "range": ">=2.4.0 <4.0.0",
       "exclude": [
         "2.5.2"
       ]

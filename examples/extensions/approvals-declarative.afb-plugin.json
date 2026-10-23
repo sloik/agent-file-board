@@ -1,11 +1,11 @@
 {
   "format": 1,
   "id": "com.example.approvals",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "name": "Example approvals — declarative",
   "compatibility": {
     "convention": {
-      "range": ">=2.4.0 <3.0.0",
+      "range": ">=2.4.0 <4.0.0",
       "exclude": [
         "2.5.2"
       ]

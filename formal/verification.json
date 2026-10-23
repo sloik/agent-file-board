@@ -4,7 +4,8 @@
     "PrivateState.tla",
     "Publication.tla",
     "PrivateRecovery.tla",
-    "AnswerAcceptance.tla"
+    "AnswerAcceptance.tla",
+    "RoomHistory.tla"
   ],
   "phases": [
     {
@@ -78,6 +79,16 @@
           "tests",
           "-p",
           "test_board_loop.py"
+        ],
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_room_history.py"
         ]
       ],
       "timeout": 180

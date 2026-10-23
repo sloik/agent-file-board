@@ -305,9 +305,16 @@ A changed UUID at an attached location is a conflict, not a trust reset.
 
 ## What folder writers can still do
 
+Since 3.0.0, opt-in signed room inventories let a client that pinned the signer
+notice committed messages or signatures that later become unavailable or change:
+`boardctl history observe` and `boardctl history status`. See
+[room history inventories](SIGNED-ROOM-HISTORY.md) for states, exit codes and
+limits. Detection is advisory, starts only after an observation, and cannot
+reveal anything removed before a client's first check.
+
 Signing detects a mismatch between checked message bytes/context and the signing
-key. It does not stop deletion, suppression, flooding or filesystem races, prove a
-complete history or encrypt anything. A direct folder routes conversation; it is
+key. Neither signing nor inventories stop deletion, suppression, flooding or
+filesystem races, prove a complete history or encrypt anything. A direct folder routes conversation; it is
 not a confidentiality boundary for someone with folder read access. Protect access
 with filesystem/sharing permissions and retain backups separately.
 
