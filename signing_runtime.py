@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shlex
 import tempfile
 
 import signing_core as core
@@ -42,7 +43,10 @@ def private_key(path, project=None):
     from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
     path = Path(path).expanduser().resolve()
     if project is not None and path.is_relative_to(Path(project).resolve()):
-        raise ValueError("private signing keys must be outside the shared project")
+        raise ValueError(f"private signing keys must be outside the shared project. {path} is inside {Path(project).resolve()}, "
+                         "where other people and tools can read it. Next: move it to a private folder and pass the new path; "
+                         "if it was ever synced or committed, treat it as exposed and create a new key with "
+                         "boardctl signing keygen --output NEW_KEY_FILE")
     try:
         data = core.strict_json(identity._read(path, 16384))
         core._fields(data, ("kty", "crv", "x", "d"), "private JWK")
@@ -57,7 +61,12 @@ def private_key(path, project=None):
             raise ValueError()
         return key
     except (ValueError, OSError, TypeError, KeyError) as exc:
-        raise ValueError("invalid or unavailable private Ed25519 JWK") from exc
+        if isinstance(exc, FileNotFoundError):
+            raise ValueError(f"invalid or unavailable private Ed25519 JWK. No key file exists at {path}. "
+                             f"Next: correct the path, or create a key with boardctl signing keygen --output {shlex.quote(str(path))}") from exc
+        raise ValueError(f"invalid or unavailable private Ed25519 JWK. {path} is not a readable private key file "
+                         "(a JSON file with exactly kty, crv, x and d). Next: pass the file made by "
+                         "boardctl signing keygen, or create a new one with boardctl signing keygen --output NEW_KEY_FILE") from exc
 
 
 def seal(statement, kind, keys):
@@ -174,7 +183,8 @@ class Session:
         def required(p):
             return p["minimum"] == "trusted" or any(r["minimum"] == "trusted" or any(v["minimum"] == "trusted" for v in r["threads"].values()) for r in p["scopes"].values())
         if (required(self.shared) or required(self.floor)) and not self.board_id:
-            raise ValueError("signing policy requires a usable board UUID")
+            raise ValueError("signing policy requires a usable board UUID. "
+                             f"Next: boardctl identity enable --path {shlex.quote(str(self.root))}")
         self.memo = {}
         self.bytes = 0
         self.loaded = set()

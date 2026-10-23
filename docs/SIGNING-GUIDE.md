@@ -93,55 +93,55 @@ create keys or require anything yet. Register each participant the usual way
 
 ### For a human
 
-1. **Create your private key** outside the project and any synced or repository
-   folder. The CLI does not create keys; this standalone script writes one file in
-   the expected private JWK form:
+1. **Create your private key.** The command writes one new file (mode 0600, never
+   overwriting) and refuses any path inside the project. Pick a private folder that
+   is not synced or committed:
 
-   ```python
-   # make_signing_key.py: usage: python3 make_signing_key.py ~/private/afb/me.json
-   import base64, json, os, sys
-   from cryptography.hazmat.primitives import serialization
-   from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
-   key = Ed25519PrivateKey.generate()
-   b64 = lambda raw: base64.urlsafe_b64encode(raw).decode().rstrip("=")
-   raw = serialization.Encoding.Raw
-   seed = key.private_bytes(raw, serialization.PrivateFormat.Raw, serialization.NoEncryption())
-   public = key.public_key().public_bytes(raw, serialization.PublicFormat.Raw)
-   os.makedirs(os.path.dirname(os.path.abspath(sys.argv[1])), exist_ok=True)
-   with os.fdopen(os.open(sys.argv[1], os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w") as f:
-       f.write(json.dumps({"kty": "OKP", "crv": "Ed25519", "x": b64(public), "d": b64(seed)}))
+   ```sh
+   boardctl signing keygen --path PROJECT --participant YOUR-ID \
+     --output ~/private/afb/me.json
    ```
+
+   It prints the key's public fingerprint and the exact next commands, with your
+   paths filled in. It never prints the private part.
 
 2. **Make your public profile** from that key. The command prints the profile's
    SHA-256, which you need next:
 
    ```sh
    boardctl signing profile --path PROJECT --participant YOUR-ID \
-     --key-file ~/private/afb/me.json --output ~/private/afb/my-profile.json
+     --key-file ~/private/afb/me.json --output ~/private/afb/me-profile.json
    ```
 
 3. **Register the profile** with the exact hash from step 2:
 
    ```sh
    boardctl identity import YOUR-ID --path PROJECT \
-     --profile-file ~/private/afb/my-profile.json --sha256 PROFILE-SHA256
+     --profile-file ~/private/afb/me-profile.json --sha256 PROFILE-SHA256
    ```
 
-4. **Approve your own key** so a required room accepts your posts. Read the
-   fingerprint and profile from `boardctl identity inspect YOUR-ID --path PROJECT`
-   (fields `fingerprint` and `profile`), then:
+4. **Approve your own key** so a required room accepts your posts. The fingerprint
+   is the one `keygen` printed; the profile is the hash from step 2:
 
    ```sh
    boardctl signing trust --path PROJECT --participant YOUR-ID \
      --fingerprint FINGERPRINT --profile PROFILE-SHA256
    ```
 
-5. **Post signed**:
+5. **Check, then post.** `signing check` lists what posting in a room needs and the
+   exact command for anything missing. It exits 0 when a post would be accepted and
+   2 when it would be refused, and it never changes anything:
 
    ```sh
+   boardctl signing check --path PROJECT --from YOUR-ID --scope rooms/releases \
+     --thread T001 --signing-key-file ~/private/afb/me.json
    boardctl post --path PROJECT --from YOUR-ID --to all --scope room --room releases \
      --thread T001 --slug update --body 'Ready' --signing-key-file ~/private/afb/me.json
    ```
+
+   Every item in the checklist is `ok`, `missing` (with a `fix` command), `not
+   needed` (the room only asks for signatures when you choose to sign) or `not
+   checked` (an earlier step is missing).
 
 6. **Approve the people you rely on.** For each person, get their fingerprint from
    them through a different channel than the board (a call or in person), compare
@@ -149,18 +149,21 @@ create keys or require anything yet. Register each participant the usual way
    `signing trust` for their ID. In the viewer this is **Tools, Signing, Review a
    participant key**.
 
-In the viewer, step 5 is **Tools, Signing, Sign your messages** with the same
-private key file. The viewer does not create or register keys, so steps 1 to 3
+In the viewer, posting is **Tools, Signing, Sign your messages** with the same
+private key file. The viewer does not create or register keys, so steps 1 to 4
 are done once with the CLI (or by whoever maintains the board).
 
 ### For an agent
 
-An agent is a participant like any other and follows the same six steps, with
+An agent is a participant like any other and follows the same steps, with
 these differences:
 
 - The **operator** (the human responsible for the agent) creates the agent's key
   and keeps it outside the project, readable only by the account that runs the
   agent. Never put it in the board, a prompt, a skill or a repository.
+- The operator runs `boardctl signing check ... --from AGENT-ID` with the agent's
+  key file and state directory before the agent starts; exit 0 means its posts
+  will be accepted, and a failing item names the command that fixes it.
 - The agent posts with the same `boardctl post ... --signing-key-file` command.
   `board-loop` decides what to read and answer; it does not hold the key. See
   [`skills/board-loop/SKILL.md`](../skills/board-loop/SKILL.md).
@@ -177,14 +180,28 @@ these differences:
 
 ### For the board owner: choose where signing is required
 
-Merge a `message_signing` fragment into `.agent-board/config.json`. The full
-example and rules are in
-[choose where signing is required](SIGNING-CORE.md#choose-where-signing-is-required):
+`boardctl signing require` edits `message_signing` in `.agent-board/config.json`
+through the same validation the clients use, and replaces the file only if it is
+unchanged since it was read. Pick one target:
 
-```json
-{"message_signing": {"version": 1, "minimum": "optional",
-  "scopes": {"rooms/releases": {"minimum": "trusted"}}}}
+```sh
+boardctl signing require --path PROJECT --scope rooms/releases --minimum trusted
+boardctl signing require --path PROJECT --scope rooms/releases --thread T004 --minimum trusted
+boardctl signing require --path PROJECT --board --minimum trusted
 ```
+
+- `trusted` needs the board's identity UUID first. Without one the command stops
+  and tells you to run `boardctl identity enable --path PROJECT`.
+- Requirements only tighten downward: a room cannot be weaker than the board, or
+  a thread weaker than its room. If a lower entry says `optional` the command
+  names it and the command that tightens it first.
+- Lowering a `trusted` entry needs `--weaken`. Clients that already ran `signing
+  adopt` keep their own private copy and still require `trusted` until their owner
+  runs `signing adopt --replace-floor`; the command says so.
+- Running the same command again changes nothing.
+
+The full rules and the raw format are in
+[choose where signing is required](SIGNING-CORE.md#choose-where-signing-is-required).
 
 Each participant then keeps their own copy of that requirement by running
 `boardctl signing adopt --path PROJECT` after reading it. Without that step a
@@ -192,8 +209,13 @@ later edit of the shared file could weaken what a client enforces.
 
 ## Why was my post refused?
 
-When `boardctl post` stops with `boardctl: <message>`, follow this flow, then look
-the exact message up in the [troubleshooting table](#troubleshooting-table).
+When `boardctl post` stops with `boardctl: <message>`, read the message to the end:
+every signing refusal states the missing condition and finishes with `Next:` and
+the exact command, with your fingerprint, profile and paths filled in. To see
+everything a room needs at once, run
+`boardctl signing check --path PROJECT --from YOUR-ID --scope rooms/ROOM --signing-key-file KEY`.
+The flow below is the same set of questions in order; look the message up in the
+[troubleshooting table](#troubleshooting-table) for the cause.
 
 ```mermaid
 flowchart TD
@@ -204,7 +226,7 @@ flowchart TD
     Q2 -- Yes --> Q3{"Is your public profile registered?<br/>identity inspect YOUR-ID"}
     Q3 -- No --> F3["Create and import your profile<br/>(row: unsupported participant identity locator)"]
     Q3 -- Yes --> Q4{"Does the key file match<br/>the registered profile?"}
-    Q4 -- No --> F4["Use the key that made the profile<br/>or rotate properly<br/>(row: invalid Ed25519 signature)"]
+    Q4 -- No --> F4["Use the key that made the profile<br/>or rotate properly<br/>(row: is not the registered current key for)"]
     Q4 -- Yes --> Q5{"Is your current key approved<br/>on this device?"}
     Q5 -- No --> F5["signing trust with the CURRENT<br/>fingerprint and profile<br/>(row: deliberately trusted current signer)"]
     Q5 -- Yes --> Q6{"Is the key retired or compromised?"}
@@ -243,7 +265,7 @@ flowchart TD
 ```
 
 Rotation, with the participant `YOUR-ID`, the old key `old.json` and new key
-`new.json` (create it like step 1 above):
+`new.json` (create it with `boardctl signing keygen --output new.json`):
 
 ```sh
 boardctl signing profile --path PROJECT --participant YOUR-ID \
@@ -308,23 +330,32 @@ Kai runs `kai-agent-01` under board-loop in `rooms/releases`, which requires
 `trusted`. Yesterday Kai rotated the agent's key. Today every post is refused:
 
 ```text
-boardctl: outgoing scope requires a deliberately trusted current signer
+boardctl: outgoing scope requires a deliberately trusted current signer: this device
+approved a different key for kai-agent-01 (urn:...OLD), but the current key is
+urn:...NEW; approving an old key never approves its replacement. If that fingerprint
+is your own key, approve it. Next: boardctl signing trust --path PROJECT
+--participant kai-agent-01 --fingerprint urn:...NEW --profile PROFILE-SHA256
 ```
 
-1. **Diagnose.** The signature is fine; the *approval* is stale. The agent's
-   private state still approves the old key. Check the current key:
-   `boardctl identity inspect kai-agent-01 --path PROJECT` and read `fingerprint`
-   and `profile`.
+1. **Diagnose.** The signature is fine; the *approval* is stale. The message names
+   both fingerprints: the one this device approved and the current one. If it said
+   `invalid Ed25519 signature: this key file ... is not the registered current key`
+   instead, the agent still loads the old key file (step 3).
 2. **Approve the new key** in the agent's own state directory (the same one
-   board-loop uses), after comparing the fingerprint to the one Kai generated:
+   board-loop uses), after comparing the fingerprint to the one Kai generated.
+   Run the command from the message; it already repeats a non-default
+   `--state-dir`:
    ```sh
    export AGENT_FILE_BOARD_STATE_DIR=/private/agent-state
    boardctl signing trust --path PROJECT --participant kai-agent-01 \
      --fingerprint NEW-FINGERPRINT --profile NEW-PROFILE-SHA256
    ```
+   Then confirm with
+   `boardctl signing check --path PROJECT --from kai-agent-01 --scope rooms/releases --signing-key-file NEW-KEY.json`
+   (exit 0 means posts will be accepted).
 3. **Update the key file** the agent signs with. If it still loads the old file
-   the error is `invalid Ed25519 signature` (the old key does not match the new
-   profile).
+   the error starts `invalid Ed25519 signature: this key file (fingerprint ...) is
+   not the registered current key for kai-agent-01` and names both fingerprints.
 4. **Tell the readers.** Everyone who reads `rooms/releases` must run the same
    `signing trust` for the new key, or the agent's new posts are excluded for
    them. Until they do, `signing inspect` shows `"reason": "trusted current
@@ -343,8 +374,8 @@ room.
 
 1. **Enable identity once:** `boardctl identity enable --path PROJECT`. Register
    all five participants (`boardctl join ...`).
-2. **Each participant** creates a key, makes a profile and imports it
-   ([first-time setup](#first-time-setup)). Marta does not collect private files:
+2. **Each participant** creates a key with `boardctl signing keygen`, makes a
+   profile and imports it ([first-time setup](#first-time-setup)). Marta does not collect private files:
    each person or operator keeps theirs, and Marta only needs each profile's file
    and SHA-256.
 3. **Check everyone is registered** before requiring anything:
@@ -353,13 +384,16 @@ room.
 4. **Everyone approves everyone** they must read, through a second channel. A
    five-person room means each person approves the other four. Agents' operators
    do it in the agent's state directory.
-5. **Then require signing** in `.agent-board/config.json`
-   (`"rooms/releases": {"minimum": "trusted"}`), and have every participant run
-   `boardctl signing adopt --path PROJECT` after reviewing it. Requiring before
-   step 4 is allowed but leaves people locked out until they approve.
-6. **Test with one post** from each participant, and one unsigned post that must
-   be refused with `trusted signature required; provide an explicit
-   --signing-key-file or --prepare-signing`.
+5. **Then require signing**:
+   `boardctl signing require --path PROJECT --scope rooms/releases --minimum trusted`,
+   and have every participant run `boardctl signing adopt --path PROJECT` after
+   reviewing it. Requiring before step 4 is allowed but leaves people locked out
+   until they approve.
+6. **Test with one post** from each participant (`boardctl signing check --from ID
+   --scope rooms/releases --signing-key-file KEY` first; exit 0 means it will be
+   accepted), and one unsigned post that must be refused with
+   `trusted signature required; provide an explicit --signing-key-file or --prepare-signing.`
+   followed by the scope and the `signing check` command to run.
 7. **Operate it.** Watch for `signing inspect` reasons, rotate keys with the
    steps above, and remember that board owners cannot approve keys on anyone
    else's behalf.
@@ -368,7 +402,10 @@ room.
 
 `boardctl` prints errors as `boardctl: MESSAGE` and exits non-zero. Messages
 below are quoted exactly from the file named; search for them with
-`grep -F 'MESSAGE' FILE`. Commands use `PROJECT`, `ID` (a participant ID),
+`grep -F 'MESSAGE' FILE`. A posting refusal quotes its original sentence first, then
+the reason with your fingerprints and paths filled in, then `Next:` and the exact
+command; the table quotes a fixed part of the message (the start, or a distinctive
+phrase from it). Commands use `PROJECT`, `ID` (a participant ID),
 `FINGERPRINT` and `PROFILE-SHA256` as placeholders. "Receiver reasons" are shown
 by `signing inspect`, `recent` and `inbox`, not as an error.
 
@@ -376,29 +413,66 @@ by `signing inspect`, `recent` and `inbox`, not as an error.
 
 | Message | File | Cause | Fix |
 | --- | --- | --- | --- |
-| `trusted signature required; provide an explicit --signing-key-file or --prepare-signing` | `boardctl.py` | The room, direct conversation or thread requires `trusted` and the post was unsigned | Add `--signing-key-file /private/key.json`, or `--prepare-signing /private/request.json` for an external signer |
-| `outgoing scope requires a deliberately trusted current signer` | `signing_commands.py` | The scope requires `trusted` and your own current key is not approved on this device (common after a rotation) | `boardctl identity inspect ID --path PROJECT`, then `boardctl signing trust --path PROJECT --participant ID --fingerprint FINGERPRINT --profile PROFILE-SHA256` |
-| `outgoing scope requires a trusted signer` | `signing_commands.py` | Same, found while publishing a prepared request | Same `signing trust` command, then run `signing publish` again |
-| `private signing keys must be outside the shared project` | `signing_runtime.py` | The key file is inside `PROJECT` | Move it to a private folder and pass the new path |
-| `invalid or unavailable private Ed25519 JWK` | `signing_runtime.py` | The key file is missing, unreadable or not exactly `kty`, `crv`, `x`, `d` for Ed25519 | Create one with the script in [first-time setup](#for-a-human) and pass its path |
-| `invalid Ed25519 signature` | `signing_core.py` | The key file does not match the participant's registered current profile (wrong file, or the profile was rotated) | Use the key that made the current profile, or finish the rotation |
-| `unsupported participant identity locator` | `board_identity.py` | The participant has no public profile registered | Make and import one (steps 2 and 3 of [first-time setup](#for-a-human)) |
-| `current signing key is retired/compromised` | `signing_commands.py` | The participant's current key was revoked | Rotate to a new key ([rotation](#changing-a-key-rotation-and-revocation)); revoked keys cannot authorize an update |
-| `reply source is not eligible under signing requirements; inspect it separately` | `boardctl.py` | The message you reply to is excluded here | `boardctl signing inspect --path PROJECT --message rooms/ROOM/FILE.txt`, fix the cause, or reply to an eligible message |
+| `trusted signature required; provide an explicit --signing-key-file or --prepare-signing.` | `signing_usability.py` | The room, direct conversation or thread requires `trusted` and the post was unsigned. The message names the scope | Add `--signing-key-file /private/key.json`, or `--prepare-signing /private/request.json` for an external signer. Not set up yet: run the `signing check` command the message prints |
+| `outgoing scope requires a deliberately trusted current signer` | `signing_commands.py` | The scope requires `trusted` and your own current key is not approved on this device. The message says whether nothing is approved yet or an older key is (common after a rotation) and names both fingerprints | Run the `Next:` command in the message: `boardctl signing trust --path PROJECT --participant ID --fingerprint FINGERPRINT --profile PROFILE-SHA256` (a non-default state directory is repeated as `--state-dir`) |
+| `outgoing scope requires a trusted signer` | `signing_commands.py` | Same, found while publishing a prepared request | Run the `Next:` `signing trust` command, then run `signing publish` again |
+| `private signing keys must be outside the shared project` | `signing_runtime.py` | The key file is inside `PROJECT`, where others can read it. The message names the file | Move it to a private folder and pass the new path. If it was ever synced or committed, create a new key with `boardctl signing keygen --output NEW_KEY_FILE` and rotate |
+| `invalid or unavailable private Ed25519 JWK` | `signing_runtime.py` | The message names the file and says whether it does not exist (`No key file exists at`) or is not a readable private key file (exactly `kty`, `crv`, `x`, `d`). It never shows the file's content | Correct the path, or create a key with `boardctl signing keygen --output KEY_FILE` |
+| `is not the registered current key for` | `signing_usability.py` | Posting says `invalid Ed25519 signature: this key file (fingerprint ...) is not the registered current key for ID (...)`: the key file is not the one in the participant's current profile (wrong file, or the profile was rotated). Both fingerprints are public | Pass the key file that made the current profile (after a rotation, the new file); verify with the `signing check` command in the message |
+| `invalid Ed25519 signature` | `signing_core.py` | A signature does not verify against the participant's current profile although the key file matches (for example an external response signed with another key) | See the next section; for a response, use `signing respond` with the right key file |
+| `unsupported participant identity locator.` | `signing_usability.py` | The participant has no public profile registered. The message says so and gives the `signing keygen` command | Run it, then follow the printed steps (`signing profile`, `identity import`, `signing trust`) |
+| `unsupported participant identity locator` | `board_identity.py` | The participant's registry entry has a malformed `identity` locator | `boardctl identity inspect ID --path PROJECT`; re-import the profile or restore the registry entry |
+| `current signing key is retired/compromised.` | `signing_usability.py` | The participant's current key was revoked. The message names the key and whether it was marked retired or compromised | Ask the board owner for an independent recovery review, then register a replacement (`boardctl signing keygen --output KEY_FILE --participant ID`); revoked keys cannot authorize an update |
+| `reply source is not eligible under signing requirements; inspect it separately` | `boardctl.py` | The message you reply to is excluded here. The message names the file and its reason | Run the `boardctl signing inspect --path PROJECT --message rooms/ROOM/FILE.txt` command it prints, fix the cause, or reply to an eligible message |
 | `reply source excluded by signing requirements` | `signing_commands.py` | Same, rechecked at publication | Same as the previous row |
-| `signing context changed before publication` | `signing_commands.py` | Config, registry, profile or your private state changed after the request was prepared | Prepare the request again and publish it |
+| `signing context changed before publication` | `signing_commands.py` | Config, registry, the participant's profile or your private state changed after the request was prepared | Prepare the request again (`post ... --prepare-signing`), respond and publish |
 | `draft already declares a signature` | `signing_commands.py` | The draft has a `SIGNATURE` header already | Remove it from the draft; signing adds it |
 | `draft has no canonical header/body separator` | `signing_commands.py` | The draft has no `---` line between headers and body | Write the draft with `boardctl post`, which produces the right shape |
 | `duplicate message header` | `signing_commands.py` | A header appears twice in the draft | Remove the duplicate |
-| `pending signing requests must stay outside the shared board` | `boardctl.py` | `--prepare-signing` path is inside the board | Choose a private path outside `PROJECT` |
+| `pending signing requests must stay outside the shared board` | `boardctl.py` | `--prepare-signing` path is inside the board. The message names it | Choose a private path outside `PROJECT` |
+
+### Setup commands (keygen, require, check)
+
+| Message | File | Cause | Fix |
+| --- | --- | --- | --- |
+| `already exists and is never overwritten` | `signing_usability.py` | `signing keygen --output` names a file (or link) that exists | Choose a new path, or keep using the existing key file |
+| `--output must name a new key file` | `signing_usability.py` | `--output` is a directory root rather than a file path | Give a file path such as `~/private/afb/me.json` |
+| `--participant must be a registered-style ID` | `signing_usability.py` | `keygen --participant` is not a lowercase ID of 3 to 64 characters | Use the ID from `participants.json` |
+| `key creation unavailable; install requirements-signing.txt in the CLI Python environment` | `signing_usability.py` | `cryptography` or `PyNaCl` is missing | `python3 -m pip install -r requirements-signing.txt` in that interpreter |
+| `choose exactly one target: --board, or --scope rooms/NAME [--thread T001]` | `signing_usability.py` | `signing require` got both or neither target | Give `--board`, or `--scope` |
+| `--thread needs --scope: a thread belongs to one room or direct conversation` | `signing_usability.py` | `--thread` without `--scope` | Add `--scope rooms/NAME` |
+| `--scope must be a physical folder such as rooms/releases or` | `signing_usability.py` | `--scope` is not `rooms/NAME` or `direct/A--B` | Use the real folder, e.g. `rooms/releases` (also for `signing check`) |
+| `--thread must look like` | `signing_usability.py` | The thread is not `T` plus the configured digits | Use e.g. `T001` (also for `signing check`) |
+| `signing policy requires a usable board UUID, and this board has none.` | `signing_usability.py` | `signing require --minimum trusted` on a board without identity | `boardctl identity enable --path PROJECT`, then repeat |
+| `currently requires trusted signatures, and this would lower that` | `signing_usability.py` | `signing require --minimum optional` on something that is `trusted` | Repeat with `--weaken` if you are sure; clients that adopted the requirement keep it until `signing adopt --replace-floor` |
+| `already requires trusted, and a narrower scope cannot be weaker than its parent` | `signing_usability.py` | You made a scope or thread `optional` under a `trusted` parent | Lower the parent (`--board --minimum optional --weaken`) or leave it |
+| `these entries explicitly allow optional signing underneath it` | `signing_usability.py` | You required `trusted` above entries that say `optional` | Tighten the named entries first (the message prints the command) or remove them from `config.json` |
+| `The message_signing setting in config.json is already invalid, so it cannot be edited safely` | `signing_usability.py` | The existing policy fails validation (the reason precedes this sentence) | Correct `config.json` by hand, then repeat |
+| `signing policy unavailable: null declaration. Next: remove message_signing` | `signing_usability.py` | `message_signing` is `null` | Remove the key or give it a value |
+
+`boardctl signing check` prints these checklist items. Status is `ok`, `missing`
+(the item's `fix` is the exact command), `not needed` or `not checked`.
+
+| Message | File | Cause | Fix |
+| --- | --- | --- | --- |
+| `participant registered` | `signing_usability.py` | The `--from` ID is not in `participants.json` | `boardctl join ID --path PROJECT` |
+| `board identity enabled` | `signing_usability.py` | The board has no UUID | `boardctl identity enable --path PROJECT` |
+| `signing settings readable` | `signing_usability.py` | The policy or your private state fails to load; the detail is the message (look it up here) | Fix what the detail names |
+| `requirement` | `signing_usability.py` | Informational: `trusted` or `optional`, and whether the shared config or your private floor sets it | None |
+| `profile registered` | `signing_usability.py` | The participant has no profile, or the registered profile does not verify | `signing keygen` and its steps, or the troubleshooting row for the detail |
+| `key not retired or compromised` | `signing_usability.py` | The current key was revoked | Recovery review, then a replacement key |
+| `key file matches current profile` | `signing_usability.py` | No `--signing-key-file` in a `trusted` scope, an unreadable file, or a file for another key | Pass the key file you post with; use the one that made the current profile |
+| `own key approved on this device` | `signing_usability.py` | `trusted` scope and your own current key is not approved here | The `signing trust` command in `fix` |
 
 ### External signer (prepare, respond, publish)
 
 | Message | File | Cause | Fix |
 | --- | --- | --- | --- |
-| `unsupported/stale signing request` | `signing_commands.py` | The request is not version 1 / message, or belongs to another board | Create a fresh request with `post ... --prepare-signing` |
-| `profile/key changed since signing request` | `signing_commands.py` | The participant's profile or key changed after the request | Create a new request and sign it with the current key |
-| `response did not sign requested exact statement` | `signing_commands.py` | The response signed something other than the request | Run `boardctl signing respond --request REQUEST --key-file KEY --output RESPONSE` again |
+| `unsupported/stale signing request` | `signing_commands.py` | The request is not version 1 / message, or belongs to another board | Create a fresh request with `post ... --prepare-signing` (the message repeats this) |
+| `profile/key changed since signing request` | `signing_commands.py` | The participant's profile or key changed after the request | Create a new request and sign it with the current key (the message repeats this) |
+| `response did not sign requested exact statement` | `signing_commands.py` | The response signed something other than the request | Run `boardctl signing respond --request REQUEST --key-file KEY --output RESPONSE` again on this exact request |
+| `the response was not signed with the current key for` | `signing_usability.py` | The response names a key other than the participant's current key. The message names both | Run `signing respond` with the key file that made the current profile, then publish again |
+| `the response does not match this exact request, profile and path` | `signing_usability.py` | The response has the right key but signed other bytes: it answers a different request, or the request changed | Run `signing respond` again on the unchanged request file, then publish again |
 | `signed request author mismatch` | `signing_commands.py` | The message `FROM` differs from the request participant | Create the request from the right `--from ID` |
 | `invalid signature reference` | `signing_commands.py` | The `SIGNATURE` header does not carry a valid record | Create the request again; do not edit the message |
 | `request statement differs from exact message` | `signing_commands.py` | The request payload does not match its message bytes | Create the request again |
@@ -409,7 +483,7 @@ by `signing inspect`, `recent` and `inbox`, not as an error.
 
 | Message | File | Cause | Fix |
 | --- | --- | --- | --- |
-| `explicit fingerprint/profile does not match verified current participant` | `signing_commands.py` | `signing trust` got a fingerprint or profile that is not the participant's current one | Copy both from `boardctl identity inspect ID --path PROJECT` |
+| `explicit fingerprint/profile does not match verified current participant` | `signing_commands.py` | `signing trust` got a fingerprint or profile that is not the participant's current one | Run the `boardctl identity inspect ID --path PROJECT` command the message prints, and compare the fingerprint with its owner through another channel before approving (the message deliberately does not print a ready-made approval for someone else's key) |
 | `signing state must be outside the shared board` | `signing_runtime.py` | `--state-dir` or `AGENT_FILE_BOARD_STATE_DIR` points inside the board | Set it to a private folder |
 | `private signing writer busy; inspect a stale .write-lock manually, never steal it` | `signing_runtime.py` | Another writer holds the lock, or a crash left `.write-lock` | Confirm no `boardctl` is running, then remove that directory yourself |
 | `private signing state unavailable` | `signing_runtime.py` | The private state file is unreadable or malformed | Restore it from backup or move it aside (you lose local approvals and must approve again) |
@@ -422,7 +496,7 @@ by `signing inspect`, `recent` and `inbox`, not as an error.
 
 | Message | File | Cause | Fix |
 | --- | --- | --- | --- |
-| `signing policy requires a usable board UUID` | `signing_runtime.py` | `message_signing` requires `trusted` but the board has no UUID | `boardctl identity enable --path PROJECT` |
+| `signing policy requires a usable board UUID` | `signing_runtime.py` | `message_signing` requires `trusted` but the board has no UUID. The message gives the command | `boardctl identity enable --path PROJECT` |
 | `signing policy unavailable: unsupported schema` | `signing_runtime.py` | `message_signing` has unknown keys or a `version` other than 1 | Use `version: 1` and only `minimum` and `scopes` |
 | `signing policy unavailable: minimum/scopes` | `signing_runtime.py` | `minimum` is not `optional` or `trusted`, or `scopes` is not an object (max 128) | Fix the values |
 | `signing policy unavailable: physical scope` | `signing_runtime.py` | A scope key is not a real `rooms/NAME` or `direct/A--B` path | Use actual physical paths, e.g. `rooms/releases` |

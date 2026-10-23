@@ -9,6 +9,7 @@ import sys
 import board_identity as identity
 import signing_core as core
 import signing_runtime as runtime
+import signing_usability as usability
 from board_upgrade import safe_path
 
 
@@ -19,10 +20,12 @@ def session(root, state_dir=None):
 
 
 def current(s, participant):
+    if identity._person(s.registry, participant).get("identity") is None:
+        raise ValueError(usability.no_profile_message(s.root, participant))
     result = s.resolve(participant)
     head = result["head"]
     if head.fingerprint in result["revoked"]:
-        raise ValueError("current signing key is retired/compromised")
+        raise ValueError(usability.revoked_message(participant, head.fingerprint, result["revoked"][head.fingerprint]))
     return head
 
 
@@ -39,20 +42,20 @@ def signed_packet(s, relative, raw, key=None):
             if ": " in line:
                 k, v = line.split(": ", 1)
                 if k in headers:
-                    raise ValueError("duplicate message header")
+                    raise ValueError("duplicate message header. Next: remove the repeated header line from the draft")
                 headers[k] = v
     head = current(s, headers["FROM"])
     context = core.MessageContext(s.board_id, headers["FROM"], head.envelope_sha256, relative)
     minimum = s.minimum(relative, headers["THREAD"].split("-")[0])
     if minimum == "trusted" and s.state["pins"].get(headers["FROM"]) != head.fingerprint:
-        raise ValueError("outgoing scope requires a deliberately trusted current signer")
+        raise ValueError(usability.unapproved_message(s, headers["FROM"], head, "outgoing scope requires a deliberately trusted current signer"))
     record = "sig_" + str(uuid.uuid4())
     if "SIGNATURE" in headers:
-        raise ValueError("draft already declares a signature")
+        raise ValueError("draft already declares a signature. Next: remove the SIGNATURE header from the draft; signing adds it")
     # Existing writer emits LF; refuse ambiguity rather than normalizing it.
     marker = b"\n---\n"
     if raw.count(marker) < 1:
-        raise ValueError("draft has no canonical header/body separator")
+        raise ValueError("draft has no canonical header/body separator. Next: write the draft with boardctl post, which produces the right shape")
     before, after = raw.split(marker, 1)
     final = before + b"\nSIGNATURE: " + core._json_bytes({"version": 1, "record": record}) + marker + after
     payload = core._json_bytes(core._statement(final, context))
@@ -62,7 +65,13 @@ def signed_packet(s, relative, raw, key=None):
               "payloadType": core.MESSAGE_TYPE, "payload": base64.b64encode(payload).decode()}
     if key is not None:
         envelope = core.sign_message(final, context, key)
-        core.verify_message(envelope, head.descriptor, final, context)
+        try:
+            core.verify_message(envelope, head.descriptor, final, context)
+        except ValueError as exc:
+            detail = usability.key_mismatch_message(s, headers["FROM"], head, key, str(exc), relative)
+            if detail is None:
+                raise
+            raise ValueError(detail) from exc
         return packet, envelope
     return packet, None
 
@@ -71,15 +80,18 @@ def publish(s, packet, envelope):
     import boardctl
     core._fields(packet, ("version", "kind", "boardId", "participant", "profile", "keyId", "path", "message", "payloadType", "payload"), "signing request")
     if type(packet["version"]) is not int or packet["version"] != 1 or packet["kind"] != "message" or packet["boardId"] != s.board_id or packet["payloadType"] != core.MESSAGE_TYPE:
-        raise ValueError("unsupported/stale signing request")
+        raise ValueError("unsupported/stale signing request. " + usability.PREPARE_AGAIN)
     head = current(s, packet["participant"])
     if (head.envelope_sha256, head.fingerprint) != (packet["profile"], packet["keyId"]):
-        raise ValueError("profile/key changed since signing request")
+        raise ValueError("profile/key changed since signing request. " + usability.PREPARE_AGAIN)
     raw = core._decode64(packet["message"])
     context = core.MessageContext(s.board_id, packet["participant"], packet["profile"], packet["path"])
-    result = core.verify_message(envelope, head.descriptor, raw, context)
+    try:
+        result = core.verify_message(envelope, head.descriptor, raw, context)
+    except ValueError as exc:
+        raise ValueError(usability.response_message(exc, packet["participant"], head, envelope)) from exc
     if result.payload != core._decode64(packet["payload"]):
-        raise ValueError("response did not sign requested exact statement")
+        raise ValueError("response did not sign requested exact statement. Next: run boardctl signing respond --request REQUEST_FILE --key-file KEY_FILE --output RESPONSE_FILE again on this exact request")
     path = safe_path(s.board, packet["path"])
     # Validate routing/metadata using a disposable source, preserving final path.
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -90,14 +102,14 @@ def publish(s, packet, envelope):
     finally:
         temporary.unlink(missing_ok=True)
     if headers["FROM"] != packet["participant"]:
-        raise ValueError("signed request author mismatch")
+        raise ValueError("signed request author mismatch. " + usability.PREPARE_AGAIN + " with --from set to the participant who signs")
     if s.minimum(packet["path"], headers["THREAD"].split("-")[0]) == "trusted" and s.state["pins"].get(headers["FROM"]) != head.fingerprint:
-        raise ValueError("outgoing scope requires a trusted signer")
+        raise ValueError(usability.unapproved_message(s, headers["FROM"], head, "outgoing scope requires a trusted signer") + ", then run signing publish again")
     ref = core.strict_json(headers["SIGNATURE"].encode())
     core._fields(ref, ("version", "record"), "SIGNATURE")
     import re
     if ref["version"] != 1 or type(ref["version"]) is not int or not re.fullmatch(r"sig_[a-f0-9-]{36}", ref["record"]):
-        raise ValueError("invalid signature reference")
+        raise ValueError("invalid signature reference. " + usability.PREPARE_AGAIN + "; do not edit the message")
     sidecars = safe_path(s.board, str(path.parent.relative_to(s.board) / ".signatures"))
     sidecars.mkdir(exist_ok=True)
     sidecar = sidecars / (ref["record"] + ".json")
@@ -111,19 +123,23 @@ def publish(s, packet, envelope):
         if (fresh.config != s.config or fresh.registry != s.registry
                 or fresh_head.envelope_sha256 != head.envelope_sha256
                 or fresh.before != s.before):
-            raise ValueError("signing context changed before publication")
+            raise ValueError("signing context changed before publication: the board settings, participants, "
+                             f"the profile of {packet['participant']} or your private signing state changed after this request was prepared. "
+                             + usability.PREPARE_AGAIN)
         if fresh.minimum(packet["path"], headers["THREAD"].split("-")[0]) == "trusted" and fresh.state["pins"].get(headers["FROM"]) != fresh_head.fingerprint:
-            raise ValueError("outgoing scope requires a trusted signer")
+            raise ValueError(usability.unapproved_message(fresh, headers["FROM"], fresh_head, "outgoing scope requires a trusted signer") + ", then run signing publish again")
         if headers.get("REPLY-TO", "-") != "-":
             source = safe_path(s.board, str(path.parent.relative_to(s.board) / headers["REPLY-TO"]))
             source_headers = boardctl.check_message(source, fresh.board, fresh.config, boardctl.ids(fresh.registry))
-            if fresh.evaluate(source, source_headers)["eligibility"] != "eligible":
-                raise ValueError("reply source excluded by signing requirements")
+            decision = fresh.evaluate(source, source_headers)
+            if decision["eligibility"] != "eligible":
+                raise ValueError(usability.reply_source_message("reply source excluded by signing requirements",
+                                                                source.relative_to(s.board).as_posix(), decision, s.root))
             if "ANSWER-STATE" in headers:
                 import answer_state
                 claim = answer_state.metadata(headers, source_headers)
                 if hashlib.sha256(source.read_bytes()).hexdigest() != claim['questionDigest']:
-                    raise ValueError("ANSWER-STATE question bytes changed")
+                    raise ValueError("ANSWER-STATE question bytes changed. Next: prepare the request again so it records the question as it is now")
         latest[0] = fresh
     publish_atomic(sidecar, envelope, guard=recheck)
     # A failed message publication may leave an immutable harmless orphan sidecar.
@@ -150,8 +166,12 @@ def publish_atomic(path, raw, guard=None):
 
 def command(args):
     root = Path(args.path).resolve()
-    s = session(root, args.state_dir)
     action = args.signing_action
+    if action in ("keygen", "require", "check"):
+        result, code = usability.run(action, root, args)
+        print(json.dumps(result))
+        return code
+    s = session(root, args.state_dir)
     if action in ("profile", "transition", "update", "revoke"):
         result = administer(s, args)
     elif action == "adopt":
@@ -161,7 +181,9 @@ def command(args):
     elif action == "trust":
         head = current(s, args.participant)
         if head.fingerprint != args.fingerprint or head.envelope_sha256 != args.profile:
-            raise ValueError("explicit fingerprint/profile does not match verified current participant")
+            raise ValueError("explicit fingerprint/profile does not match verified current participant. "
+                             f"Next: {usability.cmd('boardctl', 'identity', 'inspect', args.participant, '--path', root)}, "
+                             "copy its fingerprint and profile, and compare the fingerprint with its owner through another channel before approving")
         s.state["pins"][args.participant] = head.fingerprint
         s.save()
         result = {"participant": args.participant, "fingerprint": head.fingerprint, "trust": "trusted"}
@@ -298,10 +320,25 @@ def administer(s, args):
 def add_parser(commands):
     cli = commands.add_parser("signing", help="Local trust/policy and portable explicit signing requests")
     actions = cli.add_subparsers(dest="signing_action", required=True)
-    for name in ("adopt", "trust", "untrust", "inspect", "respond", "publish", "profile", "transition", "update", "revoke"):
+    for name in ("adopt", "trust", "untrust", "inspect", "respond", "publish", "profile", "transition", "update", "revoke", "keygen", "require", "check"):
         sub = actions.add_parser(name)
         sub.add_argument("--path", default=".")
         sub.add_argument("--state-dir")
+        if name == "keygen":
+            sub.add_argument("--output", required=True, help="new private key file; must be outside the project and must not exist")
+            sub.add_argument("--participant", help="participant ID to fill into the printed next commands")
+        if name == "require":
+            target = sub.add_mutually_exclusive_group(required=True)
+            target.add_argument("--board", action="store_true", help="require for the whole board")
+            target.add_argument("--scope", help="physical folder such as rooms/releases or direct/a--b")
+            sub.add_argument("--thread", help="narrow --scope to one thread such as T001")
+            sub.add_argument("--minimum", choices=("trusted", "optional"), required=True)
+            sub.add_argument("--weaken", action="store_true", help="allow lowering an existing trusted requirement")
+        if name == "check":
+            sub.add_argument("--from", dest="sender", required=True, help="participant who would post")
+            sub.add_argument("--scope", required=True, help="physical folder such as rooms/releases or direct/a--b")
+            sub.add_argument("--thread", help="thread such as T001")
+            sub.add_argument("--signing-key-file", help="the private key file you would post with")
         if name == "adopt": sub.add_argument("--replace-floor", action="store_true", help="deliberately replace the private requirement floor after review")
         if name in ("trust", "untrust"): sub.add_argument("--participant", required=True)
         if name == "trust":
