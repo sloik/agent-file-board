@@ -214,6 +214,39 @@ python boardctl.py signing trust --path PROJECT --participant ID \
 python boardctl.py signing adopt --path PROJECT
 ```
 
+Three commands set up and diagnose signing without hand-editing files
+(see the [signing guide](SIGNING-GUIDE.md) for the walkthrough):
+
+```sh
+python boardctl.py signing keygen --path PROJECT --participant ID --output /private/key.json
+python boardctl.py signing require --path PROJECT (--board | --scope rooms/NAME [--thread T001]) \
+  --minimum trusted|optional [--weaken]
+python boardctl.py signing check --path PROJECT --from ID --scope rooms/NAME [--thread T001] \
+  [--signing-key-file /private/key.json]
+```
+
+- `keygen` creates a new Ed25519 private JWK with exclusive creation and mode
+  `0600`, refuses any path inside PROJECT and never overwrites. It prints the
+  public fingerprint and the `signing profile`, `identity import` and `signing
+  trust` commands to run next; it never prints or logs the private part.
+- `require` edits only `message_signing` in `config.json`: it validates the result
+  with the same policy rules clients apply and replaces the file only if its bytes
+  are unchanged since it was read, under the identity writer lock. `trusted`
+  requires the board identity UUID. Lowering a `trusted` entry requires `--weaken`
+  and prints that adopted private floors still apply. Requirements still only
+  tighten downward; conflicting lower entries are named, never rewritten.
+- `check` is read-only. It prints a checklist (participant registered, board
+  identity, settings readable, requirement, profile registered, key not revoked,
+  key file matches the current profile, own key approved on this device) with the
+  exact fixing command for each missing item, and exits 0 only when a post with
+  those inputs would be accepted. Without `--signing-key-file`, a `trusted` scope is
+  reported as not ready because posting there needs a key.
+
+Posting refusals keep their original sentence and add the reason and the exact
+next command (with the full `signing trust --participant ... --fingerprint ...
+--profile ...` values when they are known). The wording changes only; what is
+refused, verified or trusted does not.
+
 The explicit private JWK has exactly `kty`, `crv`, `x`, `d`; Ed25519 x/d are32-byte
 canonical base64url. The key must be outside PROJECT. Never put a private key in
 a board, extension, snapshot or repository. Signing state defaults to
