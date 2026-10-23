@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-047
 title: Room history checkpoint export, import, rebind and interoperability vectors (3.1)
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
@@ -39,7 +39,7 @@ External-signer inventories stay planned.
   state, key status, acknowledgement) with the expected observed state, source
   status and needsAttention. A test proves the Python implementation matches
   every vector; vectors are never rewritten by tests.
-- [ ] AC5: Formal alignment reviewed; RoomHistory traces and models still pass;
+- [x] AC5: Formal alignment reviewed; RoomHistory traces and models still pass;
   full unit suite passes; docs (design status table, README, CHANGELOG,
   CONVENTION, UPGRADING where relevant) consistent; released as canonical 3.1.0
   together with viewer 3.1.0 (shared MAJOR.MINOR).
@@ -55,3 +55,13 @@ External-signer inventories stay planned.
   acknowledged rows with trusted sources were labelled neutral.
 - Full suite 315 passed; RoomHistory TLC cases and 58 trace checks pass;
   alignment reviewed; `release-check --tag v3.1.0` ok; manifest supports 3.0.0.
+
+## Publication
+
+Canonical [v3.1.0](https://github.com/sloik/agent-file-board/releases/tag/v3.1.0)
+was published from protected merge ca36fcb after the required checks and the
+exact-tag Python 3.10–3.13 matrix (run 39927727689); all 256 files in the
+downloaded source ZIP match `git archive v3.1.0`. The viewer side (history display,
+SPEC-002-059 in agent-file-board-ui) ships in viewer 3.2.0, paired with canonical
+3.2.0, because the CLI signing commands also landed as a minor release and the
+viewer shares MAJOR.MINOR; no viewer 3.1.0 was released.
