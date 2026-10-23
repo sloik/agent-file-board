@@ -18,6 +18,7 @@ import boardctl
 import signing_commands as commands
 import signing_core as core
 import signing_runtime as runtime
+import signing_usability as usability
 import test_board_identity as fixtures
 from test_signing_runtime import SigningRuntimeTests as Runtime
 
@@ -128,9 +129,12 @@ class SigningUsabilityTests(unittest.TestCase):
         self.refuse("signing", "keygen", "--output", str(target), "--participant", "Bad Name", text="--participant")
         self.refuse("signing", "keygen", "--output", "/", text="new key file")
         self.assertFalse(target.exists())
-        with self.assertRaises(SystemExit) as raised, contextlib.redirect_stderr(io.StringIO()):
-            boardctl.main(["signing", "keygen", "--path", str(self.root)])
-        self.assertEqual(raised.exception.code, 2)
+        # Without --output the default file is named after the participant, so it is required.
+        home = self.key_home()
+        before = self.snapshot()
+        err = self.refuse("signing", "keygen", text="--participant is required without --output")
+        self.assertIn(f"Next: boardctl signing keygen --path {self.root} --participant YOUR-ID", err)
+        self.assertEqual((self.snapshot(), list(home.iterdir())), (before, []))
 
     def test_keygen_setup_path_reaches_a_required_signed_post(self):
         target = self.private / "owner.json"
@@ -384,7 +388,8 @@ class SigningUsabilityTests(unittest.TestCase):
         rows = self.rows(report)
         self.assertEqual(code, 2)
         self.assertIn("identity enable", rows["board identity enabled"]["fix"])
-        self.assertIn("signing keygen", rows["profile registered"]["fix"])
+        self.assertEqual(rows["profile registered"]["fix"],
+                         f"boardctl signing keygen --path {self.root} --participant {OWNER}, then the steps it prints")
         self.assertEqual(rows["key file matches current profile"]["status"], "not checked")
         self.assertEqual(self.try_post("noprof", sender=OWNER)[0], 2)
         # Unsigned posting still works without any of it.
@@ -495,7 +500,9 @@ class SigningUsabilityTests(unittest.TestCase):
         code, _, err = self.try_post("noprofile", sender=OWNER)
         self.assertEqual(code, 2)
         self.assertIn("unsupported participant identity locator. " + OWNER + " has no signing profile registered", err)
-        self.assertIn(f"signing keygen --output KEY_FILE --path {self.root} --participant {OWNER}", err)
+        hint = f"create a key with boardctl signing keygen --path {self.root} --participant {OWNER} and follow"
+        self.assertIn(hint, err)
+        self.assertNotIn("--output", err)
 
     def test_revoked_key_message_says_what_is_possible(self):
         self.trust()
@@ -507,6 +514,8 @@ class SigningUsabilityTests(unittest.TestCase):
         self.assertIn("current signing key is retired/compromised. The key " + old.fingerprint, err)
         self.assertIn("marked compromised", err)
         self.assertIn("independent recovery review", err)
+        self.assertIn(f"(boardctl signing keygen --path {self.root} --participant {self.participant})", err)
+        self.assertNotIn("KEY_FILE", err)
 
     def test_key_file_problems_name_the_file_and_never_echo_its_content(self):
         inside = self.root / "k.json"
@@ -617,6 +626,109 @@ class SigningUsabilityTests(unittest.TestCase):
         self.assertIn("explicit fingerprint/profile does not match verified current participant. Next: boardctl identity inspect " + self.participant, err)
         self.assertNotIn("signing trust --path", err)
         self.assertEqual(self.sess().state["pins"], {})
+
+    # SPEC-002-066 conventional key location -------------------------------
+
+    def key_home(self, key_dir=None):
+        """Point HOME (and optionally AGENT_FILE_BOARD_KEY_DIR) at temp folders; never the real ~/private."""
+        home = Path(tempfile.mkdtemp(dir=self.private)).resolve()
+        env = patch.dict("os.environ", {"HOME": str(home)})
+        env.start(); self.addCleanup(env.stop)
+        os.environ.pop("AGENT_FILE_BOARD_KEY_DIR", None)
+        if key_dir is not None:
+            os.environ["AGENT_FILE_BOARD_KEY_DIR"] = str(key_dir)
+        return home
+
+    def keygen_default(self, participant=OWNER):
+        code, out, err = self.run_ctl("signing", "keygen", "--participant", participant)
+        self.assertEqual(code, 0, err)
+        return json.loads(out)
+
+    def test_keygen_defaults_to_the_conventional_private_location(self):
+        home = self.key_home()
+        before = self.snapshot()
+        result = self.keygen_default()
+        target = home / "private/afb/example-project" / f"{OWNER}.json"
+        self.assertEqual(result["keyFile"], str(target))
+        self.assertEqual(self.snapshot(), before)
+        self.assertFalse(Path(result["keyFile"]).is_relative_to(self.root))
+        self.assertEqual(target.stat().st_mode & 0o777, 0o600)
+        for folder in (home / "private", home / "private/afb", target.parent):
+            self.assertEqual(folder.stat().st_mode & 0o777, 0o700, folder)
+        self.assertNotIn("warnings", result)
+        profile = shlex.split(result["next"][0])
+        self.assertEqual(profile[profile.index("--key-file") + 1], str(target))
+        self.assertEqual(profile[profile.index("--output") + 1], str(target.parent / f"{OWNER}-profile.json"))
+        self.assertIn(f"identity import {OWNER}", result["next"][1])
+        runtime.private_key(target, self.root)
+
+    def test_keygen_default_falls_back_to_the_folder_name_for_an_unusable_project_id(self):
+        for value in (None, "a/b", "..", "", 7):
+            with self.subTest(value=value):
+                home = self.key_home()
+                config = self.config()
+                if value is None:
+                    config["project"].pop("id")
+                else:
+                    config["project"]["id"] = value
+                self.config_path.write_text(json.dumps(config))
+                self.assertEqual(self.keygen_default()["keyFile"], str(home / "private/afb" / self.root.name / f"{OWNER}.json"))
+
+    def test_key_dir_variable_replaces_the_default_folder(self):
+        keys = self.private / "keys"
+        home = self.key_home(key_dir=keys)
+        result = self.keygen_default()
+        self.assertEqual(result["keyFile"], str(keys.resolve() / "example-project" / f"{OWNER}.json"))
+        self.assertEqual((keys.stat().st_mode & 0o777, (home / "private").exists()), (0o700, False))
+
+    def test_keygen_never_writes_the_default_key_inside_the_project(self):
+        for key_dir in (self.root / "keys", self.board / "keys", self.root):
+            with self.subTest(key_dir=key_dir):
+                self.key_home(key_dir=key_dir)
+                before, paths = self.snapshot(), sorted(self.root.rglob("*"))
+                err = self.refuse("signing", "keygen", "--participant", OWNER, text="must be outside the shared project")
+                self.assertIn("Next: set AGENT_FILE_BOARD_KEY_DIR to a private folder outside the project", err)
+                self.assertEqual((self.snapshot(), sorted(self.root.rglob("*"))), (before, paths))
+
+    def test_default_key_is_never_overwritten(self):
+        self.key_home()
+        first = self.keygen_default()
+        data = Path(first["keyFile"]).read_bytes()
+        err = self.refuse("signing", "keygen", "--participant", OWNER, text="already exists and is never overwritten")
+        self.assertIn(str(Path(first["keyFile"]).with_name(f"{OWNER}-new.json")), err)
+        self.assertEqual(Path(first["keyFile"]).read_bytes(), data)
+
+    def test_inside_project_refusal_suggests_the_conventional_command(self):
+        err = self.refuse("signing", "keygen", "--output", str(self.root / "k.json"), "--participant", OWNER,
+                          text="must be outside the shared project")
+        self.assertIn(f"Next: use the conventional private location: boardctl signing keygen --path {self.root} --participant {OWNER}", err)
+        self.assertFalse((self.root / "k.json").exists())
+
+    def test_keygen_warns_but_writes_when_the_key_folder_is_synced(self):
+        home = self.key_home()
+        explicit = self.private / "Dropbox (Team)" / "keys" / "me.json"
+        code, out, err = self.run_ctl("signing", "keygen", "--output", str(explicit), "--participant", OWNER)
+        self.assertEqual(code, 0, err)
+        result = json.loads(out)
+        self.assertEqual(explicit.stat().st_mode & 0o777, 0o600)
+        [warning] = result["warnings"]
+        self.assertIn("is inside a synced folder (Dropbox)", warning)
+        self.assertIn(f"prefer the conventional location {home / 'private/afb/example-project' / (OWNER + '.json')}", warning)
+        self.key_home(key_dir=self.private / "Library" / "Mobile Documents" / "afb")
+        result = self.keygen_default()
+        self.assertTrue(Path(result["keyFile"]).exists())
+        [warning] = result["warnings"]
+        self.assertIn("synced folder (Library/Mobile Documents)", warning)
+        self.assertIn("AGENT_FILE_BOARD_KEY_DIR points into a synced folder too", warning)
+
+    def test_synced_root_recognises_the_common_sync_folders(self):
+        for path, name in (("/Users/a/Dropbox/k.json", "Dropbox"), ("/Users/a/Library/CloudStorage/Dropbox/x/k.json", "Dropbox"),
+                           ("/Users/a/Library/Mobile Documents/com~apple~CloudDocs/k.json", "Library/Mobile Documents"),
+                           ("/Users/a/iCloud Drive/k.json", "iCloud Drive"), ("C:/Users/a/OneDrive - Org/k.json", "OneDrive"),
+                           ("/Users/a/Google Drive/k.json", "Google Drive"), ("/Users/a/Library/CloudStorage/GoogleDrive-a@b/k.json", "GoogleDrive"),
+                           ("/Users/a/private/afb/p/k.json", None), ("/Users/a/Documents/Mobile Documents/k.json", None)):
+            with self.subTest(path=path):
+                self.assertEqual(usability.synced_root(path), name)
 
 
 if __name__ == "__main__":

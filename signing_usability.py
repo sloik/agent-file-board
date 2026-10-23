@@ -17,6 +17,7 @@ import signing_core as core
 import signing_runtime as runtime
 
 PARTICIPANT = re.compile(r"[a-z][a-z0-9-]{2,63}\Z")
+SYNC_ROOTS = ("Dropbox", "iCloud Drive", "OneDrive", "Google Drive", "GoogleDrive")
 PREPARE_AGAIN = ("Next: prepare the request again with boardctl post ... --prepare-signing REQUEST_FILE, "
                  "then run signing respond and signing publish")
 
@@ -38,9 +39,38 @@ def trust_command(s, participant, head):
                "--fingerprint", head.fingerprint, "--profile", head.envelope_sha256, *state_flags(s))
 
 
-def keygen_command(root, participant, output="KEY_FILE"):
-    return cmd("boardctl", "signing", "keygen", "--output", output, "--path", root,
-               *(("--participant", participant) if participant else ()))
+def key_dir():
+    """Conventional private key folder: visible (file pickers hide dot-folders), never in the board."""
+    return Path(os.environ.get("AGENT_FILE_BOARD_KEY_DIR") or Path.home() / "private/afb").expanduser()
+
+
+def project_id(root):
+    try:
+        value = json.loads((Path(root) / ".agent-board/config.json").read_bytes())["project"]["id"]
+    except (OSError, ValueError, KeyError, TypeError):
+        value = None
+    safe = isinstance(value, str) and value not in ("", ".", "..") and not set(value) & {"/", "\\", "\0"}
+    return value if safe else Path(root).name or "project"
+
+
+def default_key_file(root, participant):
+    return key_dir() / project_id(root) / f"{participant}.json"
+
+
+def synced_root(path):
+    """Name of a known sync folder in path (prefix match: 'Dropbox (Team)', 'OneDrive - Org', 'GoogleDrive-a@b')."""
+    parts = Path(path).parts
+    for i, part in enumerate(parts):
+        if part == "Mobile Documents" and i and parts[i - 1] == "Library":
+            return "Library/Mobile Documents"
+        if found := next((name for name in SYNC_ROOTS if part.startswith(name)), None):
+            return found
+    return None
+
+
+def keygen_command(root, participant, output=None):
+    return cmd("boardctl", "signing", "keygen", "--path", root, "--participant", participant or "YOUR-ID",
+               *(("--output", output) if output else ()))
 
 
 def unapproved_message(s, participant, head, lead):
@@ -85,10 +115,10 @@ def no_profile_message(root, participant):
             f"(signing profile, identity import, signing trust)")
 
 
-def revoked_message(participant, fingerprint, status):
+def revoked_message(root, participant, fingerprint, status):
     return (f"current signing key is retired/compromised. The key {fingerprint} for {participant} was marked {status} "
             f"and cannot sign or be approved again. Next: ask the board owner for an independent recovery review, "
-            f"then register a replacement key (boardctl signing keygen --output KEY_FILE --participant {participant})")
+            f"then register a replacement key ({keygen_command(root, participant)})")
 
 
 def unsigned_message(s, relative, sender, thread):
@@ -122,16 +152,22 @@ def keygen(root, args):
     participant = args.participant
     if participant is not None and not PARTICIPANT.match(participant):
         raise ValueError("--participant must be a registered-style ID: lowercase letters, digits and hyphens, 3 to 64 characters, starting with a letter")
-    absolute = Path(os.path.abspath(Path(args.output).expanduser()))
+    if args.output is None and participant is None:
+        raise ValueError("--participant is required without --output: the default key file is named after it. "
+                         f"Next: {keygen_command(root, None)}, or pass --output KEY_FILE")
+    output = default_key_file(root, participant) if args.output is None else Path(args.output).expanduser()
+    absolute = Path(os.path.abspath(output))
     if not absolute.name:
         raise ValueError("--output must name a new key file")
     parent = absolute.parent.resolve()
     final = parent / absolute.name
     if ".agent-board" in final.parts or ((root / ".agent-board").is_dir() and (final == root or final.is_relative_to(root))):
-        raise ValueError(f"private signing keys must be outside the shared project. {final} is inside {root}. "
-                         "Next: choose a private folder, for example: boardctl signing keygen --output ~/private/afb/me.json")
+        fix = (f"use the conventional private location: {keygen_command(root, participant)}" if args.output is not None else
+               "set AGENT_FILE_BOARD_KEY_DIR to a private folder outside the project (or unset it), or pass --output KEY_FILE outside it")
+        raise ValueError(f"private signing keys must be outside the shared project. {final} is inside {root}. Next: {fix}")
     if os.path.lexists(final):
-        raise ValueError(f"{final} already exists and is never overwritten. Next: choose a new --output path, "
+        raise ValueError(f"{final} already exists and is never overwritten. Next: choose a new --output path "
+                         f"(for a replacement key, for example {final.with_name(final.stem + '-new.json')}), "
                          f"or keep using the existing key file")
     try:
         from cryptography.hazmat.primitives import serialization
@@ -144,7 +180,8 @@ def keygen(root, args):
     except ImportError as exc:
         raise ValueError("key creation unavailable; install requirements-signing.txt in the CLI Python environment") from exc
     data = json.dumps({"kty": "OKP", "crv": "Ed25519", "x": _b64(public), "d": _b64(seed)}).encode()
-    parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    for folder in reversed([p for p in (parent, *parent.parents) if not p.exists()]):
+        folder.mkdir(mode=0o700, exist_ok=True)
     try:
         owned = identity._publish(final, data, mode=0o600)
     except FileExistsError as exc:
@@ -156,7 +193,15 @@ def keygen(root, args):
         raise
     who = participant or "YOUR-ID"
     profile_file = final.with_name(final.stem + "-profile.json")
-    return {"keyFile": str(final), "mode": format(os.stat(final).st_mode & 0o777, "04o"), "fingerprint": fingerprint,
+    result = {"keyFile": str(final), "mode": format(os.stat(final).st_mode & 0o777, "04o"), "fingerprint": fingerprint}
+    if (synced := synced_root(final)) is not None:
+        default = default_key_file(root, who)
+        where = ("AGENT_FILE_BOARD_KEY_DIR points into a synced folder too: set it to a private folder that is not synced"
+                 if synced_root(default) else f"prefer the conventional location {default}")
+        result["warnings"] = [f"{final.parent} is inside a synced folder ({synced}), so the private key leaves this device. "
+                              f"Private keys belong in ~/private/afb/<project-id>/<participant-id>.json (AGENT_FILE_BOARD_KEY_DIR "
+                              f"replaces ~/private/afb); {where}, then create a new key there and delete this one"]
+    return {**result,
             "next": [
                 cmd("boardctl", "signing", "profile", "--path", root, "--participant", who, "--key-file", final, "--output", profile_file),
                 cmd("boardctl", "identity", "import", who, "--path", root, "--profile-file", profile_file, "--sha256", "PROFILE-SHA256"),

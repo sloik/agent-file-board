@@ -25,7 +25,7 @@ def current(s, participant):
     result = s.resolve(participant)
     head = result["head"]
     if head.fingerprint in result["revoked"]:
-        raise ValueError(usability.revoked_message(participant, head.fingerprint, result["revoked"][head.fingerprint]))
+        raise ValueError(usability.revoked_message(s.root, participant, head.fingerprint, result["revoked"][head.fingerprint]))
     return head
 
 
@@ -333,8 +333,8 @@ def add_parser(commands):
         sub.add_argument("--path", default=".")
         sub.add_argument("--state-dir")
         if name == "keygen":
-            sub.add_argument("--output", required=True, help="new private key file; must be outside the project and must not exist")
-            sub.add_argument("--participant", help="participant ID to fill into the printed next commands")
+            sub.add_argument("--output", help="new private key file outside the project; default ~/private/afb/PROJECT-ID/PARTICIPANT.json (AGENT_FILE_BOARD_KEY_DIR replaces ~/private/afb)")
+            sub.add_argument("--participant", help="participant ID: names the default key file and fills the printed next commands")
         if name == "require":
             target = sub.add_mutually_exclusive_group(required=True)
             target.add_argument("--board", action="store_true", help="require for the whole board")
