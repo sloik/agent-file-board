@@ -86,8 +86,11 @@ does not run it, and no arbitrary React DOM runtime is supported.
 
 Extension API version is **1.1.0** (backward compatible with SDK 1.0 packages that do not request shared-state access). Each constraint is an object with `range` and
 optional `exclude` list. Ranges are whitespace-separated comparisons, all of
-which must match: `>=2.4.0 <3.0.0`, `<=2.6.1`, or an exact `=2.5.0` / `2.5.0`.
-Exclusions list exact versions and take precedence. Up to eight comparisons
+which must match: `>=2.4.0 <4.0.0`, `<=2.6.1`, or an exact `=2.5.0` / `2.5.0`.
+Exclusions list exact versions and take precedence. A board's major release can
+make an older range incompatible for new messages (3.0.0 did so for `<3.0.0`);
+release a new package version with a wider range rather than editing an installed
+package. Up to eight comparisons
 and 32 exclusions are supported. V1 rejects prereleases, leading zeroes,
 wildcards, caret/tilde ranges and alternatives. Every numeric version component
 has at most seven digits. Both convention and API must match to install.

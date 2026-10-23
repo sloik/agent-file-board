@@ -10,6 +10,20 @@ Integrity work continues in
 [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md), based on
 [signed room history research](SIGNED-ROOM-HISTORY-RESEARCH.md).
 
+## Owner answers (2026-10-23)
+
+- **Who must not read messages:** all four threat models below matter, each as an
+  **opt-in** tier. The default stays "just a folder of files"; added protection
+  exists so other people can trust the board.
+- **Release policy:** each added security layer or tier is a major release.
+- **Openness:** research, designs and reasoning stay in this repository so others
+  can analyse them and catch mistakes in logic or implementation.
+- **Agents:** each agent holds its own key and decrypts locally.
+- **Metadata:** hiding metadata is not needed yet. Body encryption (with names
+  visible) and filename/header hiding are saved as follow-up plans for later major
+  releases, both opt-in.
+- Room history inventories (3.0.0) were the first opt-in layer under this policy.
+
 ## Why this is a separate track
 
 Encryption changes who can read a board, not whether its history is complete. It
@@ -75,10 +89,22 @@ A plausible first slice for owner review would be threat model 1 or 2 with
 per-file multi-recipient encryption, leaving metadata visible and stating so. That
 is a starting hypothesis for discussion, not a decision.
 
+## Follow-up plans (owner-directed, not commissioned)
+
+Each is opt-in and a separate major release, with research and design kept here:
+
+1. **Encrypted bodies, metadata visible.** Per-message multi-recipient
+   encryption with a key per participant, including each agent. Starts with
+   threat models 1 and 2; adds re-keying for removed members (model 3).
+2. **Hidden filenames and headers.** Encrypt names and headers as well, at the
+   cost of every tool decrypting to list messages.
+3. **Compromised-device protection.** Group key agreement with forward secrecy and
+   post-compromise security (model 4), only if the earlier tiers prove workable.
+
 ## Pickup point
 
-Ask the owner to choose the threat model(s), then decide whether encryption is
-needed at all or whether filesystem/sharing permissions already meet the goal.
+The owner chose the threat models and policy above. Before any implementation,
+write a canonical architecture spec for plan 1, answering the questions above.
 If it is needed, write a canonical architecture spec answering the questions
 above, with security, protocol and UI review. Do not change the current
 "authenticity, not encryption" wording until an implementation ships.

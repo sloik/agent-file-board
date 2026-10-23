@@ -1,7 +1,10 @@
 # Signed room history: detecting missing messages
 
-Status: research captured 2026-10-22 at the owner's request. Proposed direction,
-not an accepted wire format, implemented feature or authorization to build it.
+Status: research captured 2026-10-22 at the owner's request. The recommended
+direction was designed in [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md)
+and implemented in the canonical CLI in 3.0.0; see
+[room history inventories](SIGNED-ROOM-HISTORY.md). This note is kept as the
+original analysis.
 
 ## Recommendation and ownership
 
@@ -136,8 +139,9 @@ before any claim that both clients implement the same contract.
 signers establish expectations, advisory-only diagnostics in v1). These questions
 are now tracked as the acceptance criteria of
 [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md), still
-architecture only; the proposed answers are in the
-[inventory and checkpoint design](SIGNED-ROOM-HISTORY.md). Confidentiality is a separate track:
+architecture only; the answers are in the
+[inventory and checkpoint design](SIGNED-ROOM-HISTORY.md), implemented in 3.0.0 by
+[SPEC-002-046](../specs/SPEC-002-046-room-history-detection.md). Confidentiality is a separate track:
 [folder confidentiality research](FOLDER-CONFIDENTIALITY-RESEARCH.md).
 
 ## Primary sources

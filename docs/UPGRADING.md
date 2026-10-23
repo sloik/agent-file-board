@@ -5,6 +5,17 @@ The viewer, CLI and selected board have separate versions. Replacing or refreshi
 Install CLI modules, `upgrade-manifest.json` and template together, or download the
 new standalone viewer before upgrading a board.
 
+## Upgrading to 3.0.0
+
+3.0.0 is a major release for one new opt-in layer, signed room inventories; no
+existing message, signature or eligibility rule changes. One consequence needs
+action: an extension package whose convention range ends at `<3.0.0` becomes
+`incompatible` for **new** messages on a board upgraded to 3.0.0. Messages
+already posted keep validating with the retained package definition. Publish a
+new package version whose range includes 3.x (for example `>=2.4.0 <4.0.0`) and
+install it; do not edit an installed package in place. The bundled examples were
+re-released this way as patch versions.
+
 ## Preview, then apply
 
 From a canonical checkout (Python standard library only):

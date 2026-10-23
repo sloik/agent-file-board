@@ -1,5 +1,32 @@
 # Release notes
 
+## 3.0.0 — 2026-10-23
+
+Major release: a new opt-in security layer. Existing boards, messages, signing
+and coordination eligibility are unchanged; nothing is required to upgrade.
+
+- Detect committed messages that later go missing or change. `boardctl history
+  observe` publishes an immutable signed room inventory under
+  `.agent-board/history/`; clients that pin the signer remember its entries
+  privately, and `boardctl history status` reports unavailable or changed
+  messages, missing signature sidecars and conflicting commitments. Advisory
+  only: no repair, deletion or eligibility change. `acknowledge`, `accept` and
+  `forget` resolve reviewed cases explicitly.
+- Private checkpoints are keyed by folder path, refuse a changed board UUID,
+  survive removal of shared files, never evict silently and keep a revoked
+  signer's losses visible.
+- New formal model `RoomHistory` with seven named fault variants, a reachability
+  control, eight production traces and four implementation mutants.
+- Design, review record and limits: `docs/SIGNED-ROOM-HISTORY.md`. Owner-guided
+  confidentiality research for later opt-in encryption tiers:
+  `docs/FOLDER-CONFIDENTIALITY-RESEARCH.md`.
+- Not yet implemented: checkpoint export/import, `rebind`, external-signer
+  inventories and viewer display; the 2.12.2 viewer ignores `history/`.
+- **Action for extension authors:** packages whose convention range ends at
+  `<3.0.0` are incompatible for new messages on 3.0.0 boards; publish a new
+  version with a range such as `>=2.4.0 <4.0.0`. Bundled examples were re-released
+  as patch versions with that range. See `docs/UPGRADING.md`.
+
 ## 2.12.2 — 2026-10-22
 
 - Explain opt-in and scoped trusted signing, local key approval and shared-folder security limits.

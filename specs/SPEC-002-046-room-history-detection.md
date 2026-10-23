@@ -35,25 +35,46 @@ compatibility.
 
 ## Acceptance criteria
 
-- [ ] AC1: Deleting a covered message, its sidecar, or the newest message is
+- [x] AC1: Deleting a covered message, its sidecar, or the newest message is
   reported `message-unavailable` / `signature-evidence-unavailable` by a client
   that remembered a trusted inventory, after the inventory file itself is also
   deleted or replaced with an older one. Additions stay uncovered, not mismatched.
-- [ ] AC2: Untrusted, unpinned, invalid, misnamed and flooding inventories create
+- [x] AC2: Untrusted, unpinned, invalid, misnamed and flooding inventories create
   no expectations; pinning later lets valid ones count; budgets reported.
-- [ ] AC3: Revocation after deletion keeps the loss visible and counted in
+- [x] AC3: Revocation after deletion keeps the loss visible and counted in
   `needsAttention`; unpinned-only sources stay neutral; acknowledgements lapse on
   later change and cannot cover revoked sources.
-- [ ] AC4: Private checkpoint refuses a board UUID change at the same path,
+- [x] AC4: Private checkpoint refuses a board UUID change at the same path,
   survives shared removal, rejects stale concurrent saves and never evicts silently.
-- [ ] AC5: `observe` refuses existing anomalies, self-contradiction and invalid
+- [x] AC5: `observe` refuses existing anomalies, self-contradiction and invalid
   message signatures as designed; splits and merges observations; format vectors
   (sorting, duplicates, case aliases, scope, limits, unknown fields) are rejected.
-- [ ] AC6: Formal `RoomHistory` model passes; each named bad variant and the
+- [x] AC6: Formal `RoomHistory` model passes; each named bad variant and the
   reachability control produce their counterexamples; production traces conform
   and implementation mutants are rejected; alignment is current.
-- [ ] AC7: Documentation is consistent: design status, SIGNING-CORE, README,
+- [x] AC7: Documentation is consistent: design status, SIGNING-CORE, README,
   CONVENTION, CHANGELOG, formal README/STATUS, confidentiality research with
   owner answers. Full unit suite and formal suite pass.
 - [ ] AC8: 3.0.0 released through protected PR checks with an immutable tag and
   GitHub release; downloaded source verified against the tag.
+
+## Implementation evidence (2026-10-23)
+
+- `room_history.py`, `boardctl history`; 26 tests in `tests/test_room_history.py`.
+  Four planted defects (trusting an unpinned key, pins before revocation, lapse-free
+  acknowledgements, hidden deletions) each turned the suite red before restore.
+- Building the formal traces exposed one gap, fixed with a regression test: a
+  compromise published after an unpin was not learned, because scans only
+  re-resolved pinned signers.
+- `formal/RoomHistory.tla`: faithful config passes (20,800 states), seven named
+  fault configs and the reachability control fail on their invariants; eight
+  production traces conform and four implementation mutants are rejected. The full
+  local `formal/status.py` lane passed all five phases.
+- Full unit suite: 306 passed. `boardctl release-check --tag v3.0.0` ok; upgrade
+  manifest current with 2.12.2 as a supported source.
+- Viewer 2.12.2 compatibility checked in `board.html`: native reads walk only
+  room, direct, legacy, repair and identity paths; uploads use a path allowlist,
+  so `history/` is ignored.
+- Major-release consequence, owner decision 2026-10-23: extension ranges ending at
+  `<3.0.0` become incompatible for new messages; bundled examples re-released as
+  patch versions with `<4.0.0`; migration documented.

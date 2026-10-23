@@ -1,11 +1,13 @@
 # Signed room history: inventory and checkpoint design
 
-Status: **reviewed design proposal (security, protocol and UI reviews converged
-2026-10-23); not implemented.** Tracked by
-[SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md); builds on
-[signed room history research](SIGNED-ROOM-HISTORY-RESEARCH.md). Field names below
-are proposed and become normative only when an implementation spec adopts them.
-Nothing here changes current message signing, encryption wording or eligibility.
+Status: **implemented in the canonical CLI in 3.0.0** (opt-in, advisory) by
+[SPEC-002-046](../specs/SPEC-002-046-room-history-detection.md), following the
+reviewed design [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md)
+(security, protocol and UI reviews converged 2026-10-23); builds on
+[signed room history research](SIGNED-ROOM-HISTORY-RESEARCH.md). See
+[implementation status](#implementation-status-300) for what shipped and what is
+still a plan. Nothing here changes message signing, encryption wording or
+eligibility. The format is normative in the convention's "Signed room inventories".
 
 ## Goal and owner decisions
 
@@ -39,17 +41,18 @@ conversion by Git or sync tools, and sync conflicts can also cause it.
   messages posted after the last observation).
 - **Unfamiliar or invalid inventory**: displayed only; it creates nothing.
 
-## Operator quickstart (proposed)
+## Operator quickstart
 
 1. Trust the signer's key on this client: `boardctl signing trust ...` (existing).
-2. Record what is there now: `boardctl history observe --scope rooms/general ...`.
+2. Record what is there now:
+   `boardctl history observe --scope rooms/general --from YOUR-ID --signing-key-file KEY`.
    It runs a status check first and tells you whether its output will create
    expectations on this client.
 3. Check later: `boardctl history status` (or `--scope S` for one room).
    "Not set up" means nothing is protected yet; uncovered messages are listed as
    such.
-4. Optional: `boardctl history export` and keep the file elsewhere, so a fresh or
-   rebuilt client can import an independent anchor.
+4. Planned, not in 3.0.0: `boardctl history export` to keep an independent anchor
+   elsewhere. Until then, back up the private state directory.
 
 ## 1. Trust and bootstrap (AC1)
 
@@ -136,8 +139,8 @@ with `revoked`. Effects, applied per expectation:
 trusted inventories currently say. That protects against later loss but cannot
 reveal anything hidden before first contact; status reports `bootstrap:
 folder-only` with the exact text "seen from this folder only; removals before
-this client's first check cannot be detected". Importing an export changes it to
-`bootstrap: imported`.
+this client's first check cannot be detected". Importing an export (planned, not
+in 3.0.0) would change it to `bootstrap: imported`.
 
 **Lineage hint.** Inventories reference the same signer's earlier inventories for
 the same scope (`previous`, section 2). If a trusted inventory references a hash
@@ -290,9 +293,9 @@ mode `0600`, directory `0700`, outside the shared board.
 - **Keyed by folder path, with the board UUID recorded inside**, exactly like the
   signing state. If the shared `config.identity.boardId` changes, the stored UUID
   no longer matches and history refuses with a conflict instead of starting
-  empty. Moving a folder starts a new file; carry the checkpoint across with
-  `history rebind --from OLD_PATH`, which requires matching board UUIDs, or with
-  export and import.
+  empty. Moving a folder starts a new file. The planned `history rebind --from
+  OLD_PATH` (matching board UUIDs) and export/import will carry a checkpoint
+  across; in 3.0.0 a moved folder starts unprotected until observed again.
 - Trust always comes from the signing state for the same path, so two folder
   copies never share pins or source status.
 - A missing board UUID makes history unavailable, reported as
@@ -408,7 +411,8 @@ paths), `referenced-observation-unavailable`, `profile-evidence-unavailable`,
 `checkpoint-capacity-exhausted`, `history-unavailable`, pending inventories and
 whether the verification window was complete. When a scope is `not-set-up` but
 the private history directory holds a file with the same board UUID for another
-folder path, status suggests `history rebind --from OLD_PATH`.
+folder path, status will suggest `history rebind --from OLD_PATH` (planned with
+`rebind`).
 
 Rules:
 
@@ -443,21 +447,22 @@ inventory files. Per scan the client:
 
 ## 5. Diagnostics vocabulary (AC5)
 
-CLI (proposed); every command accepts `--path`, `--signing-state-dir` (default as
-for signing, including `AGENT_FILE_BOARD_STATE_DIR`) and `--json`:
+CLI as shipped in 3.0.0. Every command accepts `--path` and `--state-dir` (the
+same private base as `signing`, default `AGENT_FILE_BOARD_STATE_DIR` or the XDG
+state directory) and prints one JSON object on success:
 
 ```sh
-boardctl history observe --scope S (--signing-key-file KEY | --prepare-signing REQ) [--full] [--accept-anomalies]
+boardctl history observe --scope S --from PARTICIPANT --signing-key-file KEY [--full] [--accept-anomalies]
 boardctl history status  [--scope S] [--strict]
-boardctl history export  --output FILE
-boardctl history import  --file FILE --sha256 EXPECTED
+boardctl history acknowledge --message rooms/ROOM/FILE.txt --reason TEXT
 boardctl history accept  --observation HASH --reason TEXT
-boardctl history acknowledge --path P --reason TEXT
 boardctl history forget  (--scope S | --observation HASH) --reason TEXT [--yes]
-boardctl history rebind  --from OLD_PATH
 ```
 
-Exit codes follow existing `boardctl` conventions:
+Planned, not in 3.0.0: `export`, `import`, `rebind` and `--prepare-signing`.
+
+Exit codes follow existing `boardctl` conventions, where every refusal or error
+exits `2` with a message on standard error and no JSON:
 
 - `status`: `2` when:
   - any checked scope is `history-unavailable`;
@@ -468,15 +473,17 @@ Exit codes follow existing `boardctl` conventions:
   - the verification window was incomplete;
   - a scope named with `--scope` is `not-set-up`, or no scope is set up at all.
 
-  `0` otherwise; `1` command error. Without `--scope`, rooms that have never been
+  `0` otherwise. Without `--scope`, rooms that have never been
   observed are listed as `not-set-up` but do not cause `2` once at least one
   scope is set up. Uncovered messages are normal on an active room and do not
   cause `2`. `--strict` makes both cause `2`.
-- Other commands: `0` done; `2` refused (`observe` safeguards, hash mismatch,
-  board UUID conflict, capacity, `accept` of a revoked or invalid inventory,
-  `forget` without `--yes`); `1` command error.
+- Other commands: `0` done; `2` refused or failed (`observe` safeguards, hash
+  mismatch, board UUID conflict, capacity, `accept` of anything but a verified
+  unfamiliar signer's inventory, invalid input). `forget` without `--yes` prints
+  what it would drop as JSON and exits `2`.
 
-`status --json` per scope: `bootstrap` (`folder-only` or `imported`), `coverage`
+`status` reports `bootstrap` (`folder-only` in 3.0.0, with the exact note text)
+and, per scope: `setUp`, `diagnostics`, `coverage`
 (`expected`, `available`, `uncovered`), `lastObservedLocal`, `summary` (count per
 observed state and per source status), `needsAttention` (count of `changed` and
 `conflicting-commitments`, plus any non-`available` expectation with at least
@@ -491,7 +498,7 @@ escalate long-unavailable messages automatically; `unavailableSince` lets
 operators judge. State names are the portable vocabulary; the viewer translates
 labels.
 
-**Export format.** One JSON file: `version`, `boardId`, `inventories` (base64
+**Export format (planned, not in 3.0.0).** One JSON file: `version`, `boardId`, `inventories` (base64
 envelope bytes) and `profiles` (base64 profile envelope bytes), at most 48 MiB
 (the 32 MiB raw checkpoint budget after base64 expansion) and 20,000
 inventories. `--sha256` is the SHA-256 of the exact file bytes, obtained out of
@@ -521,13 +528,35 @@ notification or unread effect. The panel links to "what this does not protect"
 (section 8), as signing help does. The viewer design is a UI-repository
 follow-up of this contract.
 
+## Implementation status (3.0.0)
+
+| Design element | 3.0.0 |
+| --- | --- |
+| Inventory format, payload type, limits, grammar, case-alias and scope rules | Implemented (`room_history.py`) |
+| `observe` with safeguards, delta, split parts, merge observations, `--full` | Implemented |
+| Private path-keyed checkpoint, UUID refusal, lock and expected-byte save, quotas, tombstones | Implemented |
+| Per-key source status, observed-state precedence, acknowledgement overlay | Implemented |
+| Flood budget (name equals hash, invalid-only cache, prefilter, 200 / 16 MiB window) | Implemented |
+| `status`, `acknowledge`, `accept`, `forget` | Implemented |
+| Learning compromise for unpinned signers during scans | Implemented (found while building the formal traces) |
+| Checkpoint export and import, `bootstrap: imported` | Planned |
+| `rebind` and the rebind hint | Planned |
+| External signer flow for inventories | Planned |
+| Viewer display | Planned; the 2.12.2 viewer ignores `history/` (native reads walk only room, direct, repair and identity paths; uploads use an allowlist) |
+| Formal model | Implemented as `formal/RoomHistory.tla` (section 6) |
+
+Unit tests: `tests/test_room_history.py`. Formal: `python3 formal/check.py` and
+`python3 formal/check_traces.py`.
+
 ## 6. Formal model scope (AC6)
 
 Remembered expectations are monotonic private security state, like the trusted
 floors and learned compromise modelled in the existing `formal/PrivateState.tla`.
-Proposed: a sibling model `formal/RoomHistory.tla` within the existing 90-second
-control budget, with trace collectors from the real implementation and entries in
-`formal/trace_contracts.json` and `formal/alignment.json`, as for the other models.
+Implemented as the record-style model `formal/RoomHistory.tla` (two messages,
+one signer key; about two seconds in TLC), with the production trace collector
+`formal/collect_room_history.py` and entries in `formal/trace_contracts.json` and
+`formal/alignment.json`. The model checks the invariants below as named
+operators plus `ReportsConsistent` (reports equal the faithful projection).
 
 Invariants:
 
@@ -552,50 +581,53 @@ Invariants:
 - `OrderIndependent`: the final checkpoint and reported states do not depend on
   the order inventories are verified in.
 
-Bad variants that must fail: `TrustUntrusted`, `ResetOnSharedRemoval`,
-`ReplayReplacesCheckpoint`, `SilentEviction`, `AdditionAsMismatch`,
-`RevocationHidesLoss`, `UnpinShadowsRevocation`, `AckHidesLaterChange`,
-`UnlockedCompareReplace`.
+Bad variants that fail with their named counterexample: `TrustUntrusted`,
+`ResetOnSharedRemoval`, `ReplayReplacesCheckpoint`, `AdditionAsMismatch`,
+`RevocationHidesLoss`, `UnpinShadowsRevocation`, `AckHidesLaterChange`; the
+reachability control `NeverDetects` must also fail. `UnlockedCompareReplace` is
+covered by the existing `PrivateState` and `PrivateRecovery` models, because history
+saves reuse the same lock and expected-byte replacement. `SilentEviction` and
+order independence are not modelled: there is no eviction to model, and capacity
+refusal is unit-tested. Implementation mutants rejected by trace conformance:
+trusting an unpinned signer, checking pins before revocation, acknowledgements
+that never lapse, and clearing expectations when shared history disappears.
 
 The model also covers tip consumption with merge observations (lineage never
 dropped, tips eventually reduced to one) and the per-key status order with
 best-of activity and worst-of attention.
 
-## 7. Acceptance fixtures for the implementation spec (AC7)
+## 7. Acceptance fixtures (AC7)
 
-Frozen fixtures under `tests/fixtures/room-history/` using the published RFC 8032
-test seed only, shared by Python and browser tests:
+Implemented in 3.0.0 as `tests/test_room_history.py` against real signed boards,
+using the published RFC 8032 test seed only. Covered:
 
-- Removal of a middle message, the newest message, a sidecar, an inventory (with
-  and without a referencing later inventory) and a whole writer's messages.
-- Old valid snapshot replayed with an older folder copy.
-- Clean-client bootstrap without an anchor, and with an imported checkpoint,
-  including one whose key was later rotated.
-- Delayed and reordered sync: inventory before messages, sidecar before message.
-- Concurrent posts and concurrent inventories from two writers and from two
-  devices of one participant (more than one tip).
-- Legitimate additions after an inventory (uncovered, not mismatched).
-- Conflicting commitments from two trusted signers, including `null` versus a
-  bound sidecar.
-- Key rotation, retirement, compromise revocation after deletion, and pin removal.
-- Private state loss, board UUID change at the same path, folder move with and
-  without `rebind`, capacity and per-signer quota exhaustion.
-- Flooding: many junk and misnamed inventory files, budget exhaustion reported.
+- Removal of a middle message, the newest message and a sidecar, after the
+  inventory files were also removed; changed bytes and a replaced sidecar.
+- An older shared copy (older inventory and folder) replayed after a newer
+  observation; shared history removal.
+- Legitimate additions (uncovered, not mismatched; `--strict` fails).
+- Unpinned signers creating nothing until pinned; misnamed, junk and flooding
+  inventories with budget exhaustion and completion reported; candidate order.
+- Compromise revocation after deletion, revocation learned after an unpin, pin
+  removal not shadowing revocation, unpinned-only sources neutral.
+- Acknowledgement bound to the reviewed state, re-commit by the same signer,
+  lapse on a later change, refusal for revoked sources.
 - `observe` refusals: existing anomalies, self-contradiction, invalid message
-  signature.
-- Per-path `acknowledge` followed by `observe` by the same signer listing the
-  new bytes (allowed, no conflict); a later change lapsing the acknowledgement;
-  acknowledgement attempts covering a revoked source (refused);
-  `--accept-anomalies` recording each accepted anomaly.
-- Source status combinations: rotation A to B, pin removal, revocation, and
-  mixed sources resolving to the best status.
-- More than 16 tips, merge observations, split full snapshots, and two files
-  differing only by letter case on a case-sensitive filesystem.
-- An unpinned signer's inventories becoming trusted after the key is pinned.
-- Inventory format vectors: exact PAE, sorting, duplicates, case-folded aliases,
-  path escapes, wrong scope or direct directory, foreign `previous`, size and
-  node limits, wrong payload type, unknown fields, uppercase hex.
-- State precedence: every combination in section 4 resolves to the same row.
+  signature, and `--accept-anomalies` recording each anomaly.
+- Split parts chained, merge observations of several tips, nothing-new runs,
+  `referenced-observation-unavailable` for a fresh client.
+- Board UUID change refused, stale concurrent save refused, file mode `0600`,
+  capacity exhaustion reported, `forget` needing `--yes` and leaving a tombstone,
+  `accept` limited to unfamiliar signers.
+- Inventory format vectors: sorting, duplicates, case aliases, scope and path
+  escapes, hex case, byte counts, unknown fields, locators, board, previous,
+  version, entry limit, merge rules, payload-type separation, tampered payloads.
+- CLI invalid input and a colliding direct directory.
+
+Planned with the remaining features: imported checkpoints, rebind, folder moves,
+conflicting commitments from two different trusted signers, key rotation and
+retirement combinations, more than 16 tips, case-only aliases on a
+case-sensitive filesystem, and shared frozen Python/browser vectors.
 
 Interoperability: Python and browser must agree on verification results, observed
 states, source statuses and scope diagnostics for every fixture before either is
@@ -608,7 +640,8 @@ described as implementing the contract.
 - No proof of completeness or freshness; an inventory is one signer's observation.
 - A fresh folder-only client cannot detect anything removed before first contact,
   nor removal of a signer's newest observation.
-- Losing private history state loses its protection; keep exports elsewhere.
+- Losing private history state loses its protection; back up the private state
+  directory (exports are planned).
 - A trusted signer, or a thief holding its key before revocation is learned, can
   sign misleading observations, including ones that raise false "unavailable"
   reports. Signatures prove who observed, not that it is accurate.

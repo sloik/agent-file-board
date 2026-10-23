@@ -207,3 +207,31 @@ filesystem durability, UI rendering, global offline linearizability or all possi
 implementation executions. Readers must receive the same complete evidence and
 eligibility to claim convergence. See the answer-acceptance guide and reviewed
 alignment registry; PR/main and weekly formal jobs use the existing status runner.
+
+## RoomHistory
+
+`RoomHistory.tla` models opt-in room inventories (3.0.0): one signer key, a message
+present at the start and one posted later. Each step is an environment or CLI
+action (observe, post, delete, edit, restore, acknowledge, shared removal,
+replay of an older shared copy, compromise revocation, unpin, repin, forget), and
+every step recomputes the reports exactly as each `history status` run does.
+Ghost fields record listings vouched for by a trusted key, listings published
+while unpinned, everything ever expected and coverage deliberately dropped.
+
+Invariants: `NoLostExpectation`, `UntrustedCreatesNothing`,
+`AdditionsNeverMismatch`, `ObservationNeverHidden`, `RevokedAlwaysAttention`,
+`AckBoundToObserved` and `ReportsConsistent`. Seven configurations inject a named
+fault and must fail on its invariant: `TrustUntrusted`, `ResetOnSharedRemoval`,
+`ReplayReplacesCheckpoint`, `AdditionAsMismatch`, `RevocationHidesLoss`,
+`UnpinShadowsRevocation` and `AckHidesLaterChange`. `RoomHistoryReachable` must
+find a detected deletion, so an always-silent model cannot pass.
+
+`collect_room_history.py` drives the real `boardctl history` commands on signed
+synthetic boards for eight scenarios and records observed files, private
+expectations and reports. Four implementation mutants (trusting an unpinned
+signer, checking pins before revocation, acknowledgements that never lapse,
+clearing expectations when shared history disappears) must be rejected. Private
+saves reuse the lock and expected-byte replacement covered by `PrivateState` and
+`PrivateRecovery`. Sidecar loss, conflicting commitments, several sources,
+flooding budgets, capacity and format rules are unit-tested in
+`tests/test_room_history.py`, not modelled.

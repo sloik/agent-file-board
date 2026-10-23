@@ -33,7 +33,7 @@ def package():
     guide = "A proposal requests review; an approved answer does not execute a purchase."
     files["guide.md"] = {"encoding": "utf-8", "data": guide, "sha256": hashlib.sha256(guide.encode()).hexdigest()}
     return {"format": 1, "id": "com.example.approvals", "version": "1.0.0", "name": "Example approvals",
-            "compatibility": {"convention": {"range": ">=2.4.0 <3.0.0", "exclude": ["2.5.2"]}, "api": {"range": ">=1.0.0 <2.0.0"}},
+            "compatibility": {"convention": {"range": ">=2.4.0 <4.0.0", "exclude": ["2.5.2"]}, "api": {"range": ">=1.0.0 <2.0.0"}},
             "capabilities": [], "files": files,
             "convention": {"contracts": [{"id": "com.example.approvals/request", "version": "1.0.0", "schema": "request.json", "answerSchema": "answer.json", "guidance": "guide.md", "examples": ["example.json"]}]}}
 
