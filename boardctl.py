@@ -210,6 +210,7 @@ def command_post(args: argparse.Namespace) -> int:
     if explicit_title is not None:
         explicit_title = topic_title(explicit_title.strip())
     current = resolve_topic(directory, args.thread, config)
+    declaration = creation_declaration(args, directory, current, root)
     label = current["label"] if current else getattr(args, "thread_label", args.slug)
     if explicit_title is not None:
         label = re.sub(r"[^a-z0-9]+", "-", explicit_title.lower()).strip("-") or "topic"
@@ -292,9 +293,13 @@ def command_post(args: argparse.Namespace) -> int:
     headers.extend(f"{key}: {value}" for key, value in extra.items())
     payload = ("\n".join(item for item in headers if item) + f"\n---\n{body.rstrip()}\n").encode("utf-8")
     import signing_commands
-    signing = signing_commands.session(root, getattr(args, "signing_state_dir", None))
     key_file = getattr(args, "signing_key_file", None)
     request_file = getattr(args, "prepare_signing", None)
+    scope_name = directory.relative_to(board).as_posix()
+    if declaration:
+        declare_policy(args, root, scope_name, declaration, key_file, request_file)
+        config = load_json(board / "config.json")
+    signing = signing_commands.session(root, getattr(args, "signing_state_dir", None))
     minimum = signing.minimum(path.relative_to(board).as_posix(), args.thread)
     if "ANSWER" in extra or "ANSWER-STATE" in extra or "EXTENSION-ANSWER" in extra:
         source_headers = check_message(target, board, config, known)
@@ -315,9 +320,12 @@ def command_post(args: argparse.Namespace) -> int:
             import board_identity
             board_identity._publish(request_path, json.dumps(packet).encode())
             print(json.dumps({"signingRequest": str(request_path), "published": False}))
+            history_notices(root, args, config, scope_name, None, "signing request for an external signer")
             return 0
         published = signing_commands.publish(signing, packet, envelope)
         print(published.relative_to(root))
+        # Recording runs after publication: a recording failure never loses the message.
+        history_notices(root, args, config, scope_name, key_file)
         warn_agent_presence(root, board, registry, args.sender, known)
         return 0
     if minimum == "trusted":
@@ -332,6 +340,7 @@ def command_post(args: argparse.Namespace) -> int:
     finally:
         temporary.unlink(missing_ok=True)
     print(path.relative_to(root))
+    history_notices(root, args, config, scope_name, None, "unsigned post")
     if "UI" in extra:
         from extended_static_reports import gallery_hint
         hint = gallery_hint(json.loads(extra["UI"]))
@@ -340,6 +349,59 @@ def command_post(args: argparse.Namespace) -> int:
     if not getattr(args, "presence_notice", False):
         warn_agent_presence(root, board, registry, args.sender, known)
     return 0
+
+
+def creation_declaration(args: argparse.Namespace, directory: Path, current, root: Path) -> list[str]:
+    """Check --new-room/--new-thread assertions; return the policy flags this creating post declares."""
+    new_room, new_thread = getattr(args, "new_room", False), getattr(args, "new_thread", False)
+    declared = [flag for flag, on in (("--require-signing", getattr(args, "require_signing", None)),
+                                      ("--record-history", getattr(args, "record_history", False))) if on]
+    explicit = (f"boardctl signing require --path {shlex.quote(str(root))} --scope SCOPE [--thread T] --minimum trusted"
+                f" / boardctl history policy --path {shlex.quote(str(root))} --scope SCOPE [--thread T] --record on-post")
+    if new_room and new_thread:
+        raise BoardError("choose --new-room or --new-thread, not both")
+    if declared and not (new_room or new_thread):
+        raise BoardError(f"{' and '.join(declared)} declare policy for a room or thread that this post creates: add --new-room or --new-thread. "
+                         f"To change an existing room or thread, use the explicit commands: {explicit}")
+    if new_room and args.scope != "room":
+        raise BoardError("--new-room applies to ROOM posts; for a direct conversation use --new-thread")
+    if new_room and directory.is_dir() and any(p.is_file() for p in directory.glob("*.txt")):
+        raise BoardError(f"--new-room: room {args.room} already has messages, so this post does not create it. "
+                         f"Post without --new-room; to change its policy use the explicit commands: {explicit}")
+    if new_thread and current is not None:
+        raise BoardError(f"--new-thread: thread {args.thread} already has messages here, so this post does not create it. "
+                         f"Post without --new-thread; to change its policy use the explicit commands: {explicit}")
+    return declared
+
+
+def declare_policy(args, root: Path, scope: str, declared: list[str], key_file, request_file) -> None:
+    """Write the creation-time policy before publishing, so the first message is already under it."""
+    import history_recording
+    import signing_commands
+    import signing_usability
+    thread = args.thread if getattr(args, "new_thread", False) else None
+    state_dir = getattr(args, "signing_state_dir", None)
+    try:
+        history_recording.preflight(signing_commands.session(root, state_dir), args.sender, key_file,
+                                    request_file, " and ".join(declared), record=getattr(args, "record_history", False))
+    except ValueError as exc:
+        raise BoardError(f"refused before writing anything: {exc}") from exc
+    if getattr(args, "require_signing", None):
+        result, _ = signing_usability.require(root, argparse.Namespace(
+            minimum=args.require_signing, scope=scope, thread=thread, board=False, weaken=False, state_dir=state_dir))
+        if result["changed"]:
+            print(f"policy: {result['target']} now requires trusted signatures (config.json message_signing)", file=sys.stderr)
+    if getattr(args, "record_history", False):
+        result = history_recording.declare(root, scope, thread, True)
+        if result["changed"]:
+            print(f"policy: {result['target']} now records room history on every signed post (config.json room_history)", file=sys.stderr)
+
+
+def history_notices(root: Path, args, config: dict, scope: str, key_file, why_unsigned=None) -> None:
+    import history_recording
+    for line in history_recording.after_post(root, getattr(args, "signing_state_dir", None), config, scope,
+                                             args.thread, args.sender, key_file, why_unsigned):
+        print(line, file=sys.stderr)
 
 
 def header_lines(path: Path):
@@ -808,6 +870,10 @@ def parser() -> argparse.ArgumentParser:
     post.add_argument("--ui-file", help="board-report JSON data file; requires readable body fallback")
     post.add_argument("--answer-state-file", help="Explicit shared acceptance record JSON; normally use answers accept")
     post.add_argument("--answer-file", help="JSON legacy choice or version2/3 typed answer file; requires --reply-to")
+    post.add_argument("--new-room", action="store_true", help="assert this post creates the room; policy flags then apply to the room")
+    post.add_argument("--new-thread", action="store_true", help="assert this post creates the thread; policy flags then apply to the thread")
+    post.add_argument("--require-signing", choices=("trusted",), help="with --new-room/--new-thread: require trusted signatures there (message_signing)")
+    post.add_argument("--record-history", action="store_true", help="with --new-room/--new-thread: record signed room history on every signed post there (room_history)")
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
     repair = commands.add_parser("repair"); repair.add_argument("--path", default="."); repair.add_argument("--message", required=True); repair.add_argument("--by", dest="actor", required=True); repair.add_argument("--reason", required=True); repair.add_argument("--replacement-file"); repair.set_defaults(func=command_repair)

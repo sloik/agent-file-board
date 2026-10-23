@@ -89,6 +89,16 @@
           "tests",
           "-p",
           "test_room_history.py"
+        ],
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_history_recording.py"
         ]
       ],
       "timeout": 180

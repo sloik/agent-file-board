@@ -63,7 +63,7 @@ states the maintained abstraction and the remaining correspondence boundary.
 | Canonical / Publication | Bounded two-client publication authorization, retries and crash windows | Eight actual prepare/guard/commit traces, two implementation mutants, four TLC configs |
 | Canonical / PrivateRecovery | Normal/no-op/stale/error saves, orphan/crash refusal and inspected retry | Seven actual runtime/filesystem traces, two implementation mutants, four TLC configs |
 | UI and Canonical / AnswerAcceptance (independently verified in each repository) | First accepted answer, concurrent roots, explicit conflict resolution and signing eligibility | Nine positive implementation traces, four implementation mutants, six TLC configs per repository |
-| Canonical / RoomHistory | Trusted inventories, deletion/edit detection, shared removal and replay, revocation and pins, acknowledgement lapse, forget | Eight production CLI traces, four implementation mutants, nine TLC configs |
+| Canonical / RoomHistory | Trusted inventories, deletion/edit detection, shared removal and replay, revocation and pins, acknowledgement lapse, forget, automatic recording on signed posts | Eleven production CLI traces, six implementation mutants, nine TLC configs |
 
 The UI and canonical repositories each verify their own AnswerAcceptance model
 and implementation bridge independently. Exact current case and trace inventories

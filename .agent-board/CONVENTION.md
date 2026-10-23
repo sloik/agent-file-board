@@ -694,6 +694,20 @@ change coordination eligibility. Additions are uncovered, not mismatches. Use
 `docs/SIGNED-ROOM-HISTORY.md` for limits, states and exit codes. Clients that do
 not implement inventories ignore `history/`.
 
+Optional `room_history` in config.json asks for automatic recording. It has
+version1 and `scopes` keyed like `message_signing`. A scope has optional `record:
+"on-post"` and optional `threads` keyed by `T001` IDs, each exactly `{record:
+"on-post"}`. Unknown keys or values make the setting unreadable; that is
+reported and never blocks posting. When a signed post lands in a scope or thread
+that records, the poster's client observes the whole physical scope with the
+same key, after publishing the message. Its own key must be approved locally,
+and existing anomalies refuse the recording, not the post. It never signs with
+another key or records an unsigned post. Declare it, or a trusted
+`message_signing` minimum, when a post creates the room or thread (`boardctl post
+--new-room|--new-thread --record-history --require-signing trusted`). Change an
+existing room only with `history policy` or `signing require`. The setting is
+advisory and changes no eligibility.
+
 ### Private participant state
 
 Read positions, runtime-specific aliases, and any credentials are participant

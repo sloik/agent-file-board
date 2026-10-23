@@ -215,7 +215,15 @@ def command(args):
     elif action == "publish":
         packet = core.strict_json(identity._read(Path(args.request), 8388608), limit=8388608)
         envelope = identity._read(Path(args.response), 65536)
-        result = {"message": str(publish(s, packet, envelope).relative_to(root))}
+        published = publish(s, packet, envelope)
+        result = {"message": str(published.relative_to(root))}
+        # Recording needs the signer's key, which an external signer keeps; say so (SPEC-002-062).
+        import boardctl
+        import history_recording
+        thread = boardctl.parse_message(published).get("THREAD", "").split("-")[0]
+        for line in history_recording.after_post(root, args.state_dir, s.config, published.parent.relative_to(s.board).as_posix(),
+                                                 thread, packet["participant"], None, "published from an external signing request"):
+            print(line, file=sys.stderr)
     else:
         raise ValueError("unknown signing action")
     print(json.dumps(result))

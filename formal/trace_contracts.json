@@ -125,13 +125,18 @@
         "history: untrusted then pinned",
         "history: revocation after deletion",
         "history: acknowledgement lapses",
-        "history: forget drops coverage"
+        "history: forget drops coverage",
+        "history: record on post",
+        "history: record on post refused by anomaly",
+        "history: record on post while unpinned"
       ],
       "mutants": [
         "history mutant: trusts unpinned signer",
         "history mutant: revocation not first",
         "history mutant: acknowledgement never lapses",
-        "history mutant: shared removal resets checkpoint"
+        "history mutant: shared removal resets checkpoint",
+        "history mutant: record on post blesses anomalies",
+        "history mutant: record on post with unapproved own key"
       ]
     }
   }

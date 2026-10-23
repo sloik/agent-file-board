@@ -935,8 +935,10 @@ def command(args):
     action = args.history_action
     code = 0
     if action == "status":
+        import history_recording
         checkpoint = Checkpoint(s)
         result, code = checkpoint.status([args.scope] if args.scope else None, strict=args.strict)
+        history_recording.annotate(result, checkpoint, s.config)
         checkpoint.save()
         s.save()
     elif action == "observe":
@@ -953,6 +955,9 @@ def command(args):
         result = import_checkpoint(s, args.file, args.sha256, args.state_dir)
     elif action == "rebind":
         result = rebind(s, args.source)
+    elif action == "policy":
+        import history_recording
+        result = history_recording.declare(root, args.scope, args.thread, args.record == "on-post", args.weaken)
     else:
         raise HistoryError("unknown history action")
     print(json.dumps(result))
@@ -962,7 +967,7 @@ def command(args):
 def add_parser(commands):
     cli = commands.add_parser("history", help="Opt-in signed room inventories: detect missing or changed messages (advisory)")
     actions = cli.add_subparsers(dest="history_action", required=True)
-    for name in ("observe", "status", "acknowledge", "accept", "forget", "export", "import", "rebind"):
+    for name in ("observe", "status", "acknowledge", "accept", "forget", "export", "import", "rebind", "policy"):
         sub = actions.add_parser(name)
         sub.add_argument("--path", default=".")
         sub.add_argument("--state-dir")
@@ -996,4 +1001,10 @@ def add_parser(commands):
             sub.add_argument("--sha256", required=True)
         if name == "rebind":
             sub.add_argument("--from", dest="source", required=True, help="the folder path before it moved")
+        if name == "policy":
+            sub.add_argument("--scope", required=True, help="rooms/<room> or <direct directory>/<pair>")
+            sub.add_argument("--thread", help="limit the setting to one thread, such as T001")
+            sub.add_argument("--record", choices=("on-post", "off"), required=True,
+                             help="on-post: every signed post records the room with the poster's own key")
+            sub.add_argument("--weaken", action="store_true", help="confirm turning recording off")
         sub.set_defaults(func=command)

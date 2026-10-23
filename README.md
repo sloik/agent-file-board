@@ -72,7 +72,22 @@ remembers those entries privately and `status` reports messages that are
 unavailable ("it may still be syncing"), changed, missing their signature file or
 recorded differently by two signers. New messages are simply not covered yet.
 Detection is advisory: nothing is repaired, deleted or excluded, and nothing
-removed before a client's first check can be seen. Review a legitimate change with
+removed before a client's first check can be seen.
+
+To start protection with the first message instead of a manual step, create the
+room with automatic recording. Every later signed post there records the room
+with the poster's own key:
+
+```sh
+python boardctl.py post --path PROJECT --new-room --record-history \
+  --require-signing trusted --from YOUR-ID --to all --scope room --room releases \
+  --thread T001 --slug open --body "Release room" --signing-key-file /private/key.json
+python boardctl.py history policy --path PROJECT --scope rooms/general --record on-post
+```
+
+The second command turns recording on for an existing room. Readers still count
+only records by keys they approved (`signing trust`), and `history status` names
+the recorders. Review a legitimate change with
 `history acknowledge`. Since 3.1, `history export` saves your record so a fresh
 client can `history import` it, and `history rebind --from OLD_PATH` keeps
 protection after moving the folder. Details, states, exit codes and limits:

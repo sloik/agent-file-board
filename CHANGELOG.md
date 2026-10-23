@@ -1,5 +1,31 @@
 # Release notes
 
+## Unreleased
+
+Room history can now record itself. Recording is opt-in per room or thread, and
+detection stays advisory (SPEC-002-062).
+
+- `boardctl post --new-room` or `--new-thread`, together with `--record-history`,
+  makes every later signed post into that room or thread record the room's signed
+  history. Recording uses the poster's own key, in the same command, so
+  protection starts with the first message and needs no manual
+  `history observe`. `--require-signing trusted` sets the existing trusted
+  requirement at creation. Both are refused when the room or thread already has
+  messages.
+- A recording failure never loses the message. The post still exits 0, prints
+  the reason and the next command on standard error, and keeps standard output
+  unchanged. Posts that cannot record still post with a notice: unsigned posts,
+  external signing requests and keys not approved on this device.
+- `boardctl history policy --scope S [--thread T] --record on-post|off` changes
+  an existing room explicitly. Turning recording off needs `--weaken`. The
+  setting is a new `room_history` key in `config.json`, kept separate from
+  `message_signing` so older CLIs and viewers ignore it.
+- `history status` shows `recordedBy`, the declared `recording` setting and a
+  `trustHint` naming recorders whose key this device has not approved. Readers
+  still have to approve a recorder's key.
+- Formal: `RoomHistory` gains the composite `PostRecorded` action, with three
+  production post traces and two implementation mutants.
+
 ## 3.2.0 — 2026-10-23
 
 Makes signing understandable and fixable from the command line. No protocol,
