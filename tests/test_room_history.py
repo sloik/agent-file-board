@@ -378,6 +378,117 @@ class RoomHistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "only a verified unfamiliar signer"):
             history.accept(self.sess(), digest, "check")
 
+    # -- export, import, rebind (3.1) ------------------------------------------
+
+    def export_file(self, name="checkpoint.json"):
+        result = self.run_cli("export", "--output", str(self.private / name))
+        return Path(result["output"]), result["sha256"]
+
+    def test_export_import_restores_protection_for_a_fresh_client(self):
+        first, _, _ = self.three()
+        self.observe()
+        path, digest = self.export_file()
+        shutil.rmtree(self.board / "history")  # shared evidence gone before the new client
+        first.unlink()                          # and a message removed before its first check
+        with patch.dict("os.environ", {"AGENT_FILE_BOARD_STATE_DIR": str(self.private / "fresh")}):
+            self.trust()
+            report, _ = self.status(expected=2)
+            self.assertFalse(report["scopes"][self.scope]["setUp"])
+            result = self.run_cli("import", "--file", str(path), "--sha256", digest)
+            self.assertEqual((result["imported"], result["scopes"]), (1, [self.scope]))
+            report, _ = self.status(expected=2)
+        self.assertEqual(report["scopes"][self.scope]["bootstrap"], "imported")
+        self.assertEqual(report["bootstrap"], "imported")
+        self.assertEqual(self.rows(report)[self.rel(first)]["observed"], "message-unavailable")
+
+    def test_import_refuses_wrong_hash_board_and_untrusted_signers(self):
+        self.three()
+        self.observe()
+        path, digest = self.export_file()
+        self.assertIn("do not match --sha256", self.run_cli("import", "--file", str(path), "--sha256", "0" * 64, expected=2))
+        data = json.loads(path.read_bytes())
+        data["boardId"] = "00000000-0000-4000-8000-000000000000"
+        other = self.private / "other.json"
+        other.write_bytes(core._json_bytes(data))
+        self.assertIn("another board UUID", self.run_cli("import", "--file", str(other), "--sha256",
+                                                         hashlib.sha256(other.read_bytes()).hexdigest(), expected=2))
+        with patch.dict("os.environ", {"AGENT_FILE_BOARD_STATE_DIR": str(self.private / "unpinned")}):
+            result = self.run_cli("import", "--file", str(path), "--sha256", digest)
+            self.assertEqual((result["imported"], result["unpinned"]), (0, 1))
+        self.assertIn("already exists", self.run_cli("export", "--output", str(path), expected=2))
+
+    def test_unfamiliar_import_is_staged_until_accepted(self):
+        self.three()
+        digest_obs = self.observe()["published"][0]["observation"]
+        path, digest = self.export_file()
+        shutil.rmtree(self.board / "history")
+        with patch.dict("os.environ", {"AGENT_FILE_BOARD_STATE_DIR": str(self.private / "rotated")}):
+            self.trust()
+            session = self.sess()
+            session.state["pins"][self.participant] = "urn:ietf:params:oauth:jwk-thumbprint:sha-256:" + "A" * 43
+            session.save()
+            result = self.run_cli("import", "--file", str(path), "--sha256", digest)
+            self.assertEqual((result["imported"], result["staged"]), (0, 1))
+            accepted = self.run_cli("accept", "--observation", digest_obs, "--reason", "checked out of band")
+            self.assertEqual(accepted["source"], "previously-trusted")
+            report, _ = self.status()
+        self.assertEqual(report["scopes"][self.scope]["bootstrap"], "imported")
+        self.assertEqual(report["scopes"][self.scope]["coverage"]["expected"], 3)
+
+    def move_board(self):
+        old = self.root
+        new = self.private / "moved-project"
+        shutil.copytree(old, new)
+        shutil.rmtree(old)
+        self.root, self.board = new.resolve(), new.resolve() / ".agent-board"
+        self.config_path = self.board / "config.json"
+        self.registry_path = self.board / "participants.json"
+        return old
+
+    def test_rebind_carries_checkpoint_and_unlearned_signing_state_to_a_moved_folder(self):
+        first, _, _ = self.three()
+        self.observe()
+        old = self.move_board()
+        report, _ = self.status(expected=2)
+        self.assertIn("rebind-available", report["scopes"][self.scope]["diagnostics"])
+        self.assertEqual(report["rebind"], ["boardctl history rebind --from " + json.dumps(str(old))])
+        result = self.run_cli("rebind", "--from", str(old))
+        self.assertEqual(result["history"], "rebound")
+        self.assertIn("copied trust", result["signing"])
+        report, _ = self.status(expected=0)
+        self.assertEqual(self.rows(report)[self.scope + "/" + first.name]["source"], "pinned-current")
+        (self.board / self.scope / first.name).unlink()
+        report, _ = self.status(expected=2)
+        self.assertEqual(self.rows(report)[self.scope + "/" + first.name]["observed"], "message-unavailable")
+        self.assertIn("never merges", self.run_cli("rebind", "--from", str(old), expected=2))
+
+    def test_rebind_refuses_missing_same_and_other_board_checkpoints(self):
+        self.three()
+        self.observe()
+        self.assertIn("same folder", self.run_cli("rebind", "--from", str(self.root), expected=2))
+        self.assertIn("never merges", self.run_cli("rebind", "--from", str(self.private / "nowhere"), expected=2))
+        old = self.move_board()
+        self.assertIn("no history checkpoint", self.run_cli("rebind", "--from", str(self.private / "nowhere"), expected=2))
+        stale = history.Checkpoint(self.sess()).path.parent / (hashlib.sha256(str(old).encode()).hexdigest() + ".json")
+        data = json.loads(stale.read_bytes())
+        data["boardId"] = "00000000-0000-4000-8000-000000000000"
+        stale.write_text(json.dumps(data))
+        self.assertIn("another board UUID", self.run_cli("rebind", "--from", str(old), expected=2))
+
+    def test_three_zero_checkpoint_loads_and_upgrades(self):
+        self.three()
+        self.observe()
+        checkpoint = history.Checkpoint(self.sess())
+        state = json.loads(checkpoint.path.read_bytes())
+        for key in ("root", "imported", "staged"):
+            state.pop(key)
+        checkpoint.path.write_text(json.dumps(state))
+        upgraded = history.Checkpoint(self.sess())
+        self.assertEqual((upgraded.state["root"], upgraded.state["imported"], upgraded.state["staged"]),
+                         (str(self.root), [], {}))
+        self.status(expected=0)
+        self.assertIn('"staged"', upgraded.path.read_text())
+
     # -- format vectors ------------------------------------------------------
 
     def statement(self, **changes):

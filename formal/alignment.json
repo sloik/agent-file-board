@@ -495,14 +495,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "4d93cbb91c8cb66008ee128c9f03233d3566bf9b066cbb1157a1241d5b4bce2e"
+      "sha256": "5defd84021779ff925e3c6abe833b584c407a686013a2b35c5ede1900fad5bcb"
     },
     "tests/test_room_history.py": {
       "path": "tests/test_room_history.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "e56108c11ff299587dd14862bd995d9d37552bb9db82d23881835e9f6fadabb2"
+      "sha256": "89ccaf949a84c3e677aea044585a4b156d2ed34f503eb165bd7ff27b14172606"
     },
     "formal/collect_room_history.py": {
       "path": "formal/collect_room_history.py",
@@ -1873,7 +1873,7 @@
     },
     {
       "module": "RoomHistory.tla",
-      "review": "2026-10-23: Reviewed against room_history.Checkpoint (status, verify, key_status, entry, acknowledgement overlay), observe/acknowledge/forget commands and private save discipline. Bounded production traces drive the real CLI on signed boards; four implementation mutants are rejected by TLC. Private save locking reuses signing_runtime._state_write_lock and the expected-byte replacement already modelled by PrivateState and PrivateRecovery. Documentation review 2026-10-23: README and STATUS describe this model's bounds, invariants, fault variants and traces as implemented. Review 2026-10-23: candidate ordering moved into room_history.candidate_order (same key) with direct and scan-level tests; modelled expectations, status, trust and acknowledgement behavior unchanged.",
+      "review": "2026-10-23: Reviewed against room_history.Checkpoint (status, verify, key_status, entry, acknowledgement overlay), observe/acknowledge/forget commands and private save discipline. Bounded production traces drive the real CLI on signed boards; four implementation mutants are rejected by TLC. Private save locking reuses signing_runtime._state_write_lock and the expected-byte replacement already modelled by PrivateState and PrivateRecovery. Documentation review 2026-10-23: README and STATUS describe this model's bounds, invariants, fault variants and traces as implemented. Review 2026-10-23: candidate ordering moved into room_history.candidate_order (same key) with direct and scan-level tests; modelled expectations, status, trust and acknowledgement behavior unchanged. Review 2026-10-23 (3.1): export/import learn only through the same pinned-current verification (import is an Observe by a trusted key; unfamiliar imports are staged until the existing accept rule); rebind copies a checkpoint for the same board UUID to a new path key without merging; neutral now means all sources unpinned (not modelled). Modelled expectations, trust, revocation and acknowledgement behavior unchanged; traces and mutants rerun.",
       "states": {
         "state": {
           "anchors": [
