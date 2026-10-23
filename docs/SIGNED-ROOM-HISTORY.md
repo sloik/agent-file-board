@@ -1,7 +1,7 @@
 # Signed room history: inventory and checkpoint design
 
-Status: **design proposal, revised after first security, protocol and UI review;
-not implemented.** Tracked by
+Status: **reviewed design proposal (security, protocol and UI reviews converged
+2026-10-23); not implemented.** Tracked by
 [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md); builds on
 [signed room history research](SIGNED-ROOM-HISTORY-RESEARCH.md). Field names below
 are proposed and become normative only when an implementation spec adopts them.
@@ -351,7 +351,6 @@ without coverage, so explicit-only production is never mistaken for protection.
    against the message context (any key; trust is not required). Otherwise
    `observe` refuses unless `--accept-anomalies`, in which case that message is
    listed with its actual sidecar binding and the run reports it.
-
 4. It prints whether this client will treat the new inventory as trusted (signer
    pinned and current here), and that other clients must pin the same key.
 5. It signs only bytes it read and hashed. Messages posted during the scan are
