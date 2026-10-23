@@ -298,8 +298,11 @@ def command_post(args: argparse.Namespace) -> int:
     minimum = signing.minimum(path.relative_to(board).as_posix(), args.thread)
     if "ANSWER" in extra or "ANSWER-STATE" in extra or "EXTENSION-ANSWER" in extra:
         source_headers = check_message(target, board, config, known)
-        if signing.evaluate(target, source_headers)["eligibility"] != "eligible":
-            raise BoardError("reply source is not eligible under signing requirements; inspect it separately")
+        decision = signing.evaluate(target, source_headers)
+        if decision["eligibility"] != "eligible":
+            import signing_usability
+            raise BoardError(signing_usability.reply_source_message("reply source is not eligible under signing requirements; inspect it separately",
+                                                                    target.relative_to(board).as_posix(), decision, root))
     if key_file or request_file:
         from signing_runtime import private_key
         packet, envelope = signing_commands.signed_packet(signing, path.relative_to(board).as_posix(), payload,
@@ -307,7 +310,8 @@ def command_post(args: argparse.Namespace) -> int:
         if request_file:
             request_path = Path(request_file).expanduser().resolve()
             if request_path.is_relative_to(board):
-                raise BoardError("pending signing requests must stay outside the shared board")
+                raise BoardError(f"pending signing requests must stay outside the shared board. {request_path} is inside {board}. "
+                                 "Next: choose a --prepare-signing path in a private folder outside the project")
             import board_identity
             board_identity._publish(request_path, json.dumps(packet).encode())
             print(json.dumps({"signingRequest": str(request_path), "published": False}))
@@ -317,7 +321,8 @@ def command_post(args: argparse.Namespace) -> int:
         warn_agent_presence(root, board, registry, args.sender, known)
         return 0
     if minimum == "trusted":
-        raise BoardError("trusted signature required; provide an explicit --signing-key-file or --prepare-signing")
+        import signing_usability
+        raise BoardError(signing_usability.unsigned_message(root, path.relative_to(board).as_posix(), args.sender, args.thread))
     temporary = directory / (".message-" + uuid.uuid4().hex + ".tmp")
     try:
         with temporary.open("xb") as handle:
