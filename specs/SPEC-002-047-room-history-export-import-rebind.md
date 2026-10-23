@@ -17,23 +17,23 @@ External-signer inventories stay planned.
 
 ## Acceptance criteria
 
-- [ ] AC1: `history export --output FILE` writes the design's export format
+- [x] AC1: `history export --output FILE` writes the design's export format
   (version, boardId, base64 inventory and profile envelopes), at most 48 MiB and
   20,000 inventories, from private state only, so it works after the shared
   inventories were deleted. The file is created exclusively, never overwritten.
-- [ ] AC2: `history import --file FILE --sha256 EXPECTED` refuses a hash or board
+- [x] AC2: `history import --file FILE --sha256 EXPECTED` refuses a hash or board
   mismatch, then re-verifies every inventory under this client's own pins in
   batches of 200 within the usual budgets, reports progress and remainder, and
   never trusts an inventory merely because it was exported. Imported trusted
   inventories create expectations; unfamiliar ones are staged privately so that
   `history accept` can accept them. Scopes that gained expectations report
   `bootstrap: imported`; others stay `folder-only`.
-- [ ] AC3: `history rebind --from OLD_PATH` carries a checkpoint to a moved folder
+- [x] AC3: `history rebind --from OLD_PATH` carries a checkpoint to a moved folder
   only when the old file exists, records the same board UUID and the new path has
   no checkpoint yet; it never merges or overwrites. `status` suggests the exact
   command (`rebind-available`) when a scope is not set up and another checkpoint
   for this board UUID exists. 3.0.0 checkpoints load and upgrade transparently.
-- [ ] AC4: Frozen interoperability vectors under `tests/fixtures/room-history/`
+- [x] AC4: Frozen interoperability vectors under `tests/fixtures/room-history/`
   (published RFC 8032 test seed only): valid and invalid inventory envelopes with
   expected verification outcomes, and status cases (commitments, current file
   state, key status, acknowledgement) with the expected observed state, source
@@ -43,3 +43,15 @@ External-signer inventories stay planned.
   full unit suite passes; docs (design status table, README, CHANGELOG,
   CONVENTION, UPGRADING where relevant) consistent; released as canonical 3.1.0
   together with viewer 3.1.0 (shared MAJOR.MINOR).
+
+## Implementation evidence (2026-10-23)
+
+- `room_history.py`: export, import (batches of 200, staging, per-scope bootstrap),
+  rebind (unlearned checkpoint and signing state only, status hint), 3.0 upgrade.
+- 7 new tests in `tests/test_room_history.py` and `tests/test_room_history_vectors.py`
+  (19 inventory and 17 status vectors). Planted defects (import trusting an
+  unfamiliar signer, rebind overwriting learned state, import ignoring the hash)
+  each failed the suite. Writing the vectors exposed one inconsistency, fixed:
+  acknowledged rows with trusted sources were labelled neutral.
+- Full suite 315 passed; RoomHistory TLC cases and 58 trace checks pass;
+  alignment reviewed; `release-check --tag v3.1.0` ok; manifest supports 3.0.0.

@@ -1,5 +1,21 @@
 # Release notes
 
+## 3.1.0 — 2026-10-23
+
+Completes the room history layer; no message, signing or eligibility change.
+
+- `boardctl history export` saves trusted inventories and profiles from private
+  state, so it works after the shared copies are deleted. `history import`
+  re-verifies them under this client's own trust and stages unfamiliar ones for
+  `history accept`; imported rooms report `bootstrap: imported`.
+- `boardctl history rebind --from OLD_PATH` carries protection to a moved folder,
+  including signing trust when the new location has not learned anything yet.
+  `status` suggests the command. 3.0.0 checkpoints upgrade automatically.
+- Frozen inventory and status vectors (`tests/fixtures/room-history/vectors.json`)
+  for other clients such as the viewer.
+- `needsAttention` is unchanged; the `neutral` flag now means every source key is
+  merely unpinned (acknowledged rows with trusted sources are no longer neutral).
+
 ## 3.0.0 — 2026-10-23
 
 Major release: a new opt-in security layer. Existing boards, messages, signing

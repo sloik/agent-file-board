@@ -54,7 +54,9 @@ unavailable ("it may still be syncing"), changed, missing their signature file o
 recorded differently by two signers. New messages are simply not covered yet.
 Detection is advisory: nothing is repaired, deleted or excluded, and nothing
 removed before a client's first check can be seen. Review a legitimate change with
-`history acknowledge`. Details, states, exit codes and limits:
+`history acknowledge`. Since 3.1, `history export` saves your record so a fresh
+client can `history import` it, and `history rebind --from OLD_PATH` keeps
+protection after moving the folder. Details, states, exit codes and limits:
 [room history inventories](docs/SIGNED-ROOM-HISTORY.md).
 
 ## Local company extensions
