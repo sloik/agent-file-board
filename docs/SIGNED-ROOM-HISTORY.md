@@ -424,6 +424,14 @@ per-signer and 32 MiB total checkpoint quota. A first scan of a busy room report
 an incomplete window and finishes over later runs. When the poster's own
 checkpoint is full, the post reports `checkpoint-capacity-exhausted`.
 
+Recording re-verifies every message signature in the room, so it adds time that
+grows with room size. Measured 2026-10-23 in a room of 302 signed messages, a
+recording post took 0.74 s against 0.10 s for a plain one.
+
+A prepared request published later with `signing publish` cannot record, because
+the external signer holds the key. It prints the same `not recorded` notice, and
+the next recorded post's incremental observation covers that message.
+
 **Readers still decide whom to believe.** Recording is not trust. A client counts
 a record only if it approved the recorder's current key (`signing trust`, after
 comparing the fingerprint out of band). `history status` shows three things per

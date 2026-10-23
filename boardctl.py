@@ -383,7 +383,7 @@ def declare_policy(args, root: Path, scope: str, declared: list[str], key_file, 
     state_dir = getattr(args, "signing_state_dir", None)
     try:
         history_recording.preflight(signing_commands.session(root, state_dir), args.sender, key_file,
-                                    request_file, " and ".join(declared))
+                                    request_file, " and ".join(declared), record=getattr(args, "record_history", False))
     except ValueError as exc:
         raise BoardError(f"refused before writing anything: {exc}") from exc
     if getattr(args, "require_signing", None):

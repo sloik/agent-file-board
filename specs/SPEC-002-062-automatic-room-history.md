@@ -151,7 +151,19 @@ Constraints from the owner (binding):
    - an 8 MiB per-signer quota and a 32 MiB total checkpoint quota.
 
    When the poster's own checkpoint reports `checkpoint-capacity-exhausted` for
-   the scope, the post says so. A busy room adds one small file (about 1-2 KiB)
+   the scope, the post says so.
+
+   **Latency.** `observe` verifies every message signature in the room before
+   filtering the delta, so the cost grows linearly with room size. Measured on
+   2026-10-23 on this machine, in a room of 302 signed messages from one signer:
+
+   - a plain signed post took 0.10 s;
+   - a recording post took 0.74 s, both for the first one (302 entries) and for
+     the next one (1 entry).
+
+   A room with very many distinct signers can also hit the existing per-session
+   lifecycle evidence budget (128 envelopes). That is reported as `NOT recorded`;
+   the post itself goes through. A busy room adds one small file (about 1-2 KiB)
    per signed post; a reader's first scan over many files reports an incomplete
    window and finishes over later runs, as designed.
 10. **Readers still need trust.**
@@ -226,7 +238,11 @@ Constraints from the owner (binding):
    room's recorder" flow? Not added: approval stays the explicit `signing trust`
    with an out-of-band fingerprint check.
 5. **External signers.** Recording on `signing publish` for `--prepare-signing`
-   flows needs the planned external inventory signer. Today it prints a notice.
+   flows needs the planned external inventory signer. Today both `post
+   --prepare-signing` and `signing publish` print a `not recorded` notice, and
+   the next recorded post's incremental observation catches up. Every other
+   signed path (session announcements, `answers accept`/`resolve`) goes through
+   `command_post` and records normally.
 6. **Release.** This changes the convention, adding the `room_history` config key.
    Canonical 3.3.0 is expected, and with it viewer 3.3.0. The version is left to
    the parent.
@@ -246,3 +262,8 @@ Constraints from the owner (binding):
   checked by hand in a disposable copy and rejected. The anomaly trace uses a
   deleted message, because a changed one is already refused by `observe`'s
   self-contradiction safeguard, which makes that mutant equivalent.
+- Review follow-up:
+  - The creation preflight also parses `room_history` when `--record-history` is
+    given. A malformed setting combined with `--require-signing` therefore no
+    longer leaves `message_signing` written; this is regression-tested.
+  - `signing publish` prints the `not recorded` notice.

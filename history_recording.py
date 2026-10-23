@@ -126,8 +126,14 @@ def declare(root, scope, thread, on, weaken=False):
     return result
 
 
-def preflight(s, sender, key_file, prepare, flag):
+def preflight(s, sender, key_file, prepare, flag, record=False):
     """Refuse a creation-time declaration that this post could not honor; writes nothing."""
+    if record:
+        try:
+            setting(s.config)
+        except ValueError as exc:
+            raise ValueError(f"{exc}. The room_history setting in config.json is invalid, so it cannot be edited safely. "
+                             "Next: correct it by hand (docs/SIGNED-ROOM-HISTORY.md, automatic recording), then rerun this command") from exc
     if prepare:
         raise ValueError(f"{flag} needs --signing-key-file in this same command; an external signer (--prepare-signing) "
                          "cannot sign room history yet. Next: post without it, then use boardctl signing require / "

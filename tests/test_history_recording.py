@@ -252,6 +252,31 @@ class HistoryRecordingTests(unittest.TestCase):
         self.assertIn("history: not recorded for rooms/releases: room_history setting unavailable", err)
         self.assertIn("cannot be edited safely", self.run_cli("policy", "--scope", self.scope, "--record", "on-post", expected=2))
 
+    def test_malformed_setting_refuses_creation_flags_before_writing_anything(self):
+        self.trust()
+        config = self.config()
+        config["room_history"] = {"version": 1, "scopes": {"rooms/general": {"record": "always"}}}
+        self.config_path.write_text(json.dumps(config))
+        before = self.snapshot()
+        _, err = self.send("--new-room", "--require-signing", "trusted", "--record-history", expected=2)
+        self.assertIn("refused before writing anything", err)
+        self.assertIn("cannot be edited safely", err)
+        self.assertEqual(self.snapshot(), before)
+
+    def test_external_signer_publication_reports_not_recorded(self):
+        self.create()
+        request, response = self.private / "request.json", self.private / "response.json"
+        _, err = self.send("--prepare-signing", str(request), slug="external", signed=False)
+        self.assertIn("history: not recorded for rooms/releases: signing request for an external signer", err)
+        self.ctl("signing", "respond", "--request", str(request), "--key-file", str(self.key_file), "--output", str(response))
+        out, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+            code = boardctl.main(["signing", "publish", "--path", str(self.root), "--request", str(request), "--response", str(response)])
+        self.assertEqual(code, 0, err.getvalue())
+        self.assertTrue((self.root / json.loads(out.getvalue())["message"]).is_file())
+        self.assertIn("history: not recorded for rooms/releases: published from an external signing request", err.getvalue())
+        self.assertIn("boardctl history observe", err.getvalue())
+
     def test_unapproved_own_key_posts_but_does_not_record(self):
         self.create()
         self.ctl("signing", "untrust", "--participant", self.participant)
