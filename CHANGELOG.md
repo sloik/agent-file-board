@@ -1,6 +1,6 @@
 # Release notes
 
-## Unreleased
+## 3.3.0 — 2026-10-23
 
 Room history can now record itself. Recording is opt-in per room or thread, and
 detection stays advisory (SPEC-002-062).

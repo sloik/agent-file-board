@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-062
 title: Record room history automatically from signed posts, declared per room or thread
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23

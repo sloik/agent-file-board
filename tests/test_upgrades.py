@@ -41,7 +41,7 @@ class UpgradeTests(unittest.TestCase):
         return {str(p.relative_to(self.board)): p.read_bytes() for p in self.board.rglob('*') if p.is_file()}
 
     def test_both_releases_upgrade_with_exact_backups_and_preserved_data(self):
-        for source in ('1.9.2', '2.0.0', '2.0.1', '2.1.0', '2.2.0', '2.3.0', '2.9.1', '2.10.0', '2.11.0', '2.11.1', '2.12.0', '2.12.1', '2.12.2', '3.0.0', '3.1.0'):
+        for source in ('1.9.2', '2.0.0', '2.0.1', '2.1.0', '2.2.0', '2.3.0', '2.9.1', '2.10.0', '2.11.0', '2.11.1', '2.12.0', '2.12.1', '2.12.2', '3.0.0', '3.1.0', '3.2.0'):
             with self.subTest(source=source):
                 self.seed(source)
                 before = self.snapshot()
