@@ -62,7 +62,21 @@ def key_mismatch_message(s, participant, head, key, lead, relative):
     return (f"{lead}: this key file (fingerprint {own}) is not the registered current key for {participant} "
             f"({head.fingerprint}). Next: pass the key file that made the current profile (after a rotation, "
             f"the new key file); check with: "
-            f"{cmd('boardctl', 'signing', 'check', '--path', s.root, '--from', participant, '--scope', '/'.join(relative.split('/')[:2]), '--signing-key-file', 'KEY_FILE')}")
+            f"{cmd('boardctl', 'signing', 'check', '--path', s.root, '--from', participant, '--scope', '/'.join(relative.split('/')[:2]), '--signing-key-file', 'KEY_FILE', *state_flags(s))}")
+
+
+def response_message(exc, participant, head, envelope):
+    """Blame the signing key only when the response really names a different key."""
+    try:
+        keyid = core.strict_json(envelope)["signatures"][0]["keyid"]
+    except (ValueError, KeyError, IndexError, TypeError):
+        keyid = None
+    respond = "boardctl signing respond --request REQUEST_FILE --key-file KEY_FILE --output RESPONSE_FILE"
+    if keyid is not None and keyid != head.fingerprint:
+        return (f"{exc}: the response was not signed with the current key for {participant} ({head.fingerprint}); "
+                f"it names {keyid}. Next: run {respond} with the key file that made the current profile, then publish again")
+    return (f"{exc}: the response does not match this exact request, profile and path. "
+            f"Next: run {respond} again on the unchanged request file, then publish again")
 
 
 def no_profile_message(root, participant):
@@ -77,10 +91,10 @@ def revoked_message(participant, fingerprint, status):
             f"then register a replacement key (boardctl signing keygen --output KEY_FILE --participant {participant})")
 
 
-def unsigned_message(root, relative, sender, thread):
+def unsigned_message(s, relative, sender, thread):
     scope = "/".join(relative.split("/")[:2])
-    check = cmd("boardctl", "signing", "check", "--path", root, "--from", sender, "--scope", scope,
-                "--thread", thread, "--signing-key-file", "KEY_FILE")
+    check = cmd("boardctl", "signing", "check", "--path", s.root, "--from", sender, "--scope", scope,
+                "--thread", thread, "--signing-key-file", "KEY_FILE", *state_flags(s))
     return (f"trusted signature required; provide an explicit --signing-key-file or --prepare-signing. "
             f"{scope} only accepts messages signed with an approved key and this post has no signature. "
             f"Next: repeat the post with --signing-key-file KEY_FILE (your private key file, outside the project); "
@@ -113,7 +127,7 @@ def keygen(root, args):
         raise ValueError("--output must name a new key file")
     parent = absolute.parent.resolve()
     final = parent / absolute.name
-    if final == root or final.is_relative_to(root):
+    if ".agent-board" in final.parts or ((root / ".agent-board").is_dir() and (final == root or final.is_relative_to(root))):
         raise ValueError(f"private signing keys must be outside the shared project. {final} is inside {root}. "
                          "Next: choose a private folder, for example: boardctl signing keygen --output ~/private/afb/me.json")
     if os.path.lexists(final):
@@ -277,7 +291,7 @@ def check(root, args):
         raise ValueError(f"--scope must be a physical folder such as rooms/releases or {direct}/alice--bob, got {scope!r}") from exc
     if thread is not None and not re.fullmatch(r"T\d{%d}" % digits, thread):
         raise ValueError(f"--thread must look like T{'1'.zfill(digits)}, got {thread!r}")
-    rows = []
+    rows, narrower = [], []
 
     def row(item, status, detail, fix=None):
         rows.append({"item": item, "status": status, "detail": detail, "fix": fix})
@@ -293,6 +307,8 @@ def check(root, args):
                        f"Start with: {missing[0]['item']}.")
         else:
             summary = f"Posting as {participant} in {where} would be accepted."
+        if narrower:
+            summary += f" Thread(s) {', '.join(narrower)} require trusted: repeat with --thread."
         return {"participant": participant, "scope": scope, "thread": thread, "ready": not missing,
                 "summary": summary, "checklist": rows}, (0 if not missing else 2)
 
@@ -328,7 +344,13 @@ def check(root, args):
     shared = runtime.requirement(session.shared, scope, thread or "")
     floor = runtime.requirement(session.floor, scope, thread or "")
     source = [name for name, value in (("the shared config", shared), ("your private floor on this device", floor)) if value == "trusted"]
-    row("requirement", "ok", f"{level}" + (f" (set by {' and '.join(source)})" if source else " (unsigned posts accepted)"))
+    if thread is None:
+        found = set()
+        for policy in (session.shared, session.floor):
+            found |= {tid for tid, rule in policy["scopes"].get(scope, {}).get("threads", {}).items() if rule["minimum"] == "trusted"}
+        narrower.extend(sorted(found))
+    row("requirement", "ok", f"{level}" + (f" (set by {' and '.join(source)})" if source else " (unsigned posts accepted)")
+        + (f"; thread(s) {', '.join(narrower)} here require trusted, so repeat this check with --thread" if narrower else ""))
     if person.get("identity") is None:
         row("profile registered", "missing" if needed else "not needed",
             f"{participant} has no signing profile registered" if needed else "unsigned posting works without it",
@@ -337,15 +359,17 @@ def check(root, args):
     try:
         result = session.resolve(participant)
     except ValueError as exc:
-        row("profile registered", "missing", f"the registered profile does not verify: {exc}",
-            "find this message in the troubleshooting table of docs/SIGNING-GUIDE.md")
+        row("profile registered", "missing" if needed else "not needed",
+            f"the registered profile does not verify: {exc}" + ("" if needed else "; signed posts are refused, unsigned posts are accepted here"),
+            "find this message in the troubleshooting table of docs/SIGNING-GUIDE.md" if needed else None)
         return finish()
     head = result["head"]
     row("profile registered", "ok", f"profile {head.envelope_sha256}, key {head.fingerprint}")
     status = result["revoked"].get(head.fingerprint)
     if status:
-        row("key not retired or compromised", "missing", f"the current key was marked {status}",
-            f"ask the board owner for a recovery review, then register a replacement: {keygen_command(root, participant)}")
+        row("key not retired or compromised", "missing" if needed else "not needed",
+            f"the current key was marked {status}" + ("" if needed else "; signed posts are refused, unsigned posts are accepted here"),
+            f"ask the board owner for a recovery review, then register a replacement: {keygen_command(root, participant)}" if needed else None)
         return finish()
     row("key not retired or compromised", "ok", "current key is not revoked")
     if not key_given:

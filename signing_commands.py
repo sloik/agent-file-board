@@ -89,9 +89,7 @@ def publish(s, packet, envelope):
     try:
         result = core.verify_message(envelope, head.descriptor, raw, context)
     except ValueError as exc:
-        raise ValueError(f"{exc}: the response was not signed with the current key for {packet['participant']} ({head.fingerprint}). "
-                         "Next: run boardctl signing respond --request REQUEST_FILE --key-file KEY_FILE --output RESPONSE_FILE "
-                         "with the key file that made the current profile, then publish again") from exc
+        raise ValueError(usability.response_message(exc, packet["participant"], head, envelope)) from exc
     if result.payload != core._decode64(packet["payload"]):
         raise ValueError("response did not sign requested exact statement. Next: run boardctl signing respond --request REQUEST_FILE --key-file KEY_FILE --output RESPONSE_FILE again on this exact request")
     path = safe_path(s.board, packet["path"])

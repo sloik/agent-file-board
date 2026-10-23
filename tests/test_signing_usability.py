@@ -306,6 +306,63 @@ class SigningUsabilityTests(unittest.TestCase):
         self.assertEqual((code, self.try_post("req-revoked")[0]), (2, 2))
         self.assertEqual(self.rows(report)["key not retired or compromised"]["status"], "missing")
 
+    def test_optional_scope_ignores_revoked_or_unverifiable_profiles_unless_a_key_is_used(self):
+        old = self.sess().resolve(self.participant)["head"]
+        self.ctl("signing", "revoke", "--participant", self.participant, "--key-file", str(self.key_file),
+                 "--expect-profile", old.envelope_sha256, "--status", "retired")
+        code, report, _ = self.check()
+        self.assertEqual((code, self.try_post("opt-revoked-unsigned", key=None)[0]), (0, 0))
+        self.assertEqual(self.rows(report)["key not retired or compromised"]["status"], "not needed")
+        self.assertIn("unsigned posts are accepted", self.rows(report)["key not retired or compromised"]["detail"])
+        code, report, _ = self.check("--signing-key-file", str(self.key_file))
+        self.assertEqual((code, self.try_post("opt-revoked-signed")[0]), (2, 2))
+        self.assertEqual(self.rows(report)["key not retired or compromised"]["status"], "missing")
+        # A registered profile that no longer verifies behaves the same way.
+        registry = json.loads(self.registry_path.read_bytes())
+        registry["participants"][0]["name"] = "Changed after signing"
+        self.registry_path.write_text(json.dumps(registry))
+        code, report, _ = self.check()
+        self.assertEqual((code, self.try_post("opt-broken-unsigned", key=None)[0]), (0, 0))
+        self.assertEqual(self.rows(report)["profile registered"]["status"], "not needed")
+        code, report, _ = self.check("--signing-key-file", str(self.key_file))
+        self.assertEqual((code, self.try_post("opt-broken-signed")[0]), (2, 2))
+        self.set_policy({"version": 1, "minimum": "trusted"})
+        self.assertEqual((self.check()[0], self.try_post("req-broken", key=None)[0]), (2, 2))
+
+    def test_check_without_a_thread_says_when_a_thread_rule_is_stricter(self):
+        self.ctl("signing", "require", "--scope", "rooms/general", "--thread", "T004", "--minimum", "trusted")
+        code, report, _ = self.check(thread=None)
+        self.assertEqual(code, 0)
+        self.assertIn("T004", report["summary"])
+        self.assertIn("--thread", self.rows(report)["requirement"]["detail"])
+        self.assertEqual(self.check(thread="T004")[0], 2)
+        self.assertNotIn("repeat with --thread", self.check(thread="T001")[1]["summary"])
+
+    def test_embedded_check_commands_repeat_a_non_default_state_directory(self):
+        self.set_policy({"version": 1, "minimum": "trusted"})
+        other = self.private / "agent-state"
+        code, _, err = self.try_post("unsigned", key=None, scope_extra=("--signing-state-dir", str(other)))
+        self.assertIn(f"--state-dir {other}", err)
+        wrong = self.key_for(bytes(range(32)), "wrong.json")
+        self.run_ctl("signing", "trust", "--participant", self.participant, "--state-dir", str(other),
+                     "--fingerprint", self.sess().resolve(self.participant)["head"].fingerprint,
+                     "--profile", self.sess().resolve(self.participant)["head"].envelope_sha256)
+        code, _, err = self.try_post("wrong", key=wrong, scope_extra=("--signing-state-dir", str(other)))
+        self.assertEqual(code, 2)
+        self.assertIn("is not the registered current key", err)
+        self.assertIn(f"--state-dir {other}", err)
+
+    def test_keygen_works_where_no_board_exists_but_never_inside_a_board_folder(self):
+        elsewhere = Path(tempfile.mkdtemp(dir=self.private))
+        target = self.private / "home" / "me.json"
+        code, out, err = self.run_ctl("signing", "keygen", "--output", str(target), "--path", str(elsewhere), path=False)
+        self.assertEqual(code, 0, err)
+        self.assertEqual(target.stat().st_mode & 0o777, 0o600)
+        inside = elsewhere / ".agent-board" / "key.json"
+        code, out, err = self.run_ctl("signing", "keygen", "--output", str(inside), "--path", str(elsewhere), path=False)
+        self.assertEqual(code, 2)
+        self.assertIn("must be outside the shared project", err)
+
     def test_check_names_the_exact_trust_command_and_that_command_fixes_it(self):
         self.ctl("signing", "require", "--scope", "rooms/general", "--minimum", "trusted")
         code, report, _ = self.check("--signing-key-file", str(self.key_file))
@@ -532,6 +589,15 @@ class SigningUsabilityTests(unittest.TestCase):
         err = self.refuse("signing", "publish", "--request", str(request), "--response", str(response))
         self.assertIn("the response was not signed with the current key for " + self.participant, err)
         self.assertIn("signing respond --request REQUEST_FILE --key-file KEY_FILE", err)
+        # The right key signing a different request is not blamed on the key.
+        other = self.private / "other-request.json"
+        self.ctl("post", "--from", self.participant, "--to", "all", "--scope", "room", "--room", "general", "--thread", "T001",
+                 "--slug", "second", "--body", "y", "--prepare-signing", str(other))
+        good = self.private / "good-response.json"
+        self.ctl("signing", "respond", "--request", str(request), "--key-file", str(self.key_file), "--output", str(good))
+        err = self.refuse("signing", "publish", "--request", str(other), "--response", str(good))
+        self.assertIn("does not match this exact request, profile and path", err)
+        self.assertNotIn("was not signed with the current key", err)
 
     def test_other_prepare_and_draft_refusals_end_with_a_next_step(self):
         s = self.sess()

@@ -322,7 +322,7 @@ def command_post(args: argparse.Namespace) -> int:
         return 0
     if minimum == "trusted":
         import signing_usability
-        raise BoardError(signing_usability.unsigned_message(root, path.relative_to(board).as_posix(), args.sender, args.thread))
+        raise BoardError(signing_usability.unsigned_message(signing, path.relative_to(board).as_posix(), args.sender, args.thread))
     temporary = directory / (".message-" + uuid.uuid4().hex + ".tmp")
     try:
         with temporary.open("xb") as handle:

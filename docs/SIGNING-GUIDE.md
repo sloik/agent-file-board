@@ -404,7 +404,8 @@ room.
 below are quoted exactly from the file named; search for them with
 `grep -F 'MESSAGE' FILE`. A posting refusal quotes its original sentence first, then
 the reason with your fingerprints and paths filled in, then `Next:` and the exact
-command; the table quotes the fixed first part. Commands use `PROJECT`, `ID` (a participant ID),
+command; the table quotes a fixed part of the message (the start, or a distinctive
+phrase from it). Commands use `PROJECT`, `ID` (a participant ID),
 `FINGERPRINT` and `PROFILE-SHA256` as placeholders. "Receiver reasons" are shown
 by `signing inspect`, `recent` and `inbox`, not as an error.
 
@@ -470,7 +471,8 @@ by `signing inspect`, `recent` and `inbox`, not as an error.
 | `unsupported/stale signing request` | `signing_commands.py` | The request is not version 1 / message, or belongs to another board | Create a fresh request with `post ... --prepare-signing` (the message repeats this) |
 | `profile/key changed since signing request` | `signing_commands.py` | The participant's profile or key changed after the request | Create a new request and sign it with the current key (the message repeats this) |
 | `response did not sign requested exact statement` | `signing_commands.py` | The response signed something other than the request | Run `boardctl signing respond --request REQUEST --key-file KEY --output RESPONSE` again on this exact request |
-| `the response was not signed with the current key for` | `signing_commands.py` | The response was signed with a key other than the participant's current key. The message names that key | Run `signing respond` with the key file that made the current profile, then publish again |
+| `the response was not signed with the current key for` | `signing_usability.py` | The response names a key other than the participant's current key. The message names both | Run `signing respond` with the key file that made the current profile, then publish again |
+| `the response does not match this exact request, profile and path` | `signing_usability.py` | The response has the right key but signed other bytes: it answers a different request, or the request changed | Run `signing respond` again on the unchanged request file, then publish again |
 | `signed request author mismatch` | `signing_commands.py` | The message `FROM` differs from the request participant | Create the request from the right `--from ID` |
 | `invalid signature reference` | `signing_commands.py` | The `SIGNATURE` header does not carry a valid record | Create the request again; do not edit the message |
 | `request statement differs from exact message` | `signing_commands.py` | The request payload does not match its message bytes | Create the request again |

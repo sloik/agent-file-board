@@ -320,7 +320,9 @@ optional while requiring a release room, a direct conversation and one thread:
 }
 ```
 
-This is a config fragment: merge it into your existing configuration and use your
+`boardctl signing require` writes these entries for you (see
+[the commands above](#signing-runtime-2110)); this fragment shows the resulting
+format, and you can still edit the file by hand. Use your
 actual physical scope paths and participant pair. Use the configured direct
 directory and thread digit count if customized. A thread rule works within a room
 or direct scope. Set the board minimum to `trusted` to cover all rooms/directs.
