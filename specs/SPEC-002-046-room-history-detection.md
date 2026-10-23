@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-046
 title: Detect missing and changed messages with signed room inventories (3.0.0)
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-10-23
@@ -55,7 +55,7 @@ compatibility.
 - [x] AC7: Documentation is consistent: design status, SIGNING-CORE, README,
   CONVENTION, CHANGELOG, formal README/STATUS, confidentiality research with
   owner answers. Full unit suite and formal suite pass.
-- [ ] AC8: 3.0.0 released through protected PR checks with an immutable tag and
+- [x] AC8: 3.0.0 released through protected PR checks with an immutable tag and
   GitHub release; downloaded source verified against the tag.
 
 ## Implementation evidence (2026-10-23)
@@ -79,3 +79,16 @@ compatibility.
 - Major-release consequence, owner decision 2026-10-23: extension ranges ending at
   `<3.0.0` become incompatible for new messages; bundled examples re-released as
   patch versions with `<4.0.0`; migration documented.
+
+## Publication
+
+Merged protected [PR #17](https://github.com/sloik/agent-file-board/pull/17) at
+e7a8154 after required Python 3.10–3.13 and bounded-models checks passed. Tagged
+`v3.0.0` on that merge; the exact-tag Python 3.10–3.13 matrix
+[39917056500](https://github.com/sloik/agent-file-board/actions/runs/39917056500)
+passed. Published [v3.0.0](https://github.com/sloik/agent-file-board/releases/tag/v3.0.0).
+All 252 files in the downloaded GitHub source ZIP match `git archive v3.0.0`.
+Earlier tags and releases are unchanged. The tagged changelog said "nothing is
+required to upgrade" above the extension-author action; the release notes and
+this main-branch changelog were corrected, and the immutable tag is left as is.
+Viewer 3.0.0 (agent-file-board-ui SPEC-002-056) consumes this release.
