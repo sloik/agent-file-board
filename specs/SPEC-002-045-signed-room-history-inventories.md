@@ -178,4 +178,15 @@ unpinned and unfamiliar inventories, refused for revoked or invalid;
 `acknowledge`; unscoped status no longer exits `2` for never-observed rooms once
 one scope is set up (`--strict` restores); quickstart mentions `--scope`.
 
-**Round 4**: pending protocol convergence check.
+**Round 4 (2026-10-23)**: protocol confirmed NEW-A resolved; one new major and two
+minors, addressed:
+
+- Safeguard 2 blocked re-committing an acknowledged path (NEW-C): it now applies
+  only to unacknowledged contradictions; fixture for acknowledge then observe.
+- Acknowledgement and revoked sources (NEW-D): revoked sources cannot be
+  superseded and keep counting in `needsAttention`.
+- `accept` of unpinned inventories produced no detection (NEW-E): `accept` is
+  limited to `unfamiliar-signer`; accepted sources are `previously-trusted`.
+- Layout: the `--accept-anomalies` scope sentence moved below the safeguard list.
+
+**Round 5**: pending protocol convergence check.

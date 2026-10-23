@@ -94,12 +94,15 @@ recognized, missing profile) are re-evaluated, as are unpinned and unfamiliar
 inventories, so pinning a key or restoring a setting later lets existing
 inventories become trusted.
 
-An `unfamiliar-signer` or `unpinned-signer` inventory (for example one delivered
-late, signed before its key was normally rotated or retired) can be accepted
-explicitly: `history accept --observation HASH --reason TEXT`. This is the
-operator vouching for it; the decision is recorded privately and the signature
-is checked first. Inventories signed by a key with a learned compromise, and
-`invalid-inventory` results, cannot be accepted.
+An `unfamiliar-signer` inventory (participant pinned on this client; for example
+one delivered late, signed before its key was normally rotated or retired) can
+be accepted explicitly: `history accept --observation HASH --reason TEXT`. This
+is the operator vouching for it; the decision is recorded privately and the
+signature is checked first. Its source status is then `previously-trusted`.
+`unpinned-signer` inventories cannot be accepted: pin the participant first,
+because an unpinned source would never raise a warning. Inventories signed by a
+key with a learned compromise, and `invalid-inventory` results, cannot be
+accepted either.
 
 **Source status after key changes.** Each source key of an expectation has a
 status computed only from this client's private signing state (pins and learned
@@ -340,19 +343,22 @@ without coverage, so explicit-only production is never mistaken for protection.
    active or revoked source is not `available` or acknowledged, listing each
    one. `--accept-anomalies` overrides this refusal.
 2. It refuses to list a path whose current bytes contradict the signer's own
-   existing expectation. No flag overrides this; the refusal message names the
-   path and points to `history acknowledge`.
+   existing expectation, unless a non-lapsed acknowledgement for that path
+   covers the signer's own contradicting sources (then the current bytes may be
+   listed as a fresh commitment). No flag overrides this; the refusal message
+   names the path and points to `history acknowledge`.
 3. A message with a `SIGNATURE` header is listed only if its signature verifies
    against the message context (any key; trust is not required). Otherwise
    `observe` refuses unless `--accept-anomalies`, in which case that message is
    listed with its actual sidecar binding and the run reports it.
 
-`--accept-anomalies` overrides exactly safeguards 1 and 3, and prints and records
-each anomaly it accepts.
 4. It prints whether this client will treat the new inventory as trusted (signer
    pinned and current here), and that other clients must pin the same key.
 5. It signs only bytes it read and hashed. Messages posted during the scan are
    simply absent; later observations cover them.
+
+`--accept-anomalies` overrides exactly safeguards 1 and 3, and prints and records
+each anomaly it accepts.
 
 **Resolving one anomaly.** The normal way past a refusal is per path:
 `history acknowledge --path P --reason TEXT` records, privately, that the
@@ -362,7 +368,9 @@ conversion or a message known to be lost). The acknowledgement stores:
 - the **reviewed state**: the digest, size and sidecar binding found at that
   moment, or "absent";
 - the **superseded sources**: the set of source inventory hashes whose
-  commitments for that path it covers.
+  commitments for that path it covers. Sources with a `revoked` key cannot be
+  superseded: their non-`available` commitments keep counting in
+  `needsAttention`, and only `forget --observation` removes them.
 
 While the path's current state equals the reviewed state, those superseded
 commitments are reported as `acknowledged`, informational. They stay stored, so
@@ -534,7 +542,7 @@ Invariants:
 - `ObservationNeverHidden`: a non-active source never changes a non-`available`
   observed state into `available` or removes it from output. The only overlay is
   a non-lapsed acknowledgement (next invariant).
-- `AckBoundToObserved`: a commitment is reported `acknowledged` only while the
+- `AckBoundToObserved`: a commitment from a non-revoked source is reported `acknowledged` only while the
   path's current state equals the acknowledgement's reviewed state and the
   commitment's source is in its superseded set; superseded commitments remain
   stored.
@@ -576,8 +584,10 @@ test seed only, shared by Python and browser tests:
 - Flooding: many junk and misnamed inventory files, budget exhaustion reported.
 - `observe` refusals: existing anomalies, self-contradiction, invalid message
   signature.
-- Per-path `acknowledge` followed by a fresh observation; `--accept-anomalies`
-  recording each accepted anomaly.
+- Per-path `acknowledge` followed by `observe` by the same signer listing the
+  new bytes (allowed, no conflict); a later change lapsing the acknowledgement;
+  acknowledgement attempts covering a revoked source (refused);
+  `--accept-anomalies` recording each accepted anomaly.
 - Source status combinations: rotation A to B, pin removal, revocation, and
   mixed sources resolving to the best status.
 - More than 16 tips, merge observations, split full snapshots, and two files
