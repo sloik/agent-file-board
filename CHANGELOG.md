@@ -3,7 +3,8 @@
 ## 3.0.0 — 2026-10-23
 
 Major release: a new opt-in security layer. Existing boards, messages, signing
-and coordination eligibility are unchanged; nothing is required to upgrade.
+and coordination eligibility are unchanged; upgrading a board needs no other
+change, but extension authors must widen package ranges (see the last item).
 
 - Detect committed messages that later go missing or change. `boardctl history
   observe` publishes an immutable signed room inventory under
