@@ -67,6 +67,46 @@ class ReportTests(unittest.TestCase):
             self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob('*') if p.is_file()}, before)
             self.assertEqual((root / rel).read_bytes(), original)
 
+    def test_separate_report_images_get_a_non_blocking_gallery_hint(self):
+        from extended_static_reports import gallery_hint
+        example = json.loads((Path(boardctl.__file__).parent / 'examples/openui-report/static-candidates.json').read_text())
+        def find(node, kind):
+            if isinstance(node, dict):
+                if node.get('type') == kind:
+                    return node
+                node = list(node.values())
+            if isinstance(node, list):
+                for item in node:
+                    found = find(item, kind)
+                    if found:
+                        return found
+        image, gallery = find(example, 'image'), find(example, 'image-gallery')
+        self.assertIsNotNone(image)
+        self.assertIsNotNone(gallery)
+        base = {k: v for k, v in example.items() if k != 'components'}
+        separate = dict(base, components=[image, dict(image)])
+        self.assertIn('2 separate image components', gallery_hint(separate))
+        self.assertIsNone(gallery_hint(dict(base, components=[gallery])))
+        self.assertIsNone(gallery_hint(dict(base, components=[image])))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / 'board'
+            out, err = io.StringIO(), io.StringIO()
+            def cli(*args):
+                out.seek(0); out.truncate(); err.seek(0); err.truncate()
+                with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                    code = boardctl.main(list(args))
+                return code, out.getvalue().strip(), err.getvalue()
+            cli('init', str(root), '--project-id', 'gallery', '--project-name', 'Gallery hint')
+            cli('join', 'alpha-agent', '--path', str(root))
+            report = Path(tmp) / 'separate.json'
+            report.write_text(json.dumps(separate))
+            code, rel, warnings = cli('post', '--path', str(root), '--from', 'alpha-agent', '--to', 'all', '--scope', 'room',
+                                      '--room', 'general', '--thread', 'T001', '--slug', 'images', '--ui-file', str(report),
+                                      '--body', 'Two screenshots of the release dashboard.')
+            self.assertEqual(code, 0, warnings)
+            self.assertIn('image-gallery', warnings)
+            self.assertEqual(json.loads(boardctl.parse_message(root / rel)['UI']), separate)
+
     def test_schema_text_patterns_match_runtime_text_rules(self):
         for version in (1, 2, 3):
             schema = json.loads((Path(boardctl.__file__).parent / f'.agent-board/components/board-report-v{version}.schema.json').read_text())

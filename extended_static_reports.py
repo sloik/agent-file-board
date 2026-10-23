@@ -160,3 +160,24 @@ def extension_validator():
         else:
             raise ValueError('UI v3: unknown component ' + kind)
     return validate
+
+
+def gallery_hint(report):
+    """Advisory only: several separate `image` components in one report are easier to
+    read as one `image-gallery`, which viewers can enlarge and browse together."""
+    count = 0
+    pending = [report]
+    while pending:
+        node = pending.pop()
+        if isinstance(node, dict):
+            if node.get("type") == "image":
+                count += 1
+            if node.get("type") != "image-gallery":
+                pending.extend(node.values())
+        elif isinstance(node, list):
+            pending.extend(node)
+    if count < 2:
+        return None
+    return (f"hint: this report has {count} separate image components; one image-gallery with a "
+            "title and alt text per image lets readers enlarge and browse them together (see the "
+            "convention's static report section). The message was posted unchanged.")

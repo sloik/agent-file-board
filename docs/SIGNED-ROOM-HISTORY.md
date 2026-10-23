@@ -1,11 +1,13 @@
 # Signed room history: inventory and checkpoint design
 
 Status: **implemented in the canonical CLI in 3.0.0** (opt-in, advisory) by
-[SPEC-002-046](../specs/SPEC-002-046-room-history-detection.md), following the
+[SPEC-002-046](../specs/SPEC-002-046-room-history-detection.md); export, import,
+`rebind` and interoperability vectors added in 3.1.0 by
+[SPEC-002-047](../specs/SPEC-002-047-room-history-export-import-rebind.md); following the
 reviewed design [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md)
 (security, protocol and UI reviews converged 2026-10-23); builds on
 [signed room history research](SIGNED-ROOM-HISTORY-RESEARCH.md). See
-[implementation status](#implementation-status-300) for what shipped and what is
+[implementation status](#implementation-status-300-310) for what shipped and what is
 still a plan. Nothing here changes message signing, encryption wording or
 eligibility. The format is normative in the convention's "Signed room inventories".
 
@@ -51,8 +53,9 @@ conversion by Git or sync tools, and sync conflicts can also cause it.
 3. Check later: `boardctl history status` (or `--scope S` for one room).
    "Not set up" means nothing is protected yet; uncovered messages are listed as
    such.
-4. Planned, not in 3.0.0: `boardctl history export` to keep an independent anchor
-   elsewhere. Until then, back up the private state directory.
+4. Optional (3.1.0): `boardctl history export --output FILE` and keep the file and
+   its printed SHA-256 somewhere independent, so a fresh or rebuilt client can
+   `history import` it. After moving a folder, `history rebind --from OLD_PATH`.
 
 ## 1. Trust and bootstrap (AC1)
 
@@ -139,8 +142,8 @@ with `revoked`. Effects, applied per expectation:
 trusted inventories currently say. That protects against later loss but cannot
 reveal anything hidden before first contact; status reports `bootstrap:
 folder-only` with the exact text "seen from this folder only; removals before
-this client's first check cannot be detected". Importing an export (planned, not
-in 3.0.0) would change it to `bootstrap: imported`.
+this client's first check cannot be detected". Importing an export (3.1.0)
+changes it to `bootstrap: imported` for the scopes that gained expectations.
 
 **Lineage hint.** Inventories reference the same signer's earlier inventories for
 the same scope (`previous`, section 2). If a trusted inventory references a hash
@@ -293,9 +296,12 @@ mode `0600`, directory `0700`, outside the shared board.
 - **Keyed by folder path, with the board UUID recorded inside**, exactly like the
   signing state. If the shared `config.identity.boardId` changes, the stored UUID
   no longer matches and history refuses with a conflict instead of starting
-  empty. Moving a folder starts a new file. The planned `history rebind --from
-  OLD_PATH` (matching board UUIDs) and export/import will carry a checkpoint
-  across; in 3.0.0 a moved folder starts unprotected until observed again.
+  empty. Moving a folder starts a new file; `history rebind --from OLD_PATH`
+  (3.1.0) carries the checkpoint across when the board UUID matches and the new
+  location has learned nothing yet. It also copies the old signing state (pins,
+  floors, learned evidence) if the new location's signing state is still
+  untouched; otherwise it keeps it and says to re-establish trust. It never
+  merges and never deletes the old files.
 - Trust always comes from the signing state for the same path, so two folder
   copies never share pins or source status.
 - A missing board UUID makes history unavailable, reported as
@@ -411,8 +417,8 @@ paths), `referenced-observation-unavailable`, `profile-evidence-unavailable`,
 `checkpoint-capacity-exhausted`, `history-unavailable`, pending inventories and
 whether the verification window was complete. When a scope is `not-set-up` but
 the private history directory holds a file with the same board UUID for another
-folder path, status will suggest `history rebind --from OLD_PATH` (planned with
-`rebind`).
+folder path, status reports `rebind-available` and lists the exact
+`history rebind --from OLD_PATH` command (3.1.0).
 
 Rules:
 
@@ -447,7 +453,7 @@ inventory files. Per scan the client:
 
 ## 5. Diagnostics vocabulary (AC5)
 
-CLI as shipped in 3.0.0. Every command accepts `--path` and `--state-dir` (the
+CLI as shipped (3.0.0, with export, import and rebind added in 3.1.0). Every command accepts `--path` and `--state-dir` (the
 same private base as `signing`, default `AGENT_FILE_BOARD_STATE_DIR` or the XDG
 state directory) and prints one JSON object on success:
 
@@ -457,9 +463,12 @@ boardctl history status  [--scope S] [--strict]
 boardctl history acknowledge --message rooms/ROOM/FILE.txt --reason TEXT
 boardctl history accept  --observation HASH --reason TEXT
 boardctl history forget  (--scope S | --observation HASH) --reason TEXT [--yes]
+boardctl history export  --output FILE
+boardctl history import  --file FILE --sha256 EXPECTED
+boardctl history rebind  --from OLD_PATH
 ```
 
-Planned, not in 3.0.0: `export`, `import`, `rebind` and `--prepare-signing`.
+Still planned: `--prepare-signing` (external signer) for inventories.
 
 Exit codes follow existing `boardctl` conventions, where every refusal or error
 exits `2` with a message on standard error and no JSON:
@@ -482,8 +491,9 @@ exits `2` with a message on standard error and no JSON:
   unfamiliar signer's inventory, invalid input). `forget` without `--yes` prints
   what it would drop as JSON and exits `2`.
 
-`status` reports `bootstrap` (`folder-only` in 3.0.0, with the exact note text)
-and, per scope: `setUp`, `diagnostics`, `coverage`
+`status` reports `bootstrap` (`folder-only`, `imported` or `mixed`, with the exact
+note text), `rebind` commands when available, and, per scope: `setUp`,
+`bootstrap`, `diagnostics`, `coverage`
 (`expected`, `available`, `uncovered`), `lastObservedLocal`, `summary` (count per
 observed state and per source status), `needsAttention` (count of `changed` and
 `conflicting-commitments`, plus any non-`available` expectation with at least
@@ -498,7 +508,7 @@ escalate long-unavailable messages automatically; `unavailableSince` lets
 operators judge. State names are the portable vocabulary; the viewer translates
 labels.
 
-**Export format (planned, not in 3.0.0).** One JSON file: `version`, `boardId`, `inventories` (base64
+**Export format (3.1.0).** One JSON file, created exclusively with mode `0600`: `version`, `boardId`, `inventories` (base64
 envelope bytes) and `profiles` (base64 profile envelope bytes), at most 48 MiB
 (the 32 MiB raw checkpoint budget after base64 expansion) and 20,000
 inventories. `--sha256` is the SHA-256 of the exact file bytes, obtained out of
@@ -507,8 +517,10 @@ batches of 200 inventories with the usual per-batch profile evidence budget,
 until done or capacity is reached, and reports progress and any remainder.
 `bootstrap: imported` is shown only for scopes where the import produced at
 least one expectation. An inventory from a key that has since been normally
-rotated or retired imports as `unfamiliar-signer`; the operator can accept it
-with `history accept` after checking it. This is the rotation limit of an
+rotated or retired imports as `unfamiliar-signer` and is staged privately; the
+operator can accept it with `history accept` after checking it. Imported profile
+envelopes become private lifecycle evidence that `signing` resolution still
+verifies. This is the rotation limit of an
 independent anchor and is stated, not hidden.
 
 **Viewer.** A per-scope "Missing-message check" indicator, not a lock and not the
@@ -528,9 +540,9 @@ notification or unread effect. The panel links to "what this does not protect"
 (section 8), as signing help does. The viewer design is a UI-repository
 follow-up of this contract.
 
-## Implementation status (3.0.0)
+## Implementation status (3.0.0, 3.1.0)
 
-| Design element | 3.0.0 |
+| Design element | Status |
 | --- | --- |
 | Inventory format, payload type, limits, grammar, case-alias and scope rules | Implemented (`room_history.py`) |
 | `observe` with safeguards, delta, split parts, merge observations, `--full` | Implemented |
@@ -539,8 +551,9 @@ follow-up of this contract.
 | Flood budget (name equals hash, invalid-only cache, prefilter, 200 / 16 MiB window) | Implemented |
 | `status`, `acknowledge`, `accept`, `forget` | Implemented |
 | Learning compromise for unpinned signers during scans | Implemented (found while building the formal traces) |
-| Checkpoint export and import, `bootstrap: imported` | Planned |
-| `rebind` and the rebind hint | Planned |
+| Checkpoint export and import, `bootstrap: imported` | Implemented in 3.1.0 |
+| `rebind` and the rebind hint | Implemented in 3.1.0 |
+| Shared frozen Python/browser vectors | Implemented in 3.1.0 (`tests/fixtures/room-history/vectors.json`) |
 | External signer flow for inventories | Planned |
 | Viewer display | Planned. Viewers ignore `history/` (native reads walk only room, direct, repair and identity paths; uploads use an allowlist); use viewer 3.0.0 with 3.0.0 boards, since older viewers warn about the version mismatch |
 | Formal model | Implemented as `formal/RoomHistory.tla` (section 6) |
@@ -624,10 +637,16 @@ using the published RFC 8032 test seed only. Covered:
   version, entry limit, merge rules, payload-type separation, tampered payloads.
 - CLI invalid input and a colliding direct directory.
 
-Planned with the remaining features: imported checkpoints, rebind, folder moves,
-conflicting commitments from two different trusted signers, key rotation and
-retirement combinations, more than 16 tips, case-only aliases on a
-case-sensitive filesystem, and shared frozen Python/browser vectors.
+Added in 3.1.0: export and import restoring protection for a fresh client after
+shared evidence and a message were removed; hash, board and untrusted-signer
+refusals; unfamiliar imports staged until accepted; rebind of a moved folder with
+signing state, refusals and the status hint; 3.0 checkpoint upgrade; and
+`tests/test_room_history_vectors.py` checking every frozen inventory and status
+vector (`scripts/build_room_history_vectors.py` regenerates them deliberately).
+
+Still planned: conflicting commitments from two different trusted signers, key
+rotation and retirement combinations, more than 16 tips and case-only aliases on
+a case-sensitive filesystem.
 
 Interoperability: Python and browser must agree on verification results, observed
 states, source statuses and scope diagnostics for every fixture before either is
@@ -641,7 +660,7 @@ described as implementing the contract.
 - A fresh folder-only client cannot detect anything removed before first contact,
   nor removal of a signer's newest observation.
 - Losing private history state loses its protection; back up the private state
-  directory (exports are planned).
+  directory or keep exports (3.1.0).
 - A trusted signer, or a thief holding its key before revocation is learned, can
   sign misleading observations, including ones that raise false "unavailable"
   reports. Signatures prove who observed, not that it is accurate.
