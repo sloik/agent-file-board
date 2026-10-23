@@ -113,6 +113,26 @@
         "answer mutant: accepts excluded claim",
         "answer mutant: unauthorized resolution"
       ]
+    },
+    "RoomHistory": {
+      "mode": "record",
+      "collector": "formal/collect_room_history.py",
+      "positive": [
+        "history: observe, delete and restore",
+        "history: addition stays uncovered",
+        "history: shared removal keeps expectations",
+        "history: replayed older inventory",
+        "history: untrusted then pinned",
+        "history: revocation after deletion",
+        "history: acknowledgement lapses",
+        "history: forget drops coverage"
+      ],
+      "mutants": [
+        "history mutant: trusts unpinned signer",
+        "history mutant: revocation not first",
+        "history mutant: acknowledgement never lapses",
+        "history mutant: shared removal resets checkpoint"
+      ]
     }
   }
 }

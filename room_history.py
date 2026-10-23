@@ -361,16 +361,16 @@ class Checkpoint:
             else:
                 diagnostics[scope][kind].append({"observation": digest, "reason": reason,
                                                  "participant": detail.get("participant")})
-        # Re-resolving pinned signers learns shared compromise events privately.
+        # Re-resolving every recorded signer, pinned or not, learns shared
+        # compromise events privately; an unpin must not hide a revocation.
         for participant in sorted({s["participant"] for s in self.state["sources"].values()}):
-            if participant in self.s.state["pins"]:
-                try:
-                    self.s.resolve(participant)
-                except (ValueError, OSError, KeyError, ImportError, TypeError):
-                    for scope in scopes:
-                        if any(s["participant"] == participant and s["scope"] == scope
-                               for s in self.state["sources"].values()):
-                            diagnostics[scope]["profileEvidenceUnavailable"] = True
+            try:
+                self.s.resolve(participant)
+            except (ValueError, OSError, KeyError, ImportError, TypeError):
+                for scope in scopes:
+                    if any(s["participant"] == participant and s["scope"] == scope
+                           for s in self.state["sources"].values()):
+                        diagnostics[scope]["profileEvidenceUnavailable"] = True
         return diagnostics
 
     def _cache_invalid(self, digest):

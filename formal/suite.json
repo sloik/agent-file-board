@@ -81,6 +81,50 @@
       "module": "AnswerAcceptance.tla",
       "config": "AnswerAcceptanceBadAuthority.cfg",
       "counterexample": "FirstWins"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistory.cfg"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryReachable.cfg",
+      "counterexample": "NeverDetects"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryBadTrust.cfg",
+      "counterexample": "UntrustedCreatesNothing"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryBadReset.cfg",
+      "counterexample": "NoLostExpectation"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryBadReplay.cfg",
+      "counterexample": "NoLostExpectation"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryBadAddition.cfg",
+      "counterexample": "AdditionsNeverMismatch"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryBadRevocation.cfg",
+      "counterexample": "ObservationNeverHidden"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryBadUnpin.cfg",
+      "counterexample": "RevokedAlwaysAttention"
+    },
+    {
+      "module": "RoomHistory.tla",
+      "config": "RoomHistoryBadAck.cfg",
+      "counterexample": "AckBoundToObserved"
     }
   ]
 }

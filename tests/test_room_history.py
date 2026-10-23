@@ -210,6 +210,16 @@ class RoomHistoryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "only revoked sources"):
             history.acknowledge(self.sess(), self.rel(first), "reviewed")
 
+    def test_revocation_published_after_unpin_is_still_learned(self):
+        first, _, _ = self.three()
+        self.observe()
+        first.unlink()
+        self.ctl("signing", "untrust", "--participant", self.participant)
+        trace_fixtures.revocation(self)
+        row = self.rows(self.status(expected=2)[0])[self.rel(first)]
+        self.assertEqual(row["source"], "revoked")
+        self.assertTrue(row["needsAttention"])
+
     def test_unpinned_only_sources_are_neutral(self):
         first, _, _ = self.three()
         self.observe()
