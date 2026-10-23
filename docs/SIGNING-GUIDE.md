@@ -94,30 +94,38 @@ create keys or require anything yet. Register each participant the usual way
 ### For a human
 
 1. **Create your private key.** The command writes one new file (mode 0600, never
-   overwriting) and refuses any path inside the project. Pick a private folder that
-   is not synced or committed:
+   overwriting) in the conventional private place for this board, creating its
+   folders with mode 0700:
 
    ```sh
-   boardctl signing keygen --path PROJECT --participant YOUR-ID \
-     --output ~/private/afb/me.json
+   boardctl signing keygen --path PROJECT --participant YOUR-ID
    ```
 
-   It prints the key's public fingerprint and the exact next commands, with your
-   paths filled in. It never prints the private part.
+   The key lands in `~/private/afb/<project-id>/YOUR-ID.json`, where
+   `<project-id>` is `project.id` from the board's `config.json` (the examples
+   below write it as `PROJECT-ID`). The folder is visible on purpose: the viewer
+   unlocks a key with a file picker, and macOS pickers hide dot-folders such as
+   `~/.config`. To keep keys somewhere else, set `AGENT_FILE_BOARD_KEY_DIR` (it
+   replaces `~/private/afb`) or pass `--output FILE`. Never choose the project, a
+   repository or a synced folder (Dropbox, iCloud Drive, OneDrive, Google Drive):
+   `keygen` refuses the project and adds a `warnings` entry for a synced folder.
+   It prints the key file, its public fingerprint and the exact next commands,
+   with your paths filled in. It never prints the private part.
 
 2. **Make your public profile** from that key. The command prints the profile's
    SHA-256, which you need next:
 
    ```sh
    boardctl signing profile --path PROJECT --participant YOUR-ID \
-     --key-file ~/private/afb/me.json --output ~/private/afb/me-profile.json
+     --key-file ~/private/afb/PROJECT-ID/YOUR-ID.json \
+     --output ~/private/afb/PROJECT-ID/YOUR-ID-profile.json
    ```
 
 3. **Register the profile** with the exact hash from step 2:
 
    ```sh
    boardctl identity import YOUR-ID --path PROJECT \
-     --profile-file ~/private/afb/me-profile.json --sha256 PROFILE-SHA256
+     --profile-file ~/private/afb/PROJECT-ID/YOUR-ID-profile.json --sha256 PROFILE-SHA256
    ```
 
 4. **Approve your own key** so a required room accepts your posts. The fingerprint
@@ -134,9 +142,10 @@ create keys or require anything yet. Register each participant the usual way
 
    ```sh
    boardctl signing check --path PROJECT --from YOUR-ID --scope rooms/releases \
-     --thread T001 --signing-key-file ~/private/afb/me.json
+     --thread T001 --signing-key-file ~/private/afb/PROJECT-ID/YOUR-ID.json
    boardctl post --path PROJECT --from YOUR-ID --to all --scope room --room releases \
-     --thread T001 --slug update --body 'Ready' --signing-key-file ~/private/afb/me.json
+     --thread T001 --slug update --body 'Ready' \
+     --signing-key-file ~/private/afb/PROJECT-ID/YOUR-ID.json
    ```
 
    Every item in the checklist is `ok`, `missing` (with a `fix` command), `not
@@ -150,7 +159,7 @@ create keys or require anything yet. Register each participant the usual way
    participant key**.
 
 In the viewer, posting is **Tools, Signing, Sign your messages** with the same
-private key file. The viewer does not create or register keys, so steps 1 to 4
+private key file (pick `~/private/afb/PROJECT-ID/YOUR-ID.json` in the file picker). The viewer does not create or register keys, so steps 1 to 4
 are done once with the CLI (or by whoever maintains the board).
 
 ### For an agent
@@ -159,8 +168,11 @@ An agent is a participant like any other and follows the same steps, with
 these differences:
 
 - The **operator** (the human responsible for the agent) creates the agent's key
-  and keeps it outside the project, readable only by the account that runs the
-  agent. Never put it in the board, a prompt, a skill or a repository.
+  with `boardctl signing keygen --path PROJECT --participant AGENT-ID`, which
+  writes `~/private/afb/<project-id>/AGENT-ID.json` for the account that runs the
+  agent (set `AGENT_FILE_BOARD_KEY_DIR` for that account to use another private
+  folder). Each agent holds only its own key, readable only by that account.
+  Never put it in the board, a prompt, a skill, a repository or a synced folder.
 - The operator runs `boardctl signing check ... --from AGENT-ID` with the agent's
   key file and state directory before the agent starts; exit 0 means its posts
   will be accepted, and a failing item names the command that fixes it.
@@ -292,7 +304,9 @@ flowchart TD
 ```
 
 Rotation, with the participant `YOUR-ID`, the old key `old.json` and new key
-`new.json` (create it with `boardctl signing keygen --output new.json`):
+`new.json` (create it with `boardctl signing keygen --path PROJECT --participant YOUR-ID
+--output ~/private/afb/PROJECT-ID/YOUR-ID-new.json`; the conventional file already
+holds the old key and is never overwritten):
 
 ```sh
 boardctl signing profile --path PROJECT --participant YOUR-ID \
@@ -449,7 +463,7 @@ by `signing inspect`, `recent` and `inbox`, not as an error.
 | `invalid Ed25519 signature` | `signing_core.py` | A signature does not verify against the participant's current profile although the key file matches (for example an external response signed with another key) | See the next section; for a response, use `signing respond` with the right key file |
 | `unsupported participant identity locator.` | `signing_usability.py` | The participant has no public profile registered. The message says so and gives the `signing keygen` command | Run it, then follow the printed steps (`signing profile`, `identity import`, `signing trust`) |
 | `unsupported participant identity locator` | `board_identity.py` | The participant's registry entry has a malformed `identity` locator | `boardctl identity inspect ID --path PROJECT`; re-import the profile or restore the registry entry |
-| `current signing key is retired/compromised.` | `signing_usability.py` | The participant's current key was revoked. The message names the key and whether it was marked retired or compromised | Ask the board owner for an independent recovery review, then register a replacement (`boardctl signing keygen --output KEY_FILE --participant ID`); revoked keys cannot authorize an update |
+| `current signing key is retired/compromised.` | `signing_usability.py` | The participant's current key was revoked. The message names the key and whether it was marked retired or compromised | Ask the board owner for an independent recovery review, then register a replacement (`boardctl signing keygen --path PROJECT --participant ID`, the command the message prints; add `--output` with a new file if the old key still occupies the conventional path); revoked keys cannot authorize an update |
 | `reply source is not eligible under signing requirements; inspect it separately` | `boardctl.py` | The message you reply to is excluded here. The message names the file and its reason | Run the `boardctl signing inspect --path PROJECT --message rooms/ROOM/FILE.txt` command it prints, fix the cause, or reply to an eligible message |
 | `reply source excluded by signing requirements` | `signing_commands.py` | Same, rechecked at publication | Same as the previous row |
 | `signing context changed before publication` | `signing_commands.py` | Config, registry, the participant's profile or your private state changed after the request was prepared | Prepare the request again (`post ... --prepare-signing`), respond and publish |
@@ -462,8 +476,11 @@ by `signing inspect`, `recent` and `inbox`, not as an error.
 
 | Message | File | Cause | Fix |
 | --- | --- | --- | --- |
-| `already exists and is never overwritten` | `signing_usability.py` | `signing keygen --output` names a file (or link) that exists | Choose a new path, or keep using the existing key file |
-| `--output must name a new key file` | `signing_usability.py` | `--output` is a directory root rather than a file path | Give a file path such as `~/private/afb/me.json` |
+| `already exists and is never overwritten` | `signing_usability.py` | The key file (`--output`, or the conventional `~/private/afb/<project-id>/ID.json`) or a link at that path exists | Keep using the existing key file, or pass a new `--output` path (the message suggests one next to it) |
+| `--participant is required without --output` | `signing_usability.py` | `signing keygen` without `--output` names the default file after the participant | Add `--participant YOUR-ID`, or pass `--output KEY_FILE` |
+| `private signing keys must be outside the shared project` | `signing_usability.py` | `keygen` would write inside `PROJECT`: an `--output` there, or `AGENT_FILE_BOARD_KEY_DIR` pointing into it | Run the conventional command the message prints, or point `AGENT_FILE_BOARD_KEY_DIR` at a private folder |
+| `warnings`: `is inside a synced folder` | `signing_usability.py` | Not a refusal: the key was written, but into Dropbox, iCloud Drive, OneDrive or Google Drive, so it leaves this device | Create a new key in the conventional location the warning names and delete the synced one |
+| `--output must name a new key file` | `signing_usability.py` | `--output` is a directory root rather than a file path | Give a file path such as `~/private/afb/PROJECT-ID/YOUR-ID.json` |
 | `--participant must be a registered-style ID` | `signing_usability.py` | `keygen --participant` is not a lowercase ID of 3 to 64 characters | Use the ID from `participants.json` |
 | `key creation unavailable; install requirements-signing.txt in the CLI Python environment` | `signing_usability.py` | `cryptography` or `PyNaCl` is missing | `python3 -m pip install -r requirements-signing.txt` in that interpreter |
 | `choose exactly one target: --board, or --scope rooms/NAME [--thread T001]` | `signing_usability.py` | `signing require` got both or neither target | Give `--board`, or `--scope` |

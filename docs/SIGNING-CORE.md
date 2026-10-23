@@ -218,7 +218,7 @@ Three commands set up and diagnose signing without hand-editing files
 (see the [signing guide](SIGNING-GUIDE.md) for the walkthrough):
 
 ```sh
-python boardctl.py signing keygen --path PROJECT --participant ID --output /private/key.json
+python boardctl.py signing keygen --path PROJECT --participant ID [--output /private/key.json]
 python boardctl.py signing require --path PROJECT (--board | --scope rooms/NAME [--thread T001]) \
   --minimum trusted|optional [--weaken]
 python boardctl.py signing check --path PROJECT --from ID --scope rooms/NAME [--thread T001] \
@@ -226,7 +226,10 @@ python boardctl.py signing check --path PROJECT --from ID --scope rooms/NAME [--
 ```
 
 - `keygen` creates a new Ed25519 private JWK with exclusive creation and mode
-  `0600`, refuses any path inside PROJECT and never overwrites. It prints the
+  `0600`, refuses any path inside PROJECT and never overwrites. Without `--output`
+  it writes `~/private/afb/<project-id>/<participant-id>.json` (folders `0700`;
+  `AGENT_FILE_BOARD_KEY_DIR` replaces `~/private/afb`) and adds a `warnings` entry
+  when the key folder is synced (Dropbox, iCloud Drive, OneDrive, Google Drive). It prints the
   public fingerprint and the `signing profile`, `identity import` and `signing
   trust` commands to run next; it never prints or logs the private part.
 - `require` edits only `message_signing` in `config.json`: it validates the result

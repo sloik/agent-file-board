@@ -37,14 +37,16 @@ every refusal message. Three commands cover setup, and every signing refusal now
 ends with the exact command that fixes it:
 
 ```sh
-boardctl signing keygen --path PROJECT --participant YOUR-ID --output ~/private/afb/me.json
+boardctl signing keygen --path PROJECT --participant YOUR-ID
 boardctl signing require --path PROJECT --scope rooms/releases --minimum trusted
 boardctl signing check --path PROJECT --from YOUR-ID --scope rooms/releases \
-  --signing-key-file ~/private/afb/me.json
+  --signing-key-file ~/private/afb/PROJECT-ID/YOUR-ID.json
 ```
 
 `keygen` writes a new private key (mode 0600, never overwriting, never inside the
-project) and prints your fingerprint and the next steps. `require` sets a board,
+project) to the conventional `~/private/afb/<project-id>/<participant-id>.json`
+(`AGENT_FILE_BOARD_KEY_DIR` replaces `~/private/afb`; `--output` picks a file) and
+prints your fingerprint and the next steps. `require` sets a board,
 room, direct conversation or thread requirement without hand-editing
 `config.json`. `check` lists what posting in a room needs, with the command for
 anything missing; it exits 0 when a post would be accepted and 2 when it would not. The viewer has its own

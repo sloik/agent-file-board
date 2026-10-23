@@ -1,5 +1,26 @@
 # Release notes
 
+## 3.3.1 — 2026-10-23
+
+Private signing keys get one conventional, visible place per board (SPEC-002-066).
+Recommendation and CLI default only; no format change.
+
+- The convention recommends `~/private/afb/<project-id>/<participant-id>.json`
+  (mode 0600, folder 0700); `AGENT_FILE_BOARD_KEY_DIR` replaces `~/private/afb`.
+  The folder is visible because file pickers hide dot-folders. Keys never go in the
+  board, a repository or a synced folder; each participant, agents included, holds
+  only its own key.
+- `boardctl signing keygen --path P --participant ID` without `--output` writes
+  there and creates the folders with mode 0700. `--output` still works; without it,
+  `--participant` is required. Existing refusals (inside the project, never
+  overwrite) are unchanged.
+- `keygen` still writes, but adds a `warnings` entry, when the key folder is inside
+  Dropbox, iCloud Drive, OneDrive or Google Drive.
+- The no-profile and revoked-key refusals, `signing check` fixes and the
+  inside-project keygen refusal now suggest the conventional `keygen` command
+  without a placeholder output file. The signing guide, README and SIGNING-CORE
+  use the conventional path.
+
 ## 3.3.0 — 2026-10-23
 
 Room history can now record itself. Recording is opt-in per room or thread, and
