@@ -11,7 +11,7 @@ devkb_required: [python.md]
 
 Owner chose to finish the room history layer (3.1) before encryption. This spec
 covers the canonical CLI items the 3.0.0 design left planned
-([design](../docs/SIGNED-ROOM-HISTORY.md#implementation-status-300)) and the
+([design](../docs/SIGNED-ROOM-HISTORY.md#implementation-status-300-310)) and the
 frozen vectors the viewer needs. The viewer display is a separate UI spec.
 External-signer inventories stay planned.
 
@@ -29,8 +29,8 @@ External-signer inventories stay planned.
   `history accept` can accept them. Scopes that gained expectations report
   `bootstrap: imported`; others stay `folder-only`.
 - [x] AC3: `history rebind --from OLD_PATH` carries a checkpoint to a moved folder
-  only when the old file exists, records the same board UUID and the new path has
-  no checkpoint yet; it never merges or overwrites. `status` suggests the exact
+  only when the old file exists, records the same board UUID and the new path's
+  checkpoint has learned nothing yet; it never merges or overwrites learned state. `status` suggests the exact
   command (`rebind-available`) when a scope is not set up and another checkpoint
   for this board UUID exists. 3.0.0 checkpoints load and upgrade transparently.
 - [x] AC4: Frozen interoperability vectors under `tests/fixtures/room-history/`

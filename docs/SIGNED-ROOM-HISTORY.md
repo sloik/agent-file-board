@@ -7,7 +7,7 @@ Status: **implemented in the canonical CLI in 3.0.0** (opt-in, advisory) by
 reviewed design [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md)
 (security, protocol and UI reviews converged 2026-10-23); builds on
 [signed room history research](SIGNED-ROOM-HISTORY-RESEARCH.md). See
-[implementation status](#implementation-status-300) for what shipped and what is
+[implementation status](#implementation-status-300-310) for what shipped and what is
 still a plan. Nothing here changes message signing, encryption wording or
 eligibility. The format is normative in the convention's "Signed room inventories".
 
