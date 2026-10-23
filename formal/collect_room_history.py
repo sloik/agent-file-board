@@ -15,6 +15,7 @@ import types
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / 'tests'))
 sys.path.insert(0, str(ROOT))
+import history_recording
 import room_history
 import trace_fixtures
 
@@ -33,25 +34,40 @@ MUTANTS = {
          '        if not safe_path(self.board, "history").is_dir():\n            self.state["commitments"] = {}\n'
          '        forgotten = self.state["forgotten"]["observations"]\n')],
 }
+# Record-on-post mutants (history_recording.py, SPEC-002-062).
+RECORDING_MUTANTS = {
+    'record on post blesses anomalies': [
+        ('result = room_history.observe(s, scope, sender, key_file)',
+         'result = room_history.observe(s, scope, sender, key_file, accept=True)')],
+    'record on post with unapproved own key': [
+        ('        if s.state["pins"].get(sender) != head.fingerprint:\n            return [f"history: not recorded',
+         '        if False:\n            return [f"history: not recorded')],
+}
+
+
+def target(name):
+    return 'history_recording' if name in RECORDING_MUTANTS else 'room_history'
 
 
 def mutated(name):
-    source = (ROOT / 'room_history.py').read_text()
-    for old, new in MUTANTS[name]:
+    module_name = target(name)
+    source = (ROOT / (module_name + '.py')).read_text()
+    for old, new in {**MUTANTS, **RECORDING_MUTANTS}[name]:
         if source.count(old) != 1:
             raise RuntimeError('mutation anchor missing: ' + name)
         source = source.replace(old, new)
-    module = types.ModuleType('room_history')
-    module.__file__ = str(ROOT / 'room_history.py')
-    exec(compile(source, 'mutated_room_history.py', 'exec'), module.__dict__)
+    module = types.ModuleType(module_name)
+    module.__file__ = str(ROOT / (module_name + '.py'))
+    exec(compile(source, 'mutated_' + module_name + '.py', 'exec'), module.__dict__)
     return module
 
 
 def trace(scenario, actions, mutant=None):
     from test_room_history import RoomHistoryTests
-    original = sys.modules['room_history']
+    replaced = target(mutant)
+    original = sys.modules[replaced]
     if mutant:
-        sys.modules['room_history'] = mutated(mutant)
+        sys.modules[replaced] = mutated(mutant)
     f = RoomHistoryTests()
     try:
         f.setUp()
@@ -107,6 +123,15 @@ def trace(scenario, actions, mutant=None):
             elif verb == 'post':
                 paths[m] = f.post('m-two')
                 originals[m] = paths[m].read_bytes()
+            elif verb == 'post-recorded':
+                # Real boardctl post with room_history on: the recording, if any, is its own effect.
+                f.run_cli('policy', '--scope', f.scope, '--record', 'on-post')
+                before = {p.name for p in f.inventories()}
+                paths[m] = f.post('m-two')
+                originals[m] = paths[m].read_bytes()
+                if {p.name for p in f.inventories()} - before:
+                    older.append(before)
+                    ghost['vouched'] |= {x for x in ('m1', 'm2') if folder(x) == 'ok'}
             elif verb == 'delete':
                 paths[m].unlink()
             elif verb == 'change':
@@ -147,7 +172,7 @@ def trace(scenario, actions, mutant=None):
         return dict(model='RoomHistory', scenario=scenario, states=[copy.deepcopy(s) for s in states])
     finally:
         f.doCleanups()
-        sys.modules['room_history'] = original
+        sys.modules[replaced] = original
 
 
 def traces(mutant=False):
@@ -158,7 +183,11 @@ def traces(mutant=False):
                 trace('history mutant: acknowledgement never lapses',
                       ['observe', 'change m1', 'acknowledge m1', 'change m1'], 'acknowledgement never lapses'),
                 trace('history mutant: shared removal resets checkpoint', ['observe', 'remove-shared'],
-                      'shared removal resets checkpoint')]
+                      'shared removal resets checkpoint'),
+                trace('history mutant: record on post blesses anomalies', ['observe', 'delete m1', 'post-recorded m2'],
+                      'record on post blesses anomalies'),
+                trace('history mutant: record on post with unapproved own key', ['unpin', 'post-recorded m2'],
+                      'record on post with unapproved own key')]
     return [trace('history: observe, delete and restore', ['observe', 'delete m1', 'restore m1']),
             trace('history: addition stays uncovered', ['observe', 'post m2', 'observe', 'delete m2']),
             trace('history: shared removal keeps expectations', ['observe', 'remove-shared', 'delete m1']),
@@ -166,4 +195,7 @@ def traces(mutant=False):
             trace('history: untrusted then pinned', ['unpin', 'observe', 'repin', 'delete m1']),
             trace('history: revocation after deletion', ['observe', 'delete m1', 'revoke', 'unpin']),
             trace('history: acknowledgement lapses', ['observe', 'change m1', 'acknowledge m1', 'change m1', 'restore m1']),
-            trace('history: forget drops coverage', ['observe', 'delete m1', 'forget', 'restore m1'])]
+            trace('history: forget drops coverage', ['observe', 'delete m1', 'forget', 'restore m1']),
+            trace('history: record on post', ['post-recorded m2', 'delete m2', 'restore m2']),
+            trace('history: record on post refused by anomaly', ['observe', 'delete m1', 'post-recorded m2', 'restore m1']),
+            trace('history: record on post while unpinned', ['unpin', 'post-recorded m2', 'repin', 'delete m2'])]

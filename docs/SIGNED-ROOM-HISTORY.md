@@ -4,7 +4,9 @@ Status: **implemented in the canonical CLI in 3.0.0** (opt-in, advisory) by
 [SPEC-002-046](../specs/SPEC-002-046-room-history-detection.md); export, import,
 `rebind` and interoperability vectors added in 3.1.0 by
 [SPEC-002-047](../specs/SPEC-002-047-room-history-export-import-rebind.md); following the
-reviewed design [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md)
+reviewed design [SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md);
+automatic recording from signed posts, declared per room or thread, added (unreleased) by
+[SPEC-002-062](../specs/SPEC-002-062-automatic-room-history.md)
 (security, protocol and UI reviews converged 2026-10-23); builds on
 [signed room history research](SIGNED-ROOM-HISTORY-RESEARCH.md). See
 [implementation status](#implementation-status-300-310) for what shipped and what is
@@ -46,6 +48,10 @@ conversion by Git or sync tools, and sync conflicts can also cause it.
 ## Operator quickstart
 
 1. Trust the signer's key on this client: `boardctl signing trust ...` (existing).
+   Easiest start: create the room with recording on, `boardctl post --new-room
+   --record-history ...` (see [automatic recording](#automatic-recording)). Every
+   signed post there then records the room, from the first message on, and steps 2
+   and 3 below become checks rather than chores.
 2. Record what is there now:
    `boardctl history observe --scope rooms/general --from YOUR-ID --signing-key-file KEY`.
    It runs a status check first and tells you whether its output will create
@@ -339,12 +345,98 @@ checkpoint against stable folder identity and board UUID, like its local pins an
 floors; CLI and viewer checkpoints stay separate. Read-only uploads get
 session-only checkpoints, matching their session-only trust.
 
-**Who produces inventories, and when.** v1: explicit only, with
-`boardctl history observe` (directly with `--signing-key-file`, or through the
-existing `--prepare-signing` / `signing respond` / `signing publish` flow).
-Automatic emission from board-loop or after each post is deferred until real use
-shows which cadence is worth the files. Status says "not set up" for scopes
-without coverage, so explicit-only production is never mistaken for protection.
+**Who produces inventories, and when.** Explicitly with `boardctl history
+observe --signing-key-file` (the external `--prepare-signing` flow for inventories
+is still planned), or automatically after signed posts in rooms and threads that
+declare it (next section). Board-loop does not emit inventories on its own. Status
+says "not set up" for scopes without coverage, so a room without recording is
+never mistaken for protection.
+
+### Automatic recording
+
+Added by [SPEC-002-062](../specs/SPEC-002-062-automatic-room-history.md); opt-in
+and advisory like the rest of this design.
+
+**Declaring it.** A room or thread records when `config.json` says so in
+`room_history`, a key kept separate from `message_signing`. The `message_signing`
+parsers reject unknown keys, so adding a flag there would break existing CLIs and
+viewers:
+
+```json
+"room_history": {"version": 1, "scopes": {
+  "rooms/releases": {"record": "on-post"},
+  "rooms/general": {"threads": {"T007": {"record": "on-post"}}}}}
+```
+
+- At creation: `boardctl post --new-room --record-history ...` (room) or
+  `--new-thread --record-history ...` (one thread, in a room or direct pair).
+  `--require-signing trusted` sets the existing `message_signing` minimum the
+  same way.
+- `--new-room` and `--new-thread` assert that the post creates the room or
+  thread, and refuse otherwise.
+- The flags are refused before anything is written if the post could not honor
+  them:
+  - no `--signing-key-file`, or `--prepare-signing`;
+  - a key that is not the sender's current key;
+  - the sender's own key not approved on this device;
+  - no board UUID.
+- The policy is written before the message is published, so the first message is
+  already under it. A rerun after a failed publication is idempotent.
+- An existing room changes only explicitly:
+  `boardctl history policy --scope S [--thread T] --record on-post|off`
+  (`off` needs `--weaken`), or `boardctl signing require`. The edit uses the board
+  write lock and an expected-byte replacement, so it shows in review like any
+  config change.
+
+**What a recording is.** After a signed post is published into a recording room
+or thread, `post` runs the unchanged `observe` for the whole physical scope. It
+signs as `--from`, with the same key file that signed the post, and lists every
+message not yet in that signer's own remembered expectations. Other participants'
+messages are covered too.
+
+- A thread setting decides *when* recording happens. The inventory still covers
+  the room, because inventories have no thread scope.
+- All `observe` safeguards apply. `--accept-anomalies` is never used
+  automatically, so an existing anomaly stops recording, not posting.
+
+**Failures never lose the message.** Publication comes first. A recording failure
+is printed on standard error after the published path, and the post exits 0:
+
+```text
+history: NOT recorded for SCOPE: REASON. The message is posted. Next: COMMAND
+```
+
+Exit 0 is deliberate: a non-zero exit invites a retry that would post a duplicate.
+Some posts into a recording room cannot record. They still post, with a
+`history: not recorded` notice and the next command:
+
+- unsigned posts;
+- `--prepare-signing` requests;
+- signed posts whose own key is not approved on this device. Recording them would
+  create no local expectations, and would re-list the room each time.
+
+The setting changes no posting eligibility. A malformed `room_history` is reported
+the same way and never blocks a post; `history policy` refuses to edit it.
+
+**Bounds.** Usually one inventory file (about 1-2 KiB) per signed post. Reader
+budgets are unchanged: 200 inventories and 16 MiB per scan, and an 8 MiB
+per-signer and 32 MiB total checkpoint quota. A first scan of a busy room reports
+an incomplete window and finishes over later runs. When the poster's own
+checkpoint is full, the post reports `checkpoint-capacity-exhausted`.
+
+**Readers still decide whom to believe.** Recording is not trust. A client counts
+a record only if it approved the recorder's current key (`signing trust`, after
+comparing the fingerprint out of band). `history status` shows three things per
+scope:
+
+- `recordedBy`: participants whose remembered records cover the scope, with
+  source status;
+- `recording`: the declared setting;
+- `trustHint`: records from participants this client has not approved, with the
+  command shape that approves them.
+
+Every signed poster in a recording room records. Approving any one participant
+who posts there covers the room up to that participant's latest post.
 
 `observe` safeguards, so it cannot quietly bless tampering:
 
@@ -468,6 +560,16 @@ boardctl history import  --file FILE --sha256 EXPECTED
 boardctl history rebind  --from OLD_PATH
 ```
 
+Automatic recording (SPEC-002-062):
+
+```sh
+boardctl post ... --new-room|--new-thread [--record-history] [--require-signing trusted] --signing-key-file KEY
+boardctl history policy --scope S [--thread T] --record on-post|off [--weaken]
+```
+
+`history policy` prints `{target, scope, thread, record, changed, notes}`. `status`
+scopes also carry `recordedBy`, plus `recording` and `trustHint` when relevant.
+
 Still planned: `--prepare-signing` (external signer) for inventories.
 
 Exit codes follow existing `boardctl` conventions, where every refusal or error
@@ -554,11 +656,13 @@ follow-up of this contract.
 | Checkpoint export and import, `bootstrap: imported` | Implemented in 3.1.0 |
 | `rebind` and the rebind hint | Implemented in 3.1.0 |
 | Shared frozen Python/browser vectors | Implemented in 3.1.0 (`tests/fixtures/room-history/vectors.json`) |
+| Automatic recording after signed posts, declared at room or thread creation or with `history policy` | Implemented, unreleased (SPEC-002-062, `history_recording.py`) |
+| `recordedBy`, `recording` and `trustHint` in `status` | Implemented, unreleased (SPEC-002-062) |
 | External signer flow for inventories | Planned |
 | Viewer display | Planned. Viewers ignore `history/` (native reads walk only room, direct, repair and identity paths; uploads use an allowlist); use viewer 3.0.0 with 3.0.0 boards, since older viewers warn about the version mismatch |
 | Formal model | Implemented as `formal/RoomHistory.tla` (section 6) |
 
-Unit tests: `tests/test_room_history.py`. Formal: `python3 formal/check.py` and
+Unit tests: `tests/test_room_history.py` and `tests/test_history_recording.py`. Formal: `python3 formal/check.py` and
 `python3 formal/check_traces.py`.
 
 ## 6. Formal model scope (AC6)
@@ -604,6 +708,13 @@ order independence are not modelled: there is no eviction to model, and capacity
 refusal is unit-tested. Implementation mutants rejected by trace conformance:
 trusting an unpinned signer, checking pins before revocation, acknowledgements
 that never lapse, and clearing expectations when shared history disappears.
+
+`PostRecorded` (SPEC-002-062) composes `Post` with the unchanged `Observe`:
+recording only when the poster's key is pinned and current here and no anomaly
+exists, otherwise the post alone. Three production traces drive the real
+`boardctl post` path (recorded, refused by an anomaly, unpinned). Two
+implementation mutants are rejected: recording that blesses an anomaly, and
+recording with an unapproved own key.
 
 The model also covers tip consumption with merge observations (lineage never
 dropped, tips eventually reduced to one) and the per-key status order with
@@ -664,8 +775,12 @@ described as implementing the contract.
 - A trusted signer, or a thief holding its key before revocation is learned, can
   sign misleading observations, including ones that raise false "unavailable"
   reports. Signatures prove who observed, not that it is accurate.
-- Protection starts only after someone runs `observe` with a key that other
-  clients have pinned.
+- Protection starts only after someone records with a key that other clients
+  have pinned: manually with `observe`, or automatically in rooms and threads that
+  declare recording (from their first signed message). Rooms that declare nothing
+  are not recorded.
+- Automatic recording stops while an anomaly is unresolved (the post still goes
+  through); someone must review it and `acknowledge` it first.
 - Per-signer quotas limit one compromised key; four or more compromised trusted
   keys together can still fill the total budget and stop new coverage.
 - A flood of junk inventory files cannot remove remembered coverage, but it can

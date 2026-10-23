@@ -43,6 +43,13 @@ Observe(s, t) ==
                               !.pending = IF trusted THEN @ ELSE @ \cup listed])
 Post(s, t, m) == /\ s.folder[m] = "absent" /\ m \notin s.committed \cup s.pending
                  /\ t = Project([s EXCEPT !.folder[m] = "ok"])
+\* Record-on-post (SPEC-002-062): a signed post publishes first, then runs the
+\* unchanged observe with the poster's key. It records only when that key is
+\* pinned and current here and no anomaly exists; otherwise the post stands alone.
+PostRecorded(s, t, m) ==
+  LET u == Project([s EXCEPT !.folder[m] = "ok"])
+  IN /\ Post(s, u, m)
+     /\ IF Active(u) /\ ~Anomaly(u) THEN Observe(u, t) ELSE t = u
 Delete(s, t, m) == /\ s.folder[m] # "absent"
                    /\ t = Project([s EXCEPT !.folder[m] = "absent"])
 Change(s, t, m) == /\ s.folder[m] \in {"ok", "changed"}
@@ -69,7 +76,7 @@ Forget(s, t) == /\ s.expected # {}
                 /\ t = Project([s EXCEPT !.expected = {}, !.dropped = @ \cup s.committed, !.ack = NoAck])
 Step(s, t) == \/ Observe(s, t) \/ RemoveShared(s, t) \/ Replay(s, t) \/ Revoke(s, t)
               \/ Unpin(s, t) \/ Repin(s, t) \/ Forget(s, t)
-              \/ \E m \in Msgs: \/ Post(s, t, m) \/ Delete(s, t, m) \/ Change(s, t, m)
+              \/ \E m \in Msgs: \/ Post(s, t, m) \/ PostRecorded(s, t, m) \/ Delete(s, t, m) \/ Change(s, t, m)
                                 \/ Restore(s, t, m) \/ Acknowledge(s, t, m)
 Typed(s) == /\ s.folder \in [Msgs -> FolderStates] /\ s.ack \in [Msgs -> FolderStates \cup {"none"}]
             /\ s.report \in [Msgs -> Reports]

@@ -207,6 +207,33 @@ Each participant then keeps their own copy of that requirement by running
 `boardctl signing adopt --path PROJECT` after reading it. Without that step a
 later edit of the shared file could weaken what a client enforces.
 
+**Set it when the room or thread is created.** The post that creates a room or
+thread can declare its rules itself, so the first message is already covered:
+
+```sh
+boardctl post --path PROJECT --new-room --require-signing trusted --record-history \
+  --from YOUR-ID --to all --scope room --room releases --thread T001 --slug open \
+  --body "Release room" --signing-key-file KEY
+```
+
+- `--require-signing trusted` writes the same `message_signing` entry as
+  `signing require`.
+- `--record-history` turns on [automatic room history](SIGNED-ROOM-HISTORY.md#automatic-recording).
+  After that, every signed post there records the room with the poster's own
+  key, so deleted or changed messages can be noticed without anyone running
+  `history observe`.
+- Use `--new-thread` instead of `--new-room` to set the rules for one thread.
+- Both flags need your key file and your own key approved on this device.
+  Without them the command stops before writing anything.
+- They are refused for a room or thread that already has messages. Changing
+  those stays a separate, reviewable step: `signing require` here, or
+  `boardctl history policy --scope rooms/ROOM --record on-post` (turning it off
+  needs `--weaken`).
+
+Readers still decide whom to believe. A record counts on a device only after
+its owner approves the recorder's key, and `boardctl history status` lists who
+recorded each room.
+
 ## Why was my post refused?
 
 When `boardctl post` stops with `boardctl: <message>`, read the message to the end:
@@ -491,6 +518,18 @@ by `signing inspect`, `recent` and `inbox`, not as an error.
 | `private signing floor unavailable` | `signing_runtime.py` | The private requirement floor is malformed | Restore the state file from backup, then `signing adopt` |
 | `private signing evidence budget exhausted` | `signing_runtime.py` | Remembered evidence exceeds the size limit | Archive old state (you lose remembered protections) and approve again |
 | `private signing state changed concurrently` | `signing_runtime.py` | Another process created or changed the state at the same time | Retry the command |
+
+### Creating a room or thread with rules (`--new-room`, `--new-thread`)
+
+| Message | File | Cause | Fix |
+| --- | --- | --- | --- |
+| `--require-signing and --record-history declare policy for a room or thread that this post creates` | `boardctl.py` | A policy flag was given without `--new-room` or `--new-thread` | Add one of them, or use `signing require` / `history policy` for an existing room |
+| `--new-room: room NAME already has messages` / `--new-thread: thread T already has messages here` | `boardctl.py` | The room or thread exists, so this post does not create it | Post without the flag; change the rules with `signing require` or `history policy` |
+| `refused before writing anything: ... needs your own key approved on this device` | `history_recording.py` | Your current key is not approved here, so the declared rules could not be met | Run the `signing trust` command in the message, then repeat |
+| `refused before writing anything: ... needs --signing-key-file in this same command` | `history_recording.py` | `--prepare-signing` was used; the external signer cannot record history yet | Post with `--signing-key-file`, or post first and set the rules afterwards |
+| `history: NOT recorded for SCOPE: ...` | `history_recording.py` | The message **was posted**. Recording failed, for example because of an existing anomaly | Run `history status --scope SCOPE`, review it, `history acknowledge` if appropriate, then `history observe` as printed |
+| `history: not recorded for SCOPE: unsigned post` / `your own key is not approved` | `history_recording.py` | The message was posted into a recording room but cannot be recorded | Sign the next post, or approve your own key with the printed command |
+| `room_history setting unavailable: ...` | `history_recording.py` | `room_history` in `config.json` has unknown keys or values | Fix it by hand (see [automatic recording](SIGNED-ROOM-HISTORY.md#automatic-recording)); posting is not blocked meanwhile |
 
 ### Requirements (board owner)
 
