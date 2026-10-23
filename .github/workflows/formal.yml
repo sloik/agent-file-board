@@ -23,7 +23,7 @@ jobs:
           java-version: '17'
       - uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
+          python-version: '3.15'
       - name: Verify alignment, behavior, runtime traces and bounded models
         run: python3 formal/status.py
       - name: Publish verification summary

@@ -16,7 +16,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-python@v7
         with:
-          python-version: '3.12'
+          python-version: '3.15'
       - name: Test freshness monitor
         run: python3 -m unittest discover -s formal -p test_watchdog.py
       - name: Check main verification freshness
