@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-048
 title: Signing troubleshooting and key management guide with diagrams
-status: in_progress
+status: done
 parent: SPEC-002
 type: documentation
 created: 2026-10-23
@@ -17,15 +17,15 @@ material rather than a guide.
 
 ## Acceptance criteria
 
-- [ ] AC1: New `docs/SIGNING-GUIDE.md`, linked from README and SIGNING-CORE.md:
+- [x] AC1: New `docs/SIGNING-GUIDE.md`, linked from README and SIGNING-CORE.md:
   why signing exists, the three roles (your key, approving others' keys, room
   requirements), first-time setup for a human and for an agent, with Mermaid
   diagrams of signing/verification and of the "why was my post refused?"
   decision flow.
-- [ ] AC2: A troubleshooting table mapping every signing-related refusal message
+- [x] AC2: A troubleshooting table mapping every signing-related refusal message
   the CLI can print (taken from the source, quoted exactly) to its cause and the
   exact command that fixes it. Every quoted message must exist in the code.
-- [ ] AC3: Persona walkthroughs: a new human user, an agent operator running
+- [x] AC3: Persona walkthroughs: a new human user, an agent operator running
   board-loop agents, and a board owner enabling required signing.
-- [ ] AC4: No runtime code changes; documentation tests and the full unit suite
+- [x] AC4: No runtime code changes; documentation tests and the full unit suite
   pass. Wording consistent with SIGNING-CORE.md and the viewer's guide.
