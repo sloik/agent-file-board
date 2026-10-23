@@ -132,8 +132,12 @@ legitimate additions; conflicting hashes; key rotation/revocation; and private
 state loss or capacity exhaustion. Include Python/browser interoperability vectors
 before any claim that both clients implement the same contract.
 
-No implementation task is activated by this note. Resume from these design
-questions when the owner commissions the feature.
+2026-10-23: the owner commissioned design work (integrity first, trusted
+signers establish expectations, advisory-only diagnostics in v1). These questions
+are now tracked as the acceptance criteria of
+[SPEC-002-045](../specs/SPEC-002-045-signed-room-history-inventories.md), still
+architecture only. Confidentiality is a separate track:
+[folder confidentiality research](FOLDER-CONFIDENTIALITY-RESEARCH.md).
 
 ## Primary sources
 
