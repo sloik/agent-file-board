@@ -1,0 +1,606 @@
+{
+  "version": 1,
+  "about": "Frozen room history vectors; RFC 8032 TEST1 public seed only. Regenerate only with scripts/build_room_history_vectors.py.",
+  "boardId": "2cda5aba-086d-46db-bfaf-46c51676f8bb",
+  "participant": "test-agent-01",
+  "directDirectory": "direct",
+  "profileEnvelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2ljR0Z5ZEdsamFYQmhiblFpT25zaVkyOXRMbVY0WVcxd2JHVXVjbVYwWVdsdVpXUWlPbnNpWVhKeVlYa2lPbHQwY25WbExHNTFiR3dzSW5SbGVIUWlYU3dpYm5WdFltVnlJam94ZlN3aWFXUWlPaUowWlhOMExXRm5aVzUwTFRBeElpd2lhMmx1WkNJNkltRm5aVzUwSWl3aWJHRnVaM1ZoWjJVaU9uc2lZMjl0TG1WNFlXMXdiR1V1WlhoMGNtRWlPblJ5ZFdVc0luQnlaV1psY25KbFpDSTZJbVZ1SW4wc0ltMWxkR0ZrWVhSaElqcDdJbU52YlM1bGVHRnRjR3hsTG1OdmJYQmhibmtpT25zaVlXTjBhWFpsSWpwMGNuVmxMQ0pzWlhabGJITWlPbHN4TERJc00xMHNJbkpoZEdsdklqb3dMakV5TlN3aWRHVmhiU0k2SWtSbGRtbGpaWE1pTENKMWJtdHViM2R1SWpwdWRXeHNmU3dpYjNKbkxtVjRZVzF3YkdVdVpuVjBkWEpsSWpwYlptRnNjMlVzZXlKclpXVndJam9pWVd4c0lHWnBaV3hrY3lKOVhYMHNJbTVoYldVaU9pTEZ1OE96eFlKMGVTQnJiM1FnOEorUWlDSXNJbTl3WlhKaGRHOXlJam9pYUhWdFlXNHRiM2R1WlhJdE1ERWlmU3dpY0hKbGRtbHZkWE1pT201MWJHd3NJbkIxWW14cFkwdGxlU0k2ZXlKaGJHZHZjbWwwYUcwaU9pSkZaREkxTlRFNUlpd2labTl5YldGMElqb2lhbmRySWl3aWEyVjVJanA3SW1OeWRpSTZJa1ZrTWpVMU1Ua2lMQ0pyZEhraU9pSlBTMUFpTENKNElqb2lNVEZ4V1VGWlMzaERjbVpXVTE4M1ZIbFhVVWhQWnpkb1kzWlFZWEJwVFd4eWQwbGhZVkJqU0ZWU2J5SjlmU3dpZG1WeWMybHZiaUk2TVgwPSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQucHJvZmlsZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJkbzNBTnJYaEw1VWlWSjBlZ29KNE1SMVVOVVRqdDRpaEVoQU4xNkZuUlVoMDVqZkxReUgxUjRBdVNJU0d3UHRDbi9NbnhhRWo5OFZ6OVJiYSs1UXdDZz09In1dfQ==",
+  "profileSha256": "127959f847126fe9f4fb582979bfa23887aed600a51092065d3b4b6ec07351a2",
+  "scope": "rooms/general",
+  "observedPrecedence": [
+    "unverifiable",
+    "conflicting-commitments",
+    "changed",
+    "message-unavailable",
+    "signature-evidence-unavailable",
+    "available"
+  ],
+  "sourcePrecedence": [
+    "pinned-current",
+    "previously-trusted",
+    "unpinned",
+    "revoked"
+  ],
+  "inventories": [
+    {
+      "name": "valid two entries",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IlZyMUFsR0RHSVo0T1hyUHFqVkFGa0wzQUE5Vys3NVh6eUgzcm85cjI3YlJTZVY4cVRZeEg2L21aRTJtMXJPekRWUU9DRHNXdXF3U2xLZGdmOXI4SUF3PT0ifV19",
+      "expect": "valid"
+    },
+    {
+      "name": "valid merge observation",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXMTBzSW5CaGNuUnBZMmx3WVc1MElqb2lkR1Z6ZEMxaFoyVnVkQzB3TVNJc0luQnlaWFpwYjNWeklqcGJJbUZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0VpTENKaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaUlsMHNJbkJ5YjJacGJHVWlPaUl4TWpjNU5UbG1PRFEzTVRJMlptVTVaalJtWWpVNE1qazNPV0ptWVRJek9EZzNZV1ZrTmpBd1lUVXhNRGt5TURZMVpETmlOR0kyWldNd056TTFNV0V5SWl3aWMyTnZjR1VpT2lKeWIyOXRjeTluWlc1bGNtRnNJaXdpZG1WeWMybHZiaUk2TVgwPSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IjZRUndFZGZCSUhzM3NKSFZFazUwNDNxUTRKTGlhVFFmMllKaVY4clhvQ1JQVmtObUl4dVppdlNabXZPQ2pVVDRTdit2c2lraEdyeFVUM3ZTYjd1Z0JBPT0ifV19",
+      "expect": "valid"
+    },
+    {
+      "name": "valid signature binding",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT25zaWNtVmpiM0prSWpvaWMybG5YekF3TURBd01EQXdMVEF3TURBdE5EQXdNQzA0TURBd0xUQXdNREF3TURBd01EQXdNU0lzSW5Ob1lUSTFOaUk2SW1OalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJNaWZYMWRMQ0p3WVhKMGFXTnBjR0Z1ZENJNkluUmxjM1F0WVdkbGJuUXRNREVpTENKd2NtVjJhVzkxY3lJNlcxMHNJbkJ5YjJacGJHVWlPaUl4TWpjNU5UbG1PRFEzTVRJMlptVTVaalJtWWpVNE1qazNPV0ptWVRJek9EZzNZV1ZrTmpBd1lUVXhNRGt5TURZMVpETmlOR0kyWldNd056TTFNV0V5SWl3aWMyTnZjR1VpT2lKeWIyOXRjeTluWlc1bGNtRnNJaXdpZG1WeWMybHZiaUk2TVgwPSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6ImF4MFRZbUF3bm1vZ2FGMWJjUGllY3lGV01WRVMwaytZL3ROcjdhdzhWUVBZUStCSGdVU2liTEFqc0hDaitKbHdXZFlwYmErc01iT29MZ3M5WHR3cUFnPT0ifV19",
+      "expect": "valid"
+    },
+    {
+      "name": "tampered payload",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTmpZMk5qWTJOalkyTWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IlZyMUFsR0RHSVo0T1hyUHFqVkFGa0wzQUE5Vys3NVh6eUgzcm85cjI3YlJTZVY4cVRZeEg2L21aRTJtMXJPekRWUU9DRHNXdXF3U2xLZGdmOXI4SUF3PT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "message payload type",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQubWVzc2FnZS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJTQTJVZUF5OTZDRnhDUW91VHVGUjhXYUFWZ1BqVkMxNDdVNW9PRENQWXl5bHhGd2I0WmNpSTQ5Nis0VjlUa3Vra2lMd3ZlV1Y0OGZXRjErc0ZmS2lBZz09In1dfQ==",
+      "expect": "invalid"
+    },
+    {
+      "name": "two signatures",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IlZyMUFsR0RHSVo0T1hyUHFqVkFGa0wzQUE5Vys3NVh6eUgzcm85cjI3YlJTZVY4cVRZeEg2L21aRTJtMXJPekRWUU9DRHNXdXF3U2xLZGdmOXI4SUF3PT0ifSx7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IlZyMUFsR0RHSVo0T1hyUHFqVkFGa0wzQUE5Vys3NVh6eUgzcm85cjI3YlJTZVY4cVRZeEg2L21aRTJtMXJPekRWUU9DRHNXdXF3U2xLZGdmOXI4SUF3PT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "unsorted entries",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6InJHNFJqYTA1N3dxVUlZd0xUbU5ONFdLTW1BbnpYc0lkRFdBUTVJZ2h3RVRGcWl2T1RwYlkrT0FWSkV1YjBnNThZb2ZFY1dOZ21jVEVrM3BNQXlMVENRPT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "duplicate entries",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IkFudFFPVms0ZUJ2aHlmODBFMU9FekVnTkwyZFU0QXoxbWMzYVFMTmV4T0lvMXhxR2pMU1dNMlhsTmhTNUp6Q1VuYTZzOWdJNDhRdkM2bnR4cVRRMERRPT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "case aliased entries",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOUJMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6InpRdS9BcVpucnJ6UnhucE1ycnZLZkdNM2lvUGVFeHAwWkxsamJoQ1RXbXUwYmVJcGZ2ZjVpU2FRYkJEeVEyajJBS1AxdEgrNnBIRTExSlZVcnJkbUN3PT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "entry outside scope",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZiM1JvWlhJdllTNTBlSFFpTENKemFHRXlOVFlpT2lKaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaElpd2ljMmxuYm1GMGRYSmxJanB1ZFd4c2ZWMHNJbkJoY25ScFkybHdZVzUwSWpvaWRHVnpkQzFoWjJWdWRDMHdNU0lzSW5CeVpYWnBiM1Z6SWpwYlhTd2ljSEp2Wm1sc1pTSTZJakV5TnprMU9XWTRORGN4TWpabVpUbG1OR1ppTlRneU9UYzVZbVpoTWpNNE9EZGhaV1EyTURCaE5URXdPVEl3TmpWa00ySTBZalpsWXpBM016VXhZVElpTENKelkyOXdaU0k2SW5KdmIyMXpMMmRsYm1WeVlXd2lMQ0oyWlhKemFXOXVJam94ZlE9PSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6InBoLzVrLzhWb3paa0d0dXBFdnA2QTN1NlBvczNYMGZZUGRXbVVXYmFqNHhuQ084NWQvTUFlYmVlSGFOSlVNZzF3MjRlSEhmbFRobnpkdXQ1QXhzakFnPT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "path escape",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOHVMaTloTG5SNGRDSXNJbk5vWVRJMU5pSTZJbUZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0VpTENKemFXZHVZWFIxY21VaU9tNTFiR3g5WFN3aWNHRnlkR2xqYVhCaGJuUWlPaUowWlhOMExXRm5aVzUwTFRBeElpd2ljSEpsZG1sdmRYTWlPbHRkTENKd2NtOW1hV3hsSWpvaU1USTNPVFU1WmpnME56RXlObVpsT1dZMFptSTFPREk1TnpsaVptRXlNemc0TjJGbFpEWXdNR0UxTVRBNU1qQTJOV1F6WWpSaU5tVmpNRGN6TlRGaE1pSXNJbk5qYjNCbElqb2ljbTl2YlhNdloyVnVaWEpoYkNJc0luWmxjbk5wYjI0aU9qRjkiLCJwYXlsb2FkVHlwZSI6ImFwcGxpY2F0aW9uL3ZuZC5hZ2VudC1maWxlLWJvYXJkLmludmVudG9yeS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiI5VGVCQ2w1eERoakE0ZFlHdk9JQXhJVFN2V1Nva1U3S2FMTDlsL1puRmFGVDNDaEUrTTIwdFcvNW1kNEh5ZFBLZmQzNUFJRmlqUmNGQ2hqQ25MRk1DUT09In1dfQ==",
+      "expect": "invalid"
+    },
+    {
+      "name": "uppercase hex",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNklrRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRkJRVUZCUVVGQlFVRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IlE3MUEwMEJueUhDUyswZU5aTythdHFaRk50VkRhcVViWDlkZDA4K3VsVm1zYXkzdE4vRE8zdWRTVTR0d0lNdDFFTlhRRHhmK2ZqREtxVU5aUXlYbUNnPT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "boolean byte count",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPblJ5ZFdVc0luQmhkR2dpT2lKeWIyOXRjeTluWlc1bGNtRnNMMkV1ZEhoMElpd2ljMmhoTWpVMklqb2lZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZU0lzSW5OcFoyNWhkSFZ5WlNJNmJuVnNiSDFkTENKd1lYSjBhV05wY0dGdWRDSTZJblJsYzNRdFlXZGxiblF0TURFaUxDSndjbVYyYVc5MWN5STZXMTBzSW5CeWIyWnBiR1VpT2lJeE1qYzVOVGxtT0RRM01USTJabVU1WmpSbVlqVTRNamszT1dKbVlUSXpPRGczWVdWa05qQXdZVFV4TURreU1EWTFaRE5pTkdJMlpXTXdOek0xTVdFeUlpd2ljMk52Y0dVaU9pSnliMjl0Y3k5blpXNWxjbUZzSWl3aWRtVnljMmx2YmlJNk1YMD0iLCJwYXlsb2FkVHlwZSI6ImFwcGxpY2F0aW9uL3ZuZC5hZ2VudC1maWxlLWJvYXJkLmludmVudG9yeS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJtY09xbys4aUdzODBSb2Y4UlV5QkFTa2pMTU43RWs5TWZDZWVZTmZ1a3V4OHg2d25sZ2xXaDZ4YkZkcm1Wekt6Z2VabXhNQ0JsZDRsWG5oczBrWVVDZz09In1dfQ==",
+      "expect": "invalid"
+    },
+    {
+      "name": "unknown statement field",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpWlhoMGNtRWlPakVzSW5CaGNuUnBZMmx3WVc1MElqb2lkR1Z6ZEMxaFoyVnVkQzB3TVNJc0luQnlaWFpwYjNWeklqcGJYU3dpY0hKdlptbHNaU0k2SWpFeU56azFPV1k0TkRjeE1qWm1aVGxtTkdaaU5UZ3lPVGM1WW1aaE1qTTRPRGRoWldRMk1EQmhOVEV3T1RJd05qVmtNMkkwWWpabFl6QTNNelV4WVRJaUxDSnpZMjl3WlNJNkluSnZiMjF6TDJkbGJtVnlZV3dpTENKMlpYSnphVzl1SWpveGZRPT0iLCJwYXlsb2FkVHlwZSI6ImFwcGxpY2F0aW9uL3ZuZC5hZ2VudC1maWxlLWJvYXJkLmludmVudG9yeS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJYcFJ3cWo2V0E3WXRab21pK3B0UDBnRW1uVmNyYlM0NDNMMzAxYmYwRE5MZmhYU0xVZ1JLZE1BM0lhaUZnMFYrN2I4U2lLRWtXM1BhQ3JSZTRmT0tDUT09In1dfQ==",
+      "expect": "invalid"
+    },
+    {
+      "name": "wrong board",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1EQXdNREF3TURBdE1EQXdNQzAwTURBd0xUZ3dNREF0TURBd01EQXdNREF3TURBd0lpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pGOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IkphUmhUamdQZ2dsRERsamk4bXhHbjY0VGhyUW12VDhNYXBhQTR5cjRxL1N4cnAzRHhWWXErTkpNczYwemhPYlpBRWtBLzh6MVBXZWpQTzFWUjhYakFnPT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "unknown scope",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWFHbHpkRzl5ZVM5blpXNWxjbUZzSWl3aWRtVnljMmx2YmlJNk1YMD0iLCJwYXlsb2FkVHlwZSI6ImFwcGxpY2F0aW9uL3ZuZC5hZ2VudC1maWxlLWJvYXJkLmludmVudG9yeS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJhNXlOTkhaM0xiSTVQK1dFYS9EMGNHZmVjWGQ4b3NnNDhMQnFkWVducEE5dXZzNnJrWXhwSytxcDRWMzlwSFE5Y1VnRGd6aGJhWG1sZGZRa2hEaHJEdz09In1dfQ==",
+      "expect": "invalid"
+    },
+    {
+      "name": "empty non-merge",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXMTBzSW5CaGNuUnBZMmx3WVc1MElqb2lkR1Z6ZEMxaFoyVnVkQzB3TVNJc0luQnlaWFpwYjNWeklqcGJYU3dpY0hKdlptbHNaU0k2SWpFeU56azFPV1k0TkRjeE1qWm1aVGxtTkdaaU5UZ3lPVGM1WW1aaE1qTTRPRGRoWldRMk1EQmhOVEV3T1RJd05qVmtNMkkwWWpabFl6QTNNelV4WVRJaUxDSnpZMjl3WlNJNkluSnZiMjF6TDJkbGJtVnlZV3dpTENKMlpYSnphVzl1SWpveGZRPT0iLCJwYXlsb2FkVHlwZSI6ImFwcGxpY2F0aW9uL3ZuZC5hZ2VudC1maWxlLWJvYXJkLmludmVudG9yeS5lZDI1NTE5LnYxK2pzb24iLCJzaWduYXR1cmVzIjpbeyJrZXlpZCI6InVybjppZXRmOnBhcmFtczpvYXV0aDpqd2stdGh1bWJwcmludDpzaGEtMjU2OmtQcktfcW14VldhWVZBOXd3QkY2SXVvM3ZWeno3VHhIQ1R3WEJ5Z3JTNGsiLCJzaWciOiJLbDgrNWY1SE1rNENZMzU3VDZCWnZiY1BjYWVHNldUd2pZWEdoaWgwNXBnNXN0U2s5cHpIUFJIeS9PVXlEUVlsMWJBZzdOU1FPZ2RTNEU3TXNldEVBZz09In1dfQ==",
+      "expect": "invalid"
+    },
+    {
+      "name": "unsorted previous",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sc2lZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZaUlzSW1GaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdFaVhTd2ljSEp2Wm1sc1pTSTZJakV5TnprMU9XWTRORGN4TWpabVpUbG1OR1ppTlRneU9UYzVZbVpoTWpNNE9EZGhaV1EyTURCaE5URXdPVEl3TmpWa00ySTBZalpsWXpBM016VXhZVElpTENKelkyOXdaU0k2SW5KdmIyMXpMMmRsYm1WeVlXd2lMQ0oyWlhKemFXOXVJam94ZlE9PSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6IjlCNlB1N05zS3AwbVVLS3lrSkJFR3NEeGFTcjRvUkVXQU02VkZZQmdCYU9zQ2RETUVvemlVVVBmcFdrMTlaZjZFM3hRcDEyLytCVnVZa0lDNFkvVUNnPT0ifV19",
+      "expect": "invalid"
+    },
+    {
+      "name": "unsupported version",
+      "envelopeBase64": "eyJwYXlsb2FkIjoiZXlKaWIyRnlaRWxrSWpvaU1tTmtZVFZoWW1FdE1EZzJaQzAwTm1SaUxXSm1ZV1l0TkRaak5URTJOelptT0dKaUlpd2laVzUwY21sbGN5STZXM3NpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWhMblI0ZENJc0luTm9ZVEkxTmlJNkltRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRmhZV0ZoWVdGaFlXRWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlMSHNpWW5sMFpYTWlPakV3TENKd1lYUm9Jam9pY205dmJYTXZaMlZ1WlhKaGJDOWlMblI0ZENJc0luTm9ZVEkxTmlJNkltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSmlZbUppWW1KaVltSWlMQ0p6YVdkdVlYUjFjbVVpT201MWJHeDlYU3dpY0dGeWRHbGphWEJoYm5RaU9pSjBaWE4wTFdGblpXNTBMVEF4SWl3aWNISmxkbWx2ZFhNaU9sdGRMQ0p3Y205bWFXeGxJam9pTVRJM09UVTVaamcwTnpFeU5tWmxPV1kwWm1JMU9ESTVOemxpWm1FeU16ZzROMkZsWkRZd01HRTFNVEE1TWpBMk5XUXpZalJpTm1Wak1EY3pOVEZoTWlJc0luTmpiM0JsSWpvaWNtOXZiWE12WjJWdVpYSmhiQ0lzSW5abGNuTnBiMjRpT2pKOSIsInBheWxvYWRUeXBlIjoiYXBwbGljYXRpb24vdm5kLmFnZW50LWZpbGUtYm9hcmQuaW52ZW50b3J5LmVkMjU1MTkudjEranNvbiIsInNpZ25hdHVyZXMiOlt7ImtleWlkIjoidXJuOmlldGY6cGFyYW1zOm9hdXRoOmp3ay10aHVtYnByaW50OnNoYS0yNTY6a1ByS19xbXhWV2FZVkE5d3dCRjZJdW8zdlZ6ejdUeEhDVHdYQnlnclM0ayIsInNpZyI6Ii9LY3Z6ZzNrUEtPRHZCSzRuc3VkemlyS2dVaVNKME4yR0d1eW0xTlFmTGR2OGZxbEpoM1FPdGwxaE82bW8yMU5ZL0s3VjYvenlkUGMrd0xUeWYxUEFnPT0ifV19",
+      "expect": "invalid"
+    }
+  ],
+  "statuses": [
+    {
+      "name": "available",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "available",
+        "source": "pinned-current",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "message unavailable",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": null,
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "message-unavailable",
+        "source": "pinned-current",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "changed bytes need attention",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": {
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "changed",
+        "source": "pinned-current",
+        "needsAttention": true,
+        "neutral": false
+      }
+    },
+    {
+      "name": "changed size",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "previously-trusted"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 11
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "changed",
+        "source": "previously-trusted",
+        "needsAttention": true,
+        "neutral": false
+      }
+    },
+    {
+      "name": "sidecar missing",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": {
+            "record": "sig_00000000-0000-4000-8000-000000000001",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "signature-evidence-unavailable",
+        "source": "pinned-current",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "sidecar replaced",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": {
+            "record": "sig_00000000-0000-4000-8000-000000000001",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "changed",
+        "source": "pinned-current",
+        "needsAttention": true,
+        "neutral": false
+      }
+    },
+    {
+      "name": "sidecar intact",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": {
+            "record": "sig_00000000-0000-4000-8000-000000000001",
+            "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+          }
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "available",
+        "source": "pinned-current",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "unreadable evidence",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": "error",
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "unverifiable",
+        "source": "pinned-current",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "active sources conflict",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        },
+        "s2": {
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current",
+        "s2": "previously-trusted"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "conflicting-commitments",
+        "source": "pinned-current",
+        "needsAttention": true,
+        "neutral": false
+      }
+    },
+    {
+      "name": "unpinned source does not create a conflict",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        },
+        "s2": {
+          "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current",
+        "s2": "unpinned"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "available",
+        "source": "pinned-current",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "revoked only, unavailable",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "revoked"
+      },
+      "current": null,
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "message-unavailable",
+        "source": "revoked",
+        "needsAttention": true,
+        "neutral": false
+      }
+    },
+    {
+      "name": "revoked with active source, unavailable",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        },
+        "s2": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current",
+        "s2": "revoked"
+      },
+      "current": null,
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "message-unavailable",
+        "source": "pinned-current",
+        "needsAttention": true,
+        "neutral": false
+      }
+    },
+    {
+      "name": "unpinned only is neutral",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "unpinned"
+      },
+      "current": null,
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "message-unavailable",
+        "source": "unpinned",
+        "needsAttention": false,
+        "neutral": true
+      }
+    },
+    {
+      "name": "revoked available is informational",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "revoked"
+      },
+      "current": {
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": null,
+      "expect": {
+        "observed": "available",
+        "source": "revoked",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "acknowledged while reviewed state holds",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": {
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": {
+        "superseded": [
+          "s1"
+        ],
+        "reviewedMatches": true
+      },
+      "expect": {
+        "observed": "acknowledged",
+        "source": "pinned-current",
+        "needsAttention": false,
+        "neutral": false
+      }
+    },
+    {
+      "name": "acknowledgement lapses on later change",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "pinned-current"
+      },
+      "current": {
+        "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "bytes": 10
+      },
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": {
+        "superseded": [
+          "s1"
+        ],
+        "reviewedMatches": false
+      },
+      "expect": {
+        "observed": "changed",
+        "source": "pinned-current",
+        "needsAttention": true,
+        "neutral": false
+      }
+    },
+    {
+      "name": "revoked source cannot be acknowledged",
+      "commitments": {
+        "s1": {
+          "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "bytes": 10,
+          "signature": null
+        }
+      },
+      "sourceStatus": {
+        "s1": "revoked"
+      },
+      "current": null,
+      "sidecars": {
+        "sig_00000000-0000-4000-8000-000000000001": null
+      },
+      "acknowledgement": {
+        "superseded": [
+          "s1"
+        ],
+        "reviewedMatches": true
+      },
+      "expect": {
+        "observed": "message-unavailable",
+        "source": "revoked",
+        "needsAttention": true,
+        "neutral": false
+      }
+    }
+  ]
+}

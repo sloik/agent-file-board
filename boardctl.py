@@ -327,6 +327,11 @@ def command_post(args: argparse.Namespace) -> int:
     finally:
         temporary.unlink(missing_ok=True)
     print(path.relative_to(root))
+    if "UI" in extra:
+        from extended_static_reports import gallery_hint
+        hint = gallery_hint(json.loads(extra["UI"]))
+        if hint:
+            print(hint, file=sys.stderr)
     if not getattr(args, "presence_notice", False):
         warn_agent_presence(root, board, registry, args.sender, known)
     return 0

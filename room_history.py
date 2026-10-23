@@ -32,6 +32,9 @@ SCAN_CANDIDATES = 200
 SCAN_BYTES = 16 * 1024 * 1024
 NEGATIVE_CACHE = 4096
 CLAIMS_SHOWN = 50
+EXPORT_LIMIT = 48 * 1024 * 1024
+EXPORT_INVENTORIES = 20000
+IMPORT_BATCH = 200
 HASH = re.compile(r"[a-f0-9]{64}")
 RECORD = re.compile(r"sig_[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}")
 ROOM = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*")
@@ -190,11 +193,16 @@ class Checkpoint:
         self.state = {"version": 1, "boardId": session.board_id, "sequence": 0, "sources": {},
                       "commitments": {}, "profiles": {}, "acknowledgements": {}, "accepted": {},
                       "forgotten": {"scopes": {}, "observations": {}}, "unavailable": {},
-                      "attempts": {}, "invalid": [], "capacity": {}}
+                      "attempts": {}, "invalid": [], "capacity": {},
+                      "root": str(session.root), "imported": [], "staged": {}}
         self.before = None
         if self.path.exists():
             self.before = identity._read(self.path, STATE_LIMIT)
             loaded = core.strict_json(self.before, limit=STATE_LIMIT, max_nodes=STATE_NODES)
+            added = {"root", "imported", "staged"}
+            if isinstance(loaded, dict) and set(loaded) == set(self.state) - added:
+                # 3.0.0 checkpoint: upgrade in memory; the next save persists it.
+                loaded.update(root=str(session.root), imported=[], staged={})
             core._fields(loaded, self.state.keys(), "private history state")
             if type(loaded["version"]) is not int or loaded["version"] != 1:
                 raise HistoryError("private history state unavailable")
@@ -449,7 +457,8 @@ class Checkpoint:
         revoked = any(statuses[h] == "revoked" for h in remaining)
         settled = observed in ("available", "acknowledged")
         attention = not settled and (revoked or bool(active) and observed in ("changed", "conflicting-commitments"))
-        neutral = not active and not revoked
+        # Neutral means every source key is merely unpinned, whatever the observed state.
+        neutral = all(status == "unpinned" for status in statuses.values())
         row = {"path": path, "observed": observed, "source": source,
                "sources": sorted({statuses[h] for h in by_source}, key=SOURCE.index),
                "needsAttention": attention, "neutral": neutral}
@@ -477,6 +486,7 @@ class Checkpoint:
         for scope in scopes:
             check_scope(scope, self.s.config)
         diagnostics = self.scan(scopes)
+        rebind = self.rebind_candidates()
         result, problem, any_set_up = {}, False, False
         for scope in scopes:
             paths = self.state["commitments"].get(scope, {})
@@ -493,6 +503,8 @@ class Checkpoint:
             any_set_up |= set_up
             if not set_up:
                 notes.add("not-set-up")
+                if rebind:
+                    notes.add("rebind-available")
             if scope in self.state["forgotten"]["scopes"] or any(
                     t["scope"] == scope for t in self.state["forgotten"]["observations"].values()):
                 notes.add("coverage-deliberately-dropped")
@@ -519,7 +531,8 @@ class Checkpoint:
             window = d.get("windowComplete", True)
             learned = [s["learned"] for s in self.state["sources"].values() if s["scope"] == scope]
             result[scope] = {
-                "setUp": set_up, "diagnostics": sorted(notes), "needsAttention": attention, "summary": summary,
+                "setUp": set_up, "bootstrap": "imported" if scope in self.state["imported"] else "folder-only",
+                "diagnostics": sorted(notes), "needsAttention": attention, "summary": summary,
                 "coverage": {"expected": len(rows), "available": summary.get("available", 0),
                              "uncovered": len(uncovered)},
                 "uncoveredPaths": uncovered[:CLAIMS_SHOWN], "lastObservedLocal": max(learned) if learned else None,
@@ -531,8 +544,30 @@ class Checkpoint:
                         or requested and not set_up or strict and (bool(uncovered) or not set_up))
         if not any_set_up:
             problem = True
-        return {"boardId": self.s.board_id, "bootstrap": "folder-only", "bootstrapNote": FOLDER_ONLY,
-                "scopes": result}, 2 if problem else 0
+        kinds = {r["bootstrap"] for r in result.values() if r["setUp"]}
+        report = {"boardId": self.s.board_id,
+                  "bootstrap": "folder-only" if kinds <= {"folder-only"} else "imported" if kinds == {"imported"} else "mixed",
+                  "bootstrapNote": FOLDER_ONLY, "scopes": result}
+        if rebind:
+            report["rebind"] = ["boardctl history rebind --from " + json.dumps(root) for root in rebind]
+        return report, 2 if problem else 0
+
+    def rebind_candidates(self):
+        """Folder paths of other checkpoints for this board UUID (moved folders)."""
+        found = []
+        folder = self.path.parent
+        if not folder.is_dir():
+            return found
+        for other in sorted(folder.glob("*.json")):
+            if other == self.path or not HASH.fullmatch(other.stem):
+                continue
+            try:
+                data = core.strict_json(identity._read(other, STATE_LIMIT), limit=STATE_LIMIT, max_nodes=STATE_NODES)
+            except (ValueError, OSError):
+                continue
+            if isinstance(data, dict) and data.get("boardId") == self.s.board_id and isinstance(data.get("root"), str):
+                found.append(data["root"])
+        return found[:CLAIMS_SHOWN]
 
 
 def session(root, state_dir=None):
@@ -708,9 +743,13 @@ def acknowledge(s, relative, reason):
 
 def accept(s, digest, reason):
     checkpoint = Checkpoint(s)
-    item = find_inventory(s.board, digest)
-    scope = item.parent.relative_to(safe_path(s.board, "history")).as_posix()
-    raw = _read_optional(item, MAX_ENVELOPE)
+    staged = checkpoint.state["staged"].get(digest)
+    if staged:
+        scope, raw = staged["scope"], base64.b64decode(staged["envelope"])
+    else:
+        item = find_inventory(s.board, digest)
+        scope = item.parent.relative_to(safe_path(s.board, "history")).as_posix()
+        raw = _read_optional(item, MAX_ENVELOPE)
     if raw is None or hashlib.sha256(raw).hexdigest() != digest:
         raise HistoryError("observation bytes do not match their name")
     kind, why, detail = checkpoint.verify(raw, scope)
@@ -721,8 +760,139 @@ def accept(s, digest, reason):
     if not checkpoint.learn(digest, raw, detail, accepted=True):
         raise HistoryError("checkpoint-capacity-exhausted")
     checkpoint.state["accepted"][digest] = {"reason": reason[:2000], "at": _now()}
+    if staged:
+        checkpoint.state["staged"].pop(digest)
+        if scope not in checkpoint.state["imported"]:
+            checkpoint.state["imported"].append(scope)
     checkpoint.save()
     return {"observation": digest, "accepted": True, "source": checkpoint.key_status(checkpoint.state["sources"][digest])}
+
+
+def export(s, output):
+    """Write trusted inventories and their profiles from private state only."""
+    checkpoint = Checkpoint(s)
+    inventories = sorted(src["envelope"] for src in checkpoint.state["sources"].values())
+    if len(inventories) > EXPORT_INVENTORIES:
+        raise HistoryError("export exceeds the inventory limit")
+    data = {"version": 1, "boardId": s.board_id, "inventories": inventories,
+            "profiles": sorted(set(checkpoint.state["profiles"].values()))}
+    raw = core._json_bytes(data)
+    if len(raw) > EXPORT_LIMIT:
+        raise HistoryError("export exceeds the size limit")
+    destination = Path(output)
+    try:
+        identity._publish(destination, raw, mode=0o600)
+    except FileExistsError as error:
+        raise HistoryError("refused: export file already exists; choose a new path") from error
+    return {"output": str(destination), "sha256": hashlib.sha256(raw).hexdigest(),
+            "inventories": len(inventories), "profiles": len(data["profiles"]),
+            "note": "Keep this file and its SHA-256 somewhere independent of the shared folder."}
+
+
+def import_checkpoint(s, source, expected, state_dir=None):
+    """Re-verify an export under this client's own pins; never trust it for being exported."""
+    if not isinstance(expected, str) or not HASH.fullmatch(expected):
+        raise HistoryError("--sha256 must be a lowercase SHA-256")
+    raw = identity._read(Path(source), EXPORT_LIMIT)
+    if hashlib.sha256(raw).hexdigest() != expected:
+        raise HistoryError("refused: export bytes do not match --sha256")
+    data = core.strict_json(raw, limit=EXPORT_LIMIT, max_nodes=4 * EXPORT_INVENTORIES + 64)
+    core._fields(data, ("version", "boardId", "inventories", "profiles"), "history export")
+    if type(data["version"]) is not int or data["version"] != 1:
+        raise HistoryError("unsupported history export version")
+    if data["boardId"] != s.board_id:
+        raise HistoryError("refused: export belongs to another board UUID")
+    for key in ("inventories", "profiles"):
+        if not isinstance(data[key], list) or len(data[key]) > EXPORT_INVENTORIES or not all(isinstance(v, str) for v in data[key]):
+            raise HistoryError("invalid history export " + key)
+    # Profiles become private lifecycle evidence; Session.resolve still verifies them.
+    for encoded in data["profiles"]:
+        profile = core._decode64(encoded)
+        if len(profile) <= 65536:
+            s.state["evidence"].setdefault("profiles/" + hashlib.sha256(profile).hexdigest(),
+                                           base64.b64encode(profile).decode("ascii"))
+    s.save()
+    counts = {"imported": 0, "staged": 0, "alreadyKnown": 0, "invalid": 0, "unpinned": 0, "pending": 0}
+    scopes, remaining = set(), 0
+    envelopes = data["inventories"]
+    checkpoint = Checkpoint(s)
+    for start in range(0, len(envelopes), IMPORT_BATCH):
+        # A fresh session per batch keeps the existing lifecycle evidence budget per batch.
+        checkpoint.s = session(s.root, state_dir) if start else s
+        for encoded in envelopes[start:start + IMPORT_BATCH]:
+            try:
+                inventory = core._decode64(encoded)
+                if len(inventory) > MAX_ENVELOPE:
+                    raise HistoryError("inventory exceeds budget")
+                digest = hashlib.sha256(inventory).hexdigest()
+                scope = parse(inventory)[2]["scope"]
+            except (ValueError, KeyError, TypeError):
+                counts["invalid"] += 1
+                continue
+            if digest in checkpoint.state["sources"] or digest in checkpoint.state["forgotten"]["observations"]:
+                counts["alreadyKnown"] += 1
+                continue
+            kind, _, detail = checkpoint.verify(inventory, scope)
+            if kind == "trusted":
+                if checkpoint.learn(digest, inventory, detail):
+                    counts["imported"] += 1
+                    scopes.add(scope)
+                else:
+                    counts["pending"] += 1
+            elif kind == "unfamiliar-signer" and "statement" in detail and not detail.get("compromised"):
+                checkpoint.state["staged"][digest] = {"scope": scope, "envelope": encoded}
+                counts["staged"] += 1
+            elif kind == "unpinned-signer":
+                counts["unpinned"] += 1
+            elif kind == "pending-verification":
+                counts["pending"] += 1
+            else:
+                counts["invalid"] += 1
+        checkpoint.s.save()
+    for scope in sorted(scopes):
+        if scope not in checkpoint.state["imported"]:
+            checkpoint.state["imported"].append(scope)
+    checkpoint.save()
+    remaining = counts["pending"]
+    return dict(counts, scopes=sorted(scopes), batches=-(-len(envelopes) // IMPORT_BATCH) if envelopes else 0,
+                note=("Re-run import to retry pending inventories." if remaining else "Import complete.")
+                + " Staged inventories need history accept after review.")
+
+
+def rebind(s, old_path):
+    """Carry a checkpoint (and unlearned signing state) to a moved folder; never merge or overwrite."""
+    checkpoint = Checkpoint(s)
+    old_root = Path(old_path).expanduser().resolve()
+    if old_root == s.root:
+        raise HistoryError("refused: --from names this same folder")
+    state = checkpoint.state
+    learned = (state["sources"] or state["acknowledgements"] or state["accepted"] or state["staged"]
+               or state["imported"] or state["forgotten"]["scopes"] or state["forgotten"]["observations"])
+    if learned:
+        # A checkpoint that has learned nothing (for example after a status run) may be replaced.
+        raise HistoryError("refused: this folder already has a history checkpoint; rebind never merges")
+    key = hashlib.sha256(str(old_root).encode()).hexdigest() + ".json"
+    source = checkpoint.path.parent / key
+    if not source.is_file():
+        raise HistoryError("no history checkpoint recorded for " + str(old_root))
+    raw = identity._read(source, STATE_LIMIT)
+    data = core.strict_json(raw, limit=STATE_LIMIT, max_nodes=STATE_NODES)
+    if not isinstance(data, dict) or data.get("boardId") != s.board_id:
+        raise HistoryError("refused: that checkpoint records another board UUID")
+    data["root"] = str(s.root)
+    checkpoint.state = data
+    checkpoint.save()
+    result = {"from": str(old_root), "to": str(s.root), "history": "rebound"}
+    signing_source = s.state_path.parent / key
+    learned = any(s.state[k] for k in ("pins", "heads", "revoked", "evidence", "messages"))
+    if signing_source.is_file() and not learned and s.state["floor"] == runtime.policy(None, s.config):
+        old = core.strict_json(identity._read(signing_source, 8388608), limit=8388608, max_nodes=32768)
+        if isinstance(old, dict) and old.get("boardId") == s.board_id:
+            s.state = old
+            s.save()
+            result["signing"] = "copied trust, floors and learned evidence"
+    result.setdefault("signing", "kept this folder's existing signing state; re-establish trust with signing trust if needed")
+    return result
 
 
 def forget(s, scope, digest, reason, yes):
@@ -777,6 +947,12 @@ def command(args):
         result = accept(s, args.observation, args.reason)
     elif action == "forget":
         result, code = forget(s, args.scope, args.observation, args.reason, args.yes)
+    elif action == "export":
+        result = export(s, args.output)
+    elif action == "import":
+        result = import_checkpoint(s, args.file, args.sha256, args.state_dir)
+    elif action == "rebind":
+        result = rebind(s, args.source)
     else:
         raise HistoryError("unknown history action")
     print(json.dumps(result))
@@ -786,7 +962,7 @@ def command(args):
 def add_parser(commands):
     cli = commands.add_parser("history", help="Opt-in signed room inventories: detect missing or changed messages (advisory)")
     actions = cli.add_subparsers(dest="history_action", required=True)
-    for name in ("observe", "status", "acknowledge", "accept", "forget"):
+    for name in ("observe", "status", "acknowledge", "accept", "forget", "export", "import", "rebind"):
         sub = actions.add_parser(name)
         sub.add_argument("--path", default=".")
         sub.add_argument("--state-dir")
@@ -813,4 +989,11 @@ def add_parser(commands):
             target.add_argument("--observation")
             sub.add_argument("--reason", required=True)
             sub.add_argument("--yes", action="store_true")
+        if name == "export":
+            sub.add_argument("--output", required=True)
+        if name == "import":
+            sub.add_argument("--file", required=True)
+            sub.add_argument("--sha256", required=True)
+        if name == "rebind":
+            sub.add_argument("--from", dest="source", required=True, help="the folder path before it moved")
         sub.set_defaults(func=command)
