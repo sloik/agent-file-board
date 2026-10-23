@@ -81,29 +81,44 @@ scope plus a count:
 
 | Name | Meaning |
 | --- | --- |
-| `unfamiliar-signer` | Valid signature, key not pinned or not current on this client |
+| `unpinned-signer` | The claimed participant has no pin on this client; the signature is not checked (cheap prefilter) |
+| `unfamiliar-signer` | Participant is pinned, but the signature verifies with a different, superseded or retired key |
 | `invalid-inventory` | Malformed, bad signature, wrong board, scope or payload type |
 | `pending-verification` | Evidence unavailable or verification budget reached; retried later |
+
+Only `invalid-inventory` results are cached (section 3). Unpinned and unfamiliar
+inventories are re-evaluated on every scan, so pinning a key later lets its
+existing inventories become trusted.
 
 An unfamiliar inventory that was signed before its key was normally rotated or
 retired (for example delivered late) can be accepted explicitly:
 `history accept --observation HASH --reason TEXT`. This is the operator vouching
 for it; the decision is recorded privately.
 
-**Source status after key changes.** Each expectation has a source status in
-addition to the observed state (section 4):
+**Source status after key changes.** Each source key of an expectation has a
+status computed only from this client's private signing state (pins and learned
+revocations) and the fingerprint stored at verification:
 
-- `active`: at least one source key is still pinned and not compromised.
-- Normal rotation or retirement keeps sources `active`: the key was trusted when
-  it observed them. A pin change from key A to key B keeps A's earlier
-  expectations active unless A is removed or revoked.
-- `source-revoked`: every source key has a learned compromise revocation.
-- `source-unpinned`: every source key's pin was removed (re-pinning restores).
+| Order | Source key status | Rule |
+| --- | --- | --- |
+| 1 | `pinned-current` | The stored fingerprint is the participant's current pin |
+| 2 | `previously-trusted` | The participant still has a pin, but on another key (normal rotation, retirement or pin change A to B), and the stored key has no learned compromise |
+| 3 | `unpinned` | The participant has no pin at all on this client (re-pinning restores) |
+| 4 | `revoked` | The stored key has a learned compromise revocation |
 
-A non-active source **never hides the observation.** Revocation is signed by the
-target key itself, so a thief could delete messages and then revoke the key. The
-display therefore remains, for example, `message-unavailable` with
-`source-revoked`. Only `available` with a non-active source is informational.
+An expectation's source status is the best (lowest order) status among its
+sources. `pinned-current` and `previously-trusted` count as **active**: the key
+was trusted when it observed. A non-active source **never hides the
+observation.** Revocation is signed by the target key itself, so a thief could
+delete messages and then revoke the key; the display therefore remains, for
+example, `message-unavailable` with `revoked`. Effects:
+
+- Active source: reported normally.
+- `unpinned` only: shown with its observed state, neutral, never counted in
+  `needsAttention`.
+- `revoked` only: a non-`available` observed state counts in `needsAttention`.
+- Any source status with `available` is informational and does not affect the
+  exit code.
 
 **Bootstrap.** A fresh client has no checkpoint. On first scan it remembers what
 trusted inventories currently say. That protects against later loss but cannot
@@ -158,7 +173,7 @@ nodes).
 | `profile`, `previous[]`, `sha256` | 64 lowercase hex characters |
 | `scope` | `rooms/<room>` or `<direct_directory>/<pair>`, using the same scope grammar as signing policy (`signing_runtime.policy`) and the board's configured direct directory |
 | `previous` | Sorted, unique, at most 16; each must be an inventory by the same participant for the same scope, otherwise the inventory is invalid |
-| `entries` | Non-empty (an empty delta publishes no file); sorted by `path` as bytes; unique; no two paths equal under ASCII case folding |
+| `entries` | Non-empty, except a merge observation (see Incremental observations); sorted by `path` as bytes; unique; no two paths equal under ASCII case folding |
 | `path` | `MessageContext` path rules (ASCII, at most 1,024 bytes, `.txt`); `dirname(path)` must equal `scope` |
 | `bytes` | Integer, 0 to 4,194,304 (the message read limit) |
 | `signature` | `null` for an unsigned message, or `record` matching `sig_` plus lowercase UUID and `sha256` of the sidecar file `<scope>/.signatures/<record>.json` |
@@ -209,12 +224,27 @@ limit is reached first.
 **Incremental observations.** By default `observe` lists only paths that are not
 already in the signer's own remembered expectations for that scope with the same
 digest, size and sidecar binding. A path whose current bytes differ from the
-signer's own expectation is never re-listed silently (section 3). `previous`
-lists the signer's current tips for that scope: its observations not yet
-referenced by a later one of its own. Clients follow `previous` transitively. If
-there are more than 16 tips, `observe` writes a full snapshot (`--full`) with
-empty `previous`. Expectations are a union, so a delta needs no chain replay and
-storage grows linearly with room size.
+signer's own expectation is never re-listed silently (section 3).
+
+`previous` references the signer's tips for that scope: its observations not yet
+referenced by a later one of its own. Clients follow `previous` transitively.
+
+- Each new inventory references up to 16 tips, oldest first, so tips are consumed
+  over successive runs. Lineage is never dropped.
+- When there is nothing new to list but the signer has more than one tip,
+  `observe` writes a **merge observation**: empty `entries` with at least two
+  `previous` hashes. This is the only case where `entries` may be empty.
+- A run that must split because of size limits writes its parts in order. Each
+  later part references the part before it, and the first part also references
+  up to 15 tips. `--full` snapshots follow the same rules.
+
+Expectations are a union, so a delta needs no chain replay, and storage grows
+linearly with room size.
+
+Two legitimate files whose names differ only by letter case (possible on
+case-sensitive filesystems, since thread IDs and slugs allow uppercase) are
+placed in separate inventories, never refused. On case-insensitive filesystems
+they cannot both exist.
 
 **Compatibility.** Checked 2026-10-23: current `boardctl validate` accepts a board
 containing `.agent-board/history/`, and `board_upgrade.py` writes only manifest
@@ -264,9 +294,10 @@ mode `0600`, directory `0700`, outside the shared board.
 - Contents per scope: expectations keyed by path (digest, size, sidecar binding,
   source inventory hashes); per source inventory, signer facts and envelope
   bytes; profile envelopes referenced by sources; local first-unavailable times;
-  accepted observations; forget tombstones; and a bounded negative cache of
-  inventory hashes already found invalid or unfamiliar (4,096 entries, oldest
-  dropped; dropping only costs a re-check).
+  accepted observations; per-path acknowledgements; forget tombstones; local
+  last-attempt times for unremembered inventories; and a bounded negative cache
+  of inventory hashes found `invalid-inventory` (4,096 entries, oldest dropped).
+  Dropping an entry only costs a later re-check, bounded by the scan window.
 - Loader limits: 32 MiB and 1,048,576 nodes, a separate bound from the 8 MiB
   signing state loader.
 
@@ -296,10 +327,10 @@ without coverage, so explicit-only production is never mistaken for protection.
 
 `observe` safeguards, so it cannot quietly bless tampering:
 
-1. It runs `status` for the scope first and refuses if any expectation is not
-   `available`, unless `--accept-anomalies` is given.
+1. It runs `status` for the scope first and refuses if any expectation with an
+   active source is not `available` or acknowledged, listing each one.
 2. It refuses to list a path whose current bytes contradict the signer's own
-   existing expectation, unless `--accept-anomalies` is given.
+   existing expectation.
 3. A message with a `SIGNATURE` header is listed only if its signature verifies
    against the message context (any key; trust is not required). Otherwise
    `observe` refuses unless `--accept-anomalies`, in which case that message is
@@ -308,6 +339,16 @@ without coverage, so explicit-only production is never mistaken for protection.
    pinned and current here), and that other clients must pin the same key.
 5. It signs only bytes it read and hashed. Messages posted during the scan are
    simply absent; later observations cover them.
+
+**Resolving one anomaly.** The normal way past a refusal is per path:
+`history acknowledge --path P --reason TEXT` records, privately, that the
+operator reviewed the current state of that one path (for example a newline
+conversion or a message known to be lost). It supersedes the existing
+commitments for that path only: status shows `acknowledged` as informational,
+and a later `observe` may list the current bytes as a fresh expectation.
+`--accept-anomalies` remains for bulk cases. It prints and records each anomaly
+it accepts. Without an acknowledgement, a signer that signs bytes contradicting
+its own earlier expectation creates a permanent self-conflict.
 
 ## 4. Races, partial sync and advisory semantics (AC4)
 
@@ -324,10 +365,15 @@ so Python and browser clients produce the same answer:
 | 5 | `signature-evidence-unavailable` | Message matches; bound sidecar missing |
 | 6 | `available` | Bytes, size and sidecar binding match |
 
+Acknowledged paths (section 3) are reported as `acknowledged`, informational,
+instead of their superseded commitments.
+
 Scope-level diagnostics: `not-set-up` (no expectations), `uncovered` (count and
 paths), `referenced-observation-unavailable`, `profile-evidence-unavailable`,
 `checkpoint-capacity-exhausted`, `history-unavailable`, pending inventories and
-whether the verification window was complete.
+whether the verification window was complete. When a scope is `not-set-up` but
+the private history directory holds a file with the same board UUID for another
+folder path, status suggests `history rebind --from OLD_PATH`.
 
 Rules:
 
@@ -347,8 +393,12 @@ inventory files. Per scan the client:
 
 - ignores files whose name is not their SHA-256, and hashes already in the
   negative cache or the checkpoint;
-- reads the `participant` field first and verifies signatures only for pinned
-  participants (others become `unfamiliar-signer` after a cheap parse);
+- reads the unauthenticated `participant` field first and verifies signatures
+  only for pinned participants (others are `unpinned-signer`). Junk can name a
+  pinned participant, so this only reduces cost;
+- picks candidates in an order an attacker cannot game by choosing file names:
+  first hashes referenced in `previous` of trusted inventories, then by oldest
+  local last-attempt time (never attempted first), then by hash;
 - verifies at most 200 unremembered inventories and reads at most 16 MiB of
   inventory bytes, matching the existing 200-candidate verification window;
 - shares the existing lifecycle evidence budget (128 envelopes per session in
@@ -363,19 +413,23 @@ for signing, including `AGENT_FILE_BOARD_STATE_DIR`) and `--json`:
 
 ```sh
 boardctl history observe --scope S (--signing-key-file KEY | --prepare-signing REQ) [--full] [--accept-anomalies]
-boardctl history status  [--scope S]
+boardctl history status  [--scope S] [--strict]
 boardctl history export  --output FILE
 boardctl history import  --file FILE --sha256 EXPECTED
 boardctl history accept  --observation HASH --reason TEXT
+boardctl history acknowledge --path P --reason TEXT
 boardctl history forget  (--scope S | --observation HASH) --reason TEXT [--yes]
 boardctl history rebind  --from OLD_PATH
 ```
 
 Exit codes follow existing `boardctl` conventions:
 
-- `status`: `0` when every checked scope has coverage, no uncovered messages,
-  every expectation `available` with `active` source, and a complete window;
-  `2` otherwise; `1` command error.
+- `status`: `2` when any checked scope is `not-set-up` or `history-unavailable`,
+  any expectation is not `available` or `acknowledged` (except `unpinned`-only
+  sources), `needsAttention` is non-zero, capacity is exhausted or the
+  verification window was incomplete; `0` otherwise; `1` command error.
+  Uncovered messages are normal on an active room and do not cause `2` unless
+  `--strict` is given.
 - Other commands: `0` done; `2` refused (anomalies without
   `--accept-anomalies`, hash mismatch, board UUID conflict, capacity, `forget`
   without `--yes`); `1` command error.
@@ -384,19 +438,29 @@ Exit codes follow existing `boardctl` conventions:
 (`expected`, `available`, `uncovered`), `lastObservedLocal`, `summary` (count per
 observed state and per source status), `needsAttention` (count of `changed` and
 `conflicting-commitments`, plus any non-`available` expectation whose sources are
-all `source-revoked`), `entries`, `inventories` (unfamiliar, invalid and pending,
-capped at 50 with a total) and the scope-level diagnostics. Exit `2` alone does
-not distinguish sync lag from a changed file; agents read `needsAttention` and
-`summary`. State names are the portable vocabulary; the viewer translates labels.
+all `revoked`), `entries` (each with observed state, source status and local
+`unavailableSince` where relevant), `inventories` (unpinned, unfamiliar, invalid
+and pending, capped at 50 with a total) and the scope-level diagnostics.
+
+Exit `2` alone does not distinguish sync lag from a changed file. Agents must
+read both `needsAttention` (likely problems) and `summary` (including
+`message-unavailable`, which may be sync lag or a real removal). v1 does not
+escalate long-unavailable messages automatically; `unavailableSince` lets
+operators judge. State names are the portable vocabulary; the viewer translates
+labels.
 
 **Export format.** One JSON file: `version`, `boardId`, `inventories` (base64
-envelope bytes) and `profiles` (base64 profile envelope bytes), at most 32 MiB
-and 20,000 inventories. `--sha256` is the SHA-256 of the exact file bytes,
-obtained out of band. Import re-verifies everything under the importing client's
-own pins. An inventory from a key that has since been normally rotated or
-retired imports as `unfamiliar-signer`; the operator can accept it with
-`history accept` after checking it. This is the rotation limit of an independent
-anchor and is stated, not hidden.
+envelope bytes) and `profiles` (base64 profile envelope bytes), at most 48 MiB
+(the 32 MiB raw checkpoint budget after base64 expansion) and 20,000
+inventories. `--sha256` is the SHA-256 of the exact file bytes, obtained out of
+band. Import re-verifies everything under the importing client's own pins, in
+batches of 200 inventories with the usual per-batch profile evidence budget,
+until done or capacity is reached, and reports progress and any remainder.
+`bootstrap: imported` is shown only for scopes where the import produced at
+least one expectation. An inventory from a key that has since been normally
+rotated or retired imports as `unfamiliar-signer`; the operator can accept it
+with `history accept` after checking it. This is the rotation limit of an
+independent anchor and is stated, not hidden.
 
 **Viewer.** A per-scope "Missing-message check" indicator, not a lock and not the
 word "History". Labels:
@@ -465,6 +529,13 @@ test seed only, shared by Python and browser tests:
 - Flooding: many junk and misnamed inventory files, budget exhaustion reported.
 - `observe` refusals: existing anomalies, self-contradiction, invalid message
   signature.
+- Per-path `acknowledge` followed by a fresh observation; `--accept-anomalies`
+  recording each accepted anomaly.
+- Source status combinations: rotation A to B, pin removal, revocation, and
+  mixed sources resolving to the best status.
+- More than 16 tips, merge observations, split full snapshots, and two files
+  differing only by letter case on a case-sensitive filesystem.
+- An unpinned signer's inventories becoming trusted after the key is pinned.
 - Inventory format vectors: exact PAE, sorting, duplicates, case-folded aliases,
   path escapes, wrong scope or direct directory, foreign `previous`, size and
   node limits, wrong payload type, unknown fields, uppercase hex.
@@ -487,6 +558,10 @@ described as implementing the contract.
   reports. Signatures prove who observed, not that it is accurate.
 - Protection starts only after someone runs `observe` with a key that other
   clients have pinned.
+- Per-signer quotas limit one compromised key; four or more compromised trusted
+  keys together can still fill the total budget and stop new coverage.
+- A flood of junk inventory files cannot remove remembered coverage, but it can
+  slow new coverage; incomplete windows are reported.
 - A crashed writer can leave the private lock in place until an operator
   removes it.
 - Not encryption; folder readers still read everything.

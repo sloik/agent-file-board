@@ -29,7 +29,7 @@ format adoption, live board edits, UI changes, release or push in this spec.
   trust model: a private board-wide pin for that participant, accepted profile
   lineage, and no retirement or compromise. Trust pins are per participant, not
   per scope; scoped policy sets only signing requirements. A valid signature from
-  an untrusted key is displayed as an unverified claim and never creates
+  an untrusted key is displayed as an unfamiliar inventory and never creates
   expectations. Each client also retains its own private remembered checkpoints.
 - **Advisory only in v1.** Coverage and mismatch diagnostics appear in the CLI and
   viewer, but missing or changed committed content does not alter coordination
@@ -138,4 +138,26 @@ and exit codes, `forget --yes`, order-independence invariant, replay bad variant
 backdating before revocation listed in limits, viewer tolerance as a precondition.
 Upgrades verified to touch only manifest files, never messages.
 
-**Round 2**: pending convergence check by the same reviewers.
+**Round 2 (2026-10-23)**: same reviewers checked the revision. Security:
+converged, six minor residuals. Protocol: not converged, three new majors. UI:
+not converged, one new major. All addressed in a second revision:
+
+- Source status contradicted rotation and missed mixed cases (protocol): per-key
+  status table (`pinned-current`, `previously-trusted`, `unpinned`, `revoked`)
+  computed from private signing state, best-of combination, explicit effects on
+  `needsAttention` and exit code. Also resolves security R2.
+- Tip overflow never terminated and dropped lineage (protocol): up to 16 tips per
+  inventory consumed oldest first, merge observations with empty entries, split
+  parts chained.
+- Negative cache blocked later trust (protocol, security R3): only
+  `invalid-inventory` is cached; `unpinned-signer` added for the prefilter.
+- No per-path way past a legitimate anomaly (UI): `history acknowledge --path`
+  supersedes one path's commitments; `--accept-anomalies` prints and records.
+
+Minor residuals also addressed: attacker-resistant candidate order, import
+batches and export size, `bootstrap: imported` only with real expectations,
+quota and flooding limits listed, case-only filename differences split into
+separate inventories, uncovered messages exit `2` only with `--strict`,
+`unavailableSince` with agents reading `summary`, rebind hint, stale spec wording.
+
+**Round 3**: pending convergence check.
