@@ -117,7 +117,8 @@ no OpenUI SDK or npm imports are needed here. The browser viewer supplies render
 See [the report/form examples and offline demo](examples/openui-report/README.md) and
 [the contract and 1.x migration](.agent-board/CONVENTION.md#versioned-ui-reports-20).
 Upgrade CLI, board-loop and viewer together before posting reports; existing
-messages need no rewrite.
+messages need no rewrite. A2UI is not supported yet; see
+[the research notes and decision](docs/A2UI-RESEARCH.md).
 
 ## Local extension CLI
 
