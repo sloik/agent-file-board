@@ -101,8 +101,9 @@ StateIn(ms) ==
 Members(v, mut) == MembersIn(ValidSet(v, mut), v, mut)
 Main(v, mut) == LET vs == ValidSet(v, mut) IN MainIn(vs, MembersIn(vs, v, mut))
 StateOf(v, mut) == StateIn(Members(v, mut))
-Warned(v) == {m \in v: \/ Sub(m) # "none" /\ Sub(m) \notin v
-                       \/ Promoted(m) # "none" /\ EarlierSibling(m, v)}
+\* Validate warnings: an orphaned member (any), and a valid PROMOTED-FROM message displaced as
+\* its topic's first message. (A member sorting before its root is refused at post here.)
+WarnedIn(v, vs) == {m \in v: Sub(m) # "none" /\ Sub(m) \notin v} \cup {m \in vs: Promoted(m) # "none" /\ EarlierSibling(m, v)}
 
 \* S8 contract. An answer posted when its question had no acceptance carries the first
 \* claim (node "a", or "b" for aJ); a later answer is history ("h").
@@ -143,7 +144,7 @@ Refresh(s, u, w, a) ==
   LET v == u.view[w]
       vs == ValidSet(v, Mutation)
       ms == MembersIn(vs, v, Mutation)
-  IN [u EXCEPT !.valid[w] = vs, !.members[w] = ms, !.main[w] = MainIn(vs, ms), !.warned[w] = Warned(v),
+  IN [u EXCEPT !.valid[w] = vs, !.members[w] = ms, !.main[w] = MainIn(vs, ms), !.warned[w] = WarnedIn(v, vs),
                !.state[w] = NewState(s.state[w], ms, a),
                !.accept[w] = [q \in Questions |-> AcceptOf(q, vs, u.claims, Mutation)]]
 
@@ -199,7 +200,7 @@ Typed(s) == /\ \A k \in {s.posted, s.board, s.refused, s.claims}: k \subseteq Ms
 Consistent(s) == \A w \in Writers:
   LET vs == ValidSet(s.view[w], "None")
       ms == MembersIn(vs, s.view[w], "None")
-  IN /\ s.valid[w] = vs /\ s.members[w] = ms /\ s.main[w] = MainIn(vs, ms) /\ s.warned[w] = Warned(s.view[w])
+  IN /\ s.valid[w] = vs /\ s.members[w] = ms /\ s.main[w] = MainIn(vs, ms) /\ s.warned[w] = WarnedIn(s.view[w], vs)
 \* S1 explicit membership: only SUBTHREAD makes a member; a plain REPLY-TO never does.
 S1(s) == \A w \in Writers: \A m \in s.members[w]: Sub(m) = "r"
 \* S2 one level: no board has a member whose root is a member.

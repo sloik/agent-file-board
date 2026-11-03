@@ -498,16 +498,19 @@ def header_lines(path: Path):
 
 def parse_message(path: Path) -> dict[str, str]:
     headers: dict[str, str] = {}
-    for line in header_lines(path):
-        if line == "---":
-            break
-        if ": " in line:
-            key, value = line.split(": ", 1)
-            if key in headers:
-                raise BoardError(f"{path}: duplicate header {key}")
-            headers[key] = value
-    else:
-        raise BoardError(f"{path}: missing header separator")
+    try:
+        for line in header_lines(path):
+            if line == "---":
+                break
+            if ": " in line:
+                key, value = line.split(": ", 1)
+                if key in headers:
+                    raise BoardError(f"{path}: duplicate header {key}")
+                headers[key] = value
+        else:
+            raise BoardError(f"{path}: missing header separator")
+    except UnicodeDecodeError as exc:
+        raise BoardError(f"{path}: {exc}") from exc  # name the file, so each invalid file is reported on its own
     missing = HEADER_REQUIRED - headers.keys()
     if missing:
         raise BoardError(f"{path}: missing header(s): {', '.join(sorted(missing))}")
@@ -660,9 +663,12 @@ def check_message(path, board, config, known, source_path=None, require_semantic
         raise BoardError(f"{path}: {exc}") from exc
     import codecs
     decoder = codecs.getincrementaldecoder("utf-8")("strict")
-    with source_path.open("rb") as handle:
-        for chunk in iter(lambda: handle.read(65536), b""): decoder.decode(chunk)
-        decoder.decode(b"", final=True)
+    try:
+        with source_path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(65536), b""): decoder.decode(chunk)
+            decoder.decode(b"", final=True)
+    except UnicodeDecodeError as exc:
+        raise BoardError(f"{path}: {exc}") from exc
     if "UI" in headers or ("QUESTION" in headers and object_header(headers["QUESTION"], "QUESTION").get("version") in (2,3)):
         with source_path.open(encoding="utf-8") as handle:
             for line in handle:
@@ -702,10 +708,11 @@ def safe_order(headers: dict, path: Path, config: dict):
     except (ValueError, OSError): return None
 
 
-def subthread_warnings(board: Path, config: dict, quarantined: dict) -> list[str]:
+def subthread_warnings(board: Path, config: dict, quarantined: dict, invalid=frozenset()) -> list[str]:
     """Reported, never hidden, never an error (validity stays monotonic as other files arrive):
     orphaned members (root missing or quarantined), a member that sorts before its root, and a PROMOTED-FROM
-    message that an earlier sibling (a backdated post or a T-ID collision) displaced as its topic's first message."""
+    message that an earlier sibling (a backdated post or a T-ID collision) displaced as its topic's first message.
+    The last two are reported only for valid messages (`invalid` holds the paths validate rejected)."""
     warnings = []
     paths = sorted((board / "rooms").glob("*/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("*/*.txt"))
     parsed = {}
@@ -722,12 +729,12 @@ def subthread_warnings(board: Path, config: dict, quarantined: dict) -> list[str
                 warnings.append(f"{relative}: orphaned sub-thread: root {root} is missing")
             elif target.relative_to(board).as_posix() in quarantined:
                 warnings.append(f"{relative}: orphaned sub-thread: root {root} is quarantined by a repair record")
-            elif target in parsed:
+            elif target in parsed and path not in invalid:
                 own, before = safe_order(headers, path, config), safe_order(parsed[target], target, config)
                 if own is not None and before is not None and own <= before:
                     warnings.append(f"{relative}: sub-thread message sorts before its root {root} in posting order")
         origin = headers.get("PROMOTED-FROM")
-        if origin is not None and "SUBTHREAD" not in headers and MESSAGE_REF_RE.fullmatch(origin):
+        if origin is not None and "SUBTHREAD" not in headers and MESSAGE_REF_RE.fullmatch(origin) and path not in invalid:
             own = safe_order(headers, path, config)
             topic = thread_id(headers)
             earlier = [other for other, h in parsed.items() if other.parent == path.parent and other != path and thread_id(h) == topic
@@ -760,12 +767,15 @@ def validate_report(root: Path) -> tuple[list[str], list[str]]:
         return [str(exc)], []
     quarantined, repair_errors = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
     errors.extend(repair_errors)
+    rejected = set()
     for path in sorted((board / "rooms").glob("**/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("**/*.txt")):
         if ".DS_Store" in path.relative_to(board).parts: continue
         if path.relative_to(board).as_posix() in quarantined: continue
         error = message_error(path, board, config, known, require_semantics=True)
-        if error: errors.append(error)
-    return errors, subthread_warnings(board, config, quarantined)
+        if error:
+            errors.append(error)
+            rejected.add(path)
+    return errors, subthread_warnings(board, config, quarantined, rejected)
 
 
 def command_validate(args: argparse.Namespace) -> int:

@@ -695,7 +695,7 @@ class AuditFixes(SubthreadBase):
         errors, _ = boardctl.validate_report(self.root)
         self.assertEqual(len(errors), 2)  # the refused record, and the original it therefore does not quarantine
         self.assertTrue(errors[0].endswith(".json: a replacement keeps the original's sub-thread headers: SUBTHREAD is " + self.rname + " in the original and absent in the replacement"))
-        self.assertIn("codec can't decode", errors[1])
+        self.assertTrue(errors[1].startswith(f"{self.room / member.name}: 'utf-8' codec can't decode"))  # the file is named
         replacement.unlink()
         self.member(2, "amend-" + "a" * 32, **{"SUBTHREAD-STATE": "resolved"})
         self.assertEqual(boardctl.validate_report(self.root)[0], [])
@@ -784,3 +784,29 @@ class Proof(SubthreadBase):
         self.assertIn(first.name, main)  # the new topic is visible, and it names its origin
         self.assertEqual(boardctl.parse_message(first)["PROMOTED-FROM"], root.name)
         self.assertEqual(self.recent("--subthreads")["subthreads"][0]["state"], "open")  # not resolved until the second write succeeds
+
+
+class SharedFixture(unittest.TestCase):
+    """SPEC-002-079 AC5: tests/fixtures/subthreads/cases.json is production output, shared with the viewer."""
+
+    def test_fixture_is_rebuilt_from_production_code(self):
+        spec = importlib.util.spec_from_file_location("build_subthread_cases", ROOT / "scripts/build_subthread_cases.py")
+        builder = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(builder)
+        fresh = builder.render(builder.build())
+        self.assertEqual((ROOT / "tests/fixtures/subthreads/cases.json").read_text(encoding="utf-8"), fresh,
+                         "stale: run python3 scripts/build_subthread_cases.py")
+
+    def test_fixture_covers_every_property_and_canonical_audit_row(self):
+        data = json.loads((ROOT / "tests/fixtures/subthreads/cases.json").read_text(encoding="utf-8"))
+        self.assertEqual(data["convention"], boardctl.convention_version(ROOT))
+        self.assertEqual({c["property"] for c in data["cases"]}, {"S1", "S2", "S3", "S4", "S5", "S6", "S7"})
+        rows = {r for c in data["cases"] + data["posts"] for r in c["auditRows"]}
+        self.assertLessEqual({2, 3, 4, 6, 8, 9, 10, 11, 12, 13, 14, 17, 20, 21, 22, 25, 26, 27, 28, 29, 30, 31, 34, 35, 36, 37, 40}, rows)
+        for case in data["cases"]:
+            with self.subTest(case=case["id"]):
+                names = {f["name"] for f in case["files"] if "/" not in f["name"] and f["name"] != "time-corrections.txt"}
+                self.assertEqual(set(case["expect"]["files"]), names)
+                for order in case.get("arrivals", []):
+                    self.assertEqual(sorted(order), sorted(names))
+        self.assertTrue(any(len(c.get("arrivals", [])) >= 2 for c in data["cases"] if c["property"] == "S4"))
