@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-076
 title: Explicit sub-threads under a message (SUBTHREAD headers, validation, boardctl)
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-11-03
@@ -117,10 +117,10 @@ Rules:
   skipped or weakened tests. Formal alignment (`formal/check_alignment.py` and reviewed
   anchors) updated where touched sections move.
   Evidence: tests/test_subthreads.py (28 tests); full suite 372 tests OK in a venv with requirements-signing.txt; formal check_alignment current, TLC and trace conformance pass after review-based repin of boardctl.py.
-- [ ] AC9 (docs and release): README feature row and example, CHANGELOG 3.4.0 entry, upgrade
+- [x] AC9 (docs and release): README feature row and example, CHANGELOG 3.4.0 entry, upgrade
   manifest baseline 3.3.1, `build_upgrade_manifest.py`, release-check, protected PR with
   all required checks green, tag `v3.4.0`, GitHub Release with the CHANGELOG section.
-  Docs part done (README section, CHANGELOG 3.4.0, CONVENTION 3.4.0 + History, manifest baseline 3.3.1 rebuilt, test_upgrades source). PR, protected checks, tag and GitHub Release remain for the parent.
+  Docs part done (README section, CHANGELOG 3.4.0, CONVENTION 3.4.0 + History, manifest baseline 3.3.1 rebuilt, test_upgrades source). Released: PR #27 merged (bd52fb5) after all required checks; tag v3.4.0 CI green; GitHub Release v3.4.0 published (2026-11-03).
 
 ## Out of scope
 
