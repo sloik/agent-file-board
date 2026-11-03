@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-079
 title: Sub-threads are provable - TLA+ model, real-code traces, rule audit, examples and guide
-status: in_progress
+status: done
 parent: SPEC-002
 type: feature
 created: 2026-11-03
@@ -106,7 +106,7 @@ resolve, promote half-done) are reached.
   mean; signing and history behaviour. Linked from README, CONVENTION and the board-loop
   SKILL.md.
   Evidence: docs/SUBTHREADS.md, its output blocks (main flow, summaries, three refusals) checked by the same test; linked from README, CONVENTION Sub-threads (3.4) and skills/board-loop/SKILL.md.
-- [ ] AC8 (release): CHANGELOG 3.4.1. CONVENTION version 3.4.1 only if a rule text
+- [x] AC8 (release): CHANGELOG 3.4.1. CONVENTION version 3.4.1 only if a rule text
   changed (otherwise leave it at 3.4.0 and say why). Upgrade manifest, release-check,
   protected PR with all required checks, tag `v3.4.1`, GitHub Release.
   Docs/version part done (CONVENTION 3.4.1 because rule text changed; CHANGELOG 3.4.1; upgrade manifest with baseline 3.4.0, --check green; release-check ok v3.4.1; tests pass in run 41732515330). Open: protected PR merge, tag v3.4.1, GitHub Release (parent).
@@ -154,3 +154,5 @@ The audit row numbers refer to `docs/SUBTHREAD-RULE-AUDIT.md`. These decisions a
   `PROMOTED-FROM`; `main`, or `resolved`/`open`, with `SUBTHREAD` present, for the other
   two. `repair`, `validate` and the viewer repair flow all enforce it.
 - **#10, #30, wording:** canonical wording is authoritative; the viewer adopts it exactly.
+
+AC8 release evidence (2026-11-03): PR #29 merged (5a2db3e) after Python 3.10-3.13 and bounded-models passed (runs 41733389601, 41733389596); tag v3.4.1 CI green; GitHub Release v3.4.1 published.
