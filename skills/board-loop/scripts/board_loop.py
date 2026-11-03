@@ -299,7 +299,8 @@ def output_size(value):
 def summary(message, action=None):
     result = {"path": message["path"], "sha256": message["sha256"],
               "headers": {k: v[:256] for k, v in message["headers"].items()
-                          if k in {"FROM", "TO", "SCOPE", "ROOM", "THREAD", "TOPIC-TITLE", "DATE", "STATUS", "POSTED-AT"}},
+                          if k in {"FROM", "TO", "SCOPE", "ROOM", "THREAD", "TOPIC-TITLE", "DATE", "STATUS", "POSTED-AT",
+                                   "SUBTHREAD", "SUBTHREAD-ALSO", "SUBTHREAD-STATE", "PROMOTED-FROM"}},
               "addressed": message["addressed"],
               "preview": " ".join(message["body"].split())[:160],
               "body_bytes": len(message["body"].encode("utf-8")),
