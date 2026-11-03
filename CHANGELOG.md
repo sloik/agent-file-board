@@ -31,6 +31,8 @@ stay valid.
   header value is kept byte for byte, an invalid one may be corrected or dropped, and none
   is added (so a member with only a bad `SUBTHREAD-STATE` can now be repaired).
 - A file that is not valid UTF-8 is reported with its path.
+- `promote` refuses a root that is invalid or quarantined by a repair, before writing.
+- `validate` warns about members of a root that cannot be read as a message.
 - CONVENTION 3.4.1: canonical posting order replaces "explicit time corrections";
   orphan, correction, repair and thread-number wording corrected; state and summaries use
   only eligible members.

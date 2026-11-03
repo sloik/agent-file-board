@@ -114,6 +114,8 @@ def cases():
         ("orphans-missing-root", [10, 34], "S5", "With the root deleted, a member replying to it fails the generic REPLY-TO rule (invalid, shown); "
          "a member replying to another member is a valid orphan. Both are reported as orphaned.",
          [side, member(3, "chained", reply=side[0])], {}),
+        ("orphans-unreadable-root", [36], "S5", "A root that cannot be read (and is not quarantined) is itself invalid; its members stay valid and are orphans.",
+         [broken_root, quarantined_member], {}),
         ("orphans-quarantined-root", [35], "S5", "A root quarantined by a repair record leaves its members valid but orphaned.",
          [broken_root, quarantined_member, repair_record], {}),
         ("header-values", [2, 3, 17, 20, 31], "S1", "Value syntax, ALSO/STATE need SUBTHREAD, CLOSED is invalid on a member, SUBTHREAD and PROMOTED-FROM exclude each other.",
@@ -155,7 +157,8 @@ def cases():
 
 
 def posts():
-    """(id, audit rows, files, argv after `post --path PROJECT`) for post-time refusals and acceptances."""
+    """(id, audit rows, files, argv) for post-time refusals and acceptances. argv is after `post --path PROJECT`,
+    or a full `promote ...` list (its `--path PROJECT` is added after the command name)."""
     base = ["--from", B, "--to", "all", "--scope", "room", "--room", "general", "--thread", "T001", "--slug", "new", "--body", "New"]
     def args(*extra, thread="T001"):
         out = list(base)
@@ -163,7 +166,16 @@ def posts():
         return out + list(extra)
     side = member(2, "side")
     broken_root = ("2026-11-03_1000_alpha-agent_T001_broken.txt", "not a message\n")
+    weird = msg(1, A, "T001", "weird", status="WEIRD")  # parses, but is not a valid message
+    weird_member = member(2, "side", reply=weird[0], SUBTHREAD=weird[0])
+    weird_repair = ("repairs/" + "9" * 32 + ".json", json.dumps({"version": 1, "target": "rooms/general/" + weird[0],
+                    "sha256": hashlib.sha256(weird[1].encode()).hexdigest(), "by": A, "at": "2026-11-03T10:30:00.000Z",
+                    "reason": "Bad status", "replacement": None}))
+    promote = ["promote", "--room", "general", "--root", weird[0], "--from", A, "--title", "Moved", "--at", "2026-11-03 11:00"]
     return [
+        ("promote-invalid-root", [33], [weird, weird_member], promote),
+        ("promote-quarantined-root", [33], [weird, weird_member, weird_repair], promote),
+        ("post-quarantined-root", [33], [weird, weird_member, weird_repair], args("--subthread", weird[0], "--at", "2026-11-03 11:00")),
         ("post-missing-root", [36], [ROOT_MSG], args("--subthread", "2026-11-03_1000_alpha-agent_T001_missing.txt", "--at", "2026-11-03 11:00")),
         ("post-unreadable-root", [36], [broken_root], args("--subthread", broken_root[0], "--at", "2026-11-03 11:00")),
         ("post-nested", [6], [ROOT_MSG, side], args("--subthread", side[0], "--at", "2026-11-03 11:00")),
@@ -215,6 +227,10 @@ RULES = [
     (r"^a replacement corrects or drops an invalid sub-thread header: ", "repair.subthread-header"),
     (r"^orphaned sub-thread: root \S+ is missing$", "orphan.root-missing"),
     (r"^orphaned sub-thread: root \S+ is quarantined by a repair record$", "orphan.root-quarantined"),
+    (r"^orphaned sub-thread: root \S+ cannot be read as a message$", "orphan.root-unreadable"),
+    (r"^--root \S+ is quarantined by a repair record; promote a valid root instead$", "promote.root-quarantined"),
+    (r"^--root \S+ is not a valid message: ", "promote.root-invalid"),
+    (r"^unknown sender, status, or language$", "file.sender-status-language"),
     (r"^PROMOTED-FROM: \S+ is earlier in T\d+, so this is no longer the topic's first message", "promoted.displaced"),
     (r"^sub-thread message sorts before its root \S+ in posting order$", "member.before-root"),
 ]
@@ -226,11 +242,12 @@ def rule(text, headers=None):
     if other:  # the parse error of another file this one depends on (decision #30 keeps the wording)
         name, inner = other.groups()
         headers = headers or {}
-        kind = ("promoted.origin-unreadable" if headers.get("PROMOTED-FROM") == name
-                else "subthread.root-unreadable" if headers.get("SUBTHREAD") == name else None)
-        if kind is None or rule(inner) not in ("file.separator", "file.utf8", "file.duplicate-header", "file.missing-headers"):
-            raise RuntimeError("unclassified dependency error: " + text)
-        return kind
+        parse = rule(inner) in ("file.separator", "file.utf8", "file.duplicate-header", "file.missing-headers")
+        if headers.get("PROMOTED-FROM") == name and parse:
+            return "promoted.origin-unreadable"
+        if headers.get("SUBTHREAD") == name:  # post: the root's own parse or validity error
+            return "subthread.root-unreadable" if parse else "subthread.root-invalid"
+        raise RuntimeError("unclassified dependency error: " + text)
     for pattern, rule_id in RULES:
         if re.search(pattern, text):
             return rule_id
@@ -354,14 +371,16 @@ def build():
                     board.write(name, text)
                 answer = base / "answer.json"
                 answer.write_text(ANSWER)
-                command = ["post", "--path", str(board.root), *[str(answer) if a == "{ANSWER_FILE}" else a for a in argv]]
+                values = [str(answer) if a == "{ANSWER_FILE}" else a for a in argv]
+                verb, values = (values[0], values[1:]) if values[0] == "promote" else ("post", values)
+                command = [verb, "--path", str(board.root), *values]
                 before = sorted(p.name for p in board.room.glob("*.txt"))
                 code, stdout, stderr = board.cli(*command)
                 after = sorted(p.name for p in board.room.glob("*.txt"))
                 written = sorted(set(after) - set(before))
                 headers = boardctl.parse_message(board.room / written[0]) if written else {}
                 out["posts"].append({"id": case_id, "auditRows": rows, "files": [{"name": n, "text": t} for n, t in files],
-                                     "argv": ["post", "--path", "PROJECT", *argv], "exit": code,
+                                     "argv": [verb, "--path", "PROJECT", *(argv[1:] if argv[0] == "promote" else argv)], "exit": code,
                                      "error": board.relative(stderr.strip().removeprefix("boardctl: ")) if code else None,
                                      "rule": rule(board.relative(stderr.strip().removeprefix("boardctl: ")), {"SUBTHREAD": argv[argv.index("--subthread") + 1]} if "--subthread" in argv else {}) if code else None,
                                      "written": {k: v for k, v in headers.items() if k in boardctl.SUBTHREAD_HEADERS + ("REPLY-TO",)} if written else None})

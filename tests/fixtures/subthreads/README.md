@@ -47,7 +47,7 @@ time never decides an order.
 | `files` | Per message file name: `{valid, error, rule}`. `error` is the exact `validate` text after the `<path>: ` prefix, or `null`; `rule` is its stable id (below), or `null`. Text inside an error that names another file is relative to `.agent-board/`. |
 | `otherErrors` | `{file, rule, text}` for validate errors not attributed to a message file, such as a refused repair record (`file` is `repairs/<hex>.json`). `text` is the whole line; paths are relative to `.agent-board/`. |
 | `warnings` | `{file, rule, text}` for each `validate` warning, in output order. `text` is the exact line (`rooms/<room>/<file>: ...`). Warnings never change the exit status. |
-| `orphans` | File names with an `orphaned sub-thread` warning (root missing or quarantined). A member whose `REPLY-TO` target is the missing root is also invalid; see `files`. |
+| `orphans` | File names with an `orphaned sub-thread` warning (root missing, quarantined or unreadable). A member whose `REPLY-TO` target is the missing root is also invalid; see `files`. |
 | `membership` | Per message listed by `recent` (valid and eligible): its `SUBTHREAD` root, or `null` for the main flow. |
 | `listed` | The file names `recent` lists. Invalid and quarantined files are absent. |
 | `mainFlow` | The file names `recent --main-flow` lists: non-members plus `SUBTHREAD-ALSO: main` members. |
@@ -59,7 +59,7 @@ time never decides an order.
 | --- | --- |
 | `id`, `auditRows` | As above. |
 | `files[]` | `{name, text}` messages present before the post. |
-| `argv` | The `boardctl` arguments. `PROJECT` is the board's project root. `{ANSWER_FILE}` is a file holding `{"question":"go","selected":["yes"]}`. |
+| `argv` | The `boardctl` arguments, a `post` or a `promote`. `PROJECT` is the board's project root. `{ANSWER_FILE}` is a file holding `{"question":"go","selected":["yes"]}`. |
 | `exit` | `0` (written) or `2` (refused, nothing written). |
 | `error` | The refusal text without the `boardctl: ` prefix, or `null`. Paths are relative to `.agent-board/`. |
 | `rule` | Its stable id, or `null`. |
@@ -101,6 +101,10 @@ Every expected error and warning has a stable `rule` id. A parity consumer match
 | `promoted.displaced` | `PROMOTED-FROM: F is earlier in T, so this is no longer the topic's first message; it still continues the sub-thread of R` | warning |
 | `orphan.root-missing` | `orphaned sub-thread: root R is missing` | warning |
 | `orphan.root-quarantined` | `orphaned sub-thread: root R is quarantined by a repair record` | warning |
+| `orphan.root-unreadable` | `orphaned sub-thread: root R cannot be read as a message` (the root file exists, does not parse and is not quarantined; the root itself is reported as invalid) | warning |
+| `subthread.root-invalid` | the root's own validity error, `rooms/ROOM/R: <reason>`, for example a quarantined root that parses | post |
+| `promote.root-quarantined` | `--root R is quarantined by a repair record; promote a valid root instead` | promote |
+| `promote.root-invalid` | `--root R is not a valid message: <reason>` | promote |
 | `repair.subthread-header` | `a replacement keeps the original's sub-thread headers: K is V in the original and V' in the replacement` (a valid value changed or dropped, or a header added; `absent` for a missing header), or `a replacement corrects or drops an invalid sub-thread header: K is V in the original and V' in the replacement, which is still invalid` | error on `repairs/<hex>.json` |
 | `reply-to.missing` | `REPLY-TO target is missing` | error |
 | `answer.target-missing` | `ANSWER reply target is missing` | error |
@@ -108,6 +112,7 @@ Every expected error and warning has a stable `rule` id. A parity consumer match
 | `file.separator` | `missing header separator` | error |
 | `file.duplicate-header` | `duplicate header K` | error |
 | `file.missing-headers` | `missing header(s): ...` | error |
+| `file.sender-status-language` | `unknown sender, status, or language` | error |
 | `file.date` | `DATE must be an ISO date/time in the board time zone, optionally with seconds, fractional seconds or an offset` | error |
 | `file.utf8` | `'utf-8' codec can't decode ...` (Python's decoder text) | error |
 

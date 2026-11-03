@@ -400,6 +400,13 @@ def command_promote(args: argparse.Namespace) -> int:
     if origin.is_symlink() or not origin.is_file(): raise BoardError(f"root {args.root} does not exist in {directory.relative_to(board).as_posix()}")
     origin_headers = parse_message(origin)
     if "SUBTHREAD" in origin_headers: raise BoardError("--root names a sub-thread message; sub-threads nest one level only")
+    # Like post --subthread, refuse before writing anything: the root must be a valid, unquarantined message.
+    quarantined, _ = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
+    if origin.relative_to(board).as_posix() in quarantined:
+        raise BoardError(f"--root {args.root} is quarantined by a repair record; promote a valid root instead")
+    invalid = message_error(origin, board, config, known)
+    if invalid:
+        raise BoardError(f"--root {args.root} is not a valid message: {invalid.split(': ', 1)[-1]}")
     old_topic = thread_id(origin_headers)
     recipient = args.recipient or ("all" if scope == "room" else next(item for item in args.direct.split("--") if item != args.sender))
     if scope == "direct" and "--".join(sorted((args.sender, recipient))) != args.direct: raise BoardError("--from and --to must be the two participants of the direct pair")
@@ -711,7 +718,7 @@ def safe_order(headers: dict, path: Path, config: dict):
 
 def subthread_warnings(board: Path, config: dict, quarantined: dict, invalid=frozenset()) -> list[str]:
     """Reported, never hidden, never an error (validity stays monotonic as other files arrive):
-    orphaned members (root missing or quarantined), a member that sorts before its root, and a PROMOTED-FROM
+    orphaned members (root missing, quarantined or unreadable), a member that sorts before its root, and a PROMOTED-FROM
     message that an earlier sibling (a backdated post or a T-ID collision) displaced as its topic's first message.
     The last two are reported only for valid messages (`invalid` holds the paths validate rejected)."""
     warnings = []
@@ -730,6 +737,8 @@ def subthread_warnings(board: Path, config: dict, quarantined: dict, invalid=fro
                 warnings.append(f"{relative}: orphaned sub-thread: root {root} is missing")
             elif target.relative_to(board).as_posix() in quarantined:
                 warnings.append(f"{relative}: orphaned sub-thread: root {root} is quarantined by a repair record")
+            elif target not in parsed and not target.is_symlink():
+                warnings.append(f"{relative}: orphaned sub-thread: root {root} cannot be read as a message")
             elif target in parsed and path not in invalid:
                 own, before = safe_order(headers, path, config), safe_order(parsed[target], target, config)
                 if own is not None and before is not None and own <= before:

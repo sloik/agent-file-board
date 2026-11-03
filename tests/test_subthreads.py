@@ -123,7 +123,8 @@ class ValidationRules(SubthreadBase):
         self.base.write_bytes(b"not a valid message\xff")
         errors, warnings = boardctl.validate_report(self.root)
         self.assertEqual(len(errors), 1)  # only the broken root
-        self.assertEqual(warnings, [])
+        # SPEC-002-079 audit row 36: an unreadable root orphans its members before any repair too.
+        self.assertEqual(warnings, [f"rooms/general/{self.room.glob('*_first.txt').__next__().name}: orphaned sub-thread: root {self.rname} cannot be read as a message"])
         self.cli("repair", "--path", str(self.root), "--message", "rooms/general/" + self.rname, "--by", "alpha-agent", "--reason", "Malformed output")
         errors, warnings = boardctl.validate_report(self.root)
         self.assertEqual(errors, [])
@@ -693,6 +694,28 @@ class AuditFixes(SubthreadBase):
         unmarked = answer.with_name(answer.name.replace("_answer", "_unmarked"))
         unmarked.write_text("\n".join(lines) + "\n")
         self.assertRejects(unmarked, "must carry SUBTHREAD")
+
+    def test_row33_promote_refuses_a_quarantined_or_invalid_root(self):
+        invalid = self.raw(1, "alpha-agent", "T001", "weird", status="WEIRD")  # parses, but is not a valid message
+        self.member(2, "side", reply=invalid.name, SUBTHREAD=invalid.name)
+        before = sorted(p.name for p in self.room.glob("*.txt"))
+        promote = ("promote", "--path", str(self.root), "--room", "general", "--root", invalid.name, "--from", "alpha-agent", "--title", "Moved")
+        self.cli(*promote, expected=2)
+        self.assertIn(f"--root {invalid.name} is not a valid message", self.err)
+        self.cli("repair", "--path", str(self.root), "--message", "rooms/general/" + invalid.name, "--by", "alpha-agent", "--reason", "Bad status")
+        self.cli(*promote, expected=2)
+        self.assertIn(f"--root {invalid.name} is quarantined by a repair record", self.err)
+        self.assertEqual(sorted(p.name for p in self.room.glob("*.txt")), before)  # nothing written
+        self.post("refused", "--subthread", invalid.name, sender="bravo-agent", to="alpha-agent", expected=2)  # as post --subthread refuses
+
+    def test_row36_members_of_an_unreadable_root_are_orphans(self):
+        member = self.member(1, "side")
+        self.base.write_bytes(b"not a message\n")
+        errors, warnings = boardctl.validate_report(self.root)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing header separator", errors[0])
+        self.assertValid(member)
+        self.assertEqual(warnings, [f"rooms/general/{member.name}: orphaned sub-thread: root {self.rname} cannot be read as a message"])
 
     def test_row37_validate_enforces_that_a_replacement_keeps_sub_thread_headers(self):
         member = self.member(1, "side", **{"SUBTHREAD-STATE": "resolved"})

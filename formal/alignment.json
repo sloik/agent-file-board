@@ -453,7 +453,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "e9cf02aa2426f6eb5b17f32b6624e137966c525db0fb34160a22b23ac78390be"
+      "sha256": "b27592ce93c6f5914335298c50287d5a0cf26375c9fdf8f1694aab4cb18cf61e"
     },
     "tests/test_answer_state.py": {
       "path": "tests/test_answer_state.py",
@@ -684,21 +684,21 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "39a0046516af74a08aaae4f3a014968e26b5645bd6d6a98274897b861e0a0c6e"
+      "sha256": "5cf516bc484a8c38e2d583b2ab0b5d7f326b48feec1cc8c7c16690c324636eef"
     },
     "tests/fixtures/subthreads/cases.json": {
       "path": "tests/fixtures/subthreads/cases.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "a79b3173843866bf84c857c4136e74172dae3da233fc24da7780fc5bd8254607"
+      "sha256": "768836398486f0579e5ec536491ec96aad1923cda918f25e48b7009705e5128c"
     },
     "scripts/build_subthread_cases.py": {
       "path": "scripts/build_subthread_cases.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "cdb4560031c84623a79856c70c9833d09178e11e8da3f9d6771023228b82c0ec"
+      "sha256": "42a1ec55c3e0a7ae555fef27c0a602bd118c975049d7d5fc286226e0ea16546f"
     },
     "message_repairs.py": {
       "path": "message_repairs.py",
@@ -737,7 +737,7 @@
         "kind": "python",
         "name": "command_promote"
       },
-      "sha256": "625f3d72984e9380371c3258f565d2eaa21dc52f30fa2a9cd39a68525432f385"
+      "sha256": "1932552eae0bc10c685d1c1206369c573d6569930eb706ef1de7cf2c63dfc6f6"
     },
     "subthread-next-thread": {
       "path": "boardctl.py",
@@ -761,7 +761,7 @@
         "kind": "python",
         "name": "subthread_warnings"
       },
-      "sha256": "d451fce0218cd82a4e0220471f5f7e71d375619206eecc55f94302b24734722a"
+      "sha256": "dfde791caded0d7fbe0b86199b2d42ce8d00c80bd17836f0155ca8d82e2d2100"
     },
     "subthread-validate": {
       "path": "boardctl.py",
@@ -2618,7 +2618,7 @@
     },
     {
       "module": "Subthreads.tla",
-      "review": "2026-11-03 (SPEC-002-079): New hand-written bounded model of sub-threads (convention 3.4.1). Reviewed against boardctl subthread_check, check_message, command_post, command_promote, next_thread, message_order, subthread_warnings, validate_report, subthread_summaries, command_recent and answer_workflow.scan. The collector runs the real commands on two board copies and a shared folder; three positive traces conform and eight implementation mutants are rejected by TraceConforms. Acceptance reuses AnswerAcceptance!Projection as a contract (S8), not composed behaviours; AnswerAcceptance.tla is unchanged. The fixed refusal order is a symmetry reduction: a refusal writes nothing. Faithful TLC: 65,043 distinct states. Refined repair rule (decision #37) in message_repairs.subthread_header_issue is outside the model (unit-tested, pinned in cases.json); MESSAGE_REF_RE now lives in message_repairs and boardctl aliases it.",
+      "review": "2026-11-03 (SPEC-002-079): New hand-written bounded model of sub-threads (convention 3.4.1). Reviewed against boardctl subthread_check, check_message, command_post, command_promote, next_thread, message_order, subthread_warnings, validate_report, subthread_summaries, command_recent and answer_workflow.scan. The collector runs the real commands on two board copies and a shared folder; three positive traces conform and eight implementation mutants are rejected by TraceConforms. Acceptance reuses AnswerAcceptance!Projection as a contract (S8), not composed behaviours; AnswerAcceptance.tla is unchanged. The fixed refusal order is a symmetry reduction: a refusal writes nothing. Faithful TLC: 65,043 distinct states. Refined repair rule (decision #37) in message_repairs.subthread_header_issue is outside the model (unit-tested, pinned in cases.json); MESSAGE_REF_RE now lives in message_repairs and boardctl aliases it. promote now refuses an invalid or quarantined root before writing (audit row 33), and validate warns about members of an unreadable root (row 36); neither is modelled (the model has no repair records or unreadable files), both are unit-tested and pinned in cases.json.",
       "states": {
         "state": {
           "anchors": [

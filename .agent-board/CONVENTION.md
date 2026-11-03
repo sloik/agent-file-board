@@ -841,9 +841,11 @@ derived from `REPLY-TO` chains: a message whose `REPLY-TO` names a member, witho
 - **Orphans.** If the root has been quarantined by a repair, its members stay valid but
   orphaned. If the root file is missing, a member whose `REPLY-TO` is the root fails the
   general `REPLY-TO` rule like any reply and is shown as invalid, never hidden; a member
-  replying to another member stays valid but orphaned. `boardctl validate` reports every
-  member of a missing or quarantined root as an orphan warning. A new post naming a
-  missing or unreadable root is refused.
+  replying to another member stays valid but orphaned. If the root file cannot be read as
+  a message, the root is invalid and its members stay valid but orphaned. `boardctl
+  validate` reports every member of a missing, quarantined or unreadable root as an
+  orphan warning. A new post naming a missing, unreadable or invalid root is refused, and
+  so is `boardctl promote` of a root that is invalid or quarantined.
 - **State.** The state of a sub-thread, its reply count, participants and any outcome
   text come only from valid, eligible members: never from an invalid, quarantined or
   signing-excluded message. A summary covers every such member of the directory,

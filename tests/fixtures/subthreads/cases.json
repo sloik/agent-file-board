@@ -913,6 +913,66 @@
    }
   },
   {
+   "id": "orphans-unreadable-root",
+   "auditRows": [
+    36
+   ],
+   "property": "S5",
+   "description": "A root that cannot be read (and is not quarantined) is itself invalid; its members stay valid and are orphans.",
+   "files": [
+    {
+     "name": "2026-11-03_1000_alpha-agent_T001_broken.txt",
+     "text": "not a message\n"
+    },
+    {
+     "name": "2026-11-03_1001_bravo-agent_T001_orphan.txt",
+     "text": "FROM: bravo-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:01\nLANGUAGE: en\nREPLY-TO: 2026-11-03_1000_alpha-agent_T001_broken.txt\nSTATUS: INFO\nPOSTED-AT: 2026-11-03T09:01:00.000Z\nSUBTHREAD: 2026-11-03_1000_alpha-agent_T001_broken.txt\n---\nBody of orphan\n"
+    }
+   ],
+   "expect": {
+    "files": {
+     "2026-11-03_1000_alpha-agent_T001_broken.txt": {
+      "valid": false,
+      "error": "missing header separator",
+      "rule": "file.separator"
+     },
+     "2026-11-03_1001_bravo-agent_T001_orphan.txt": {
+      "valid": true,
+      "error": null,
+      "rule": null
+     }
+    },
+    "otherErrors": [],
+    "warnings": [
+     {
+      "file": "rooms/general/2026-11-03_1001_bravo-agent_T001_orphan.txt",
+      "rule": "orphan.root-unreadable",
+      "text": "rooms/general/2026-11-03_1001_bravo-agent_T001_orphan.txt: orphaned sub-thread: root 2026-11-03_1000_alpha-agent_T001_broken.txt cannot be read as a message"
+     }
+    ],
+    "orphans": [
+     "2026-11-03_1001_bravo-agent_T001_orphan.txt"
+    ],
+    "membership": {
+     "2026-11-03_1001_bravo-agent_T001_orphan.txt": "2026-11-03_1000_alpha-agent_T001_broken.txt"
+    },
+    "listed": [
+     "2026-11-03_1001_bravo-agent_T001_orphan.txt"
+    ],
+    "mainFlow": [],
+    "subthreads": [
+     {
+      "root": "2026-11-03_1000_alpha-agent_T001_broken.txt",
+      "state": "open",
+      "replies": 1,
+      "participants": [
+       "bravo-agent"
+      ]
+     }
+    ]
+   }
+  },
+  {
    "id": "orphans-quarantined-root",
    "auditRows": [
     35
@@ -1862,6 +1922,127 @@
   }
  ],
  "posts": [
+  {
+   "id": "promote-invalid-root",
+   "auditRows": [
+    33
+   ],
+   "files": [
+    {
+     "name": "2026-11-03_1001_alpha-agent_T001_weird.txt",
+     "text": "FROM: alpha-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:01\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: WEIRD\nPOSTED-AT: 2026-11-03T09:01:00.000Z\n---\nBody of weird\n"
+    },
+    {
+     "name": "2026-11-03_1002_bravo-agent_T001_side.txt",
+     "text": "FROM: bravo-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:02\nLANGUAGE: en\nREPLY-TO: 2026-11-03_1001_alpha-agent_T001_weird.txt\nSTATUS: INFO\nPOSTED-AT: 2026-11-03T09:02:00.000Z\nSUBTHREAD: 2026-11-03_1001_alpha-agent_T001_weird.txt\n---\nBody of side\n"
+    }
+   ],
+   "argv": [
+    "promote",
+    "--path",
+    "PROJECT",
+    "--room",
+    "general",
+    "--root",
+    "2026-11-03_1001_alpha-agent_T001_weird.txt",
+    "--from",
+    "alpha-agent",
+    "--title",
+    "Moved",
+    "--at",
+    "2026-11-03 11:00"
+   ],
+   "exit": 2,
+   "error": "--root 2026-11-03_1001_alpha-agent_T001_weird.txt is not a valid message: unknown sender, status, or language",
+   "rule": "promote.root-invalid",
+   "written": null
+  },
+  {
+   "id": "promote-quarantined-root",
+   "auditRows": [
+    33
+   ],
+   "files": [
+    {
+     "name": "2026-11-03_1001_alpha-agent_T001_weird.txt",
+     "text": "FROM: alpha-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:01\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: WEIRD\nPOSTED-AT: 2026-11-03T09:01:00.000Z\n---\nBody of weird\n"
+    },
+    {
+     "name": "2026-11-03_1002_bravo-agent_T001_side.txt",
+     "text": "FROM: bravo-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:02\nLANGUAGE: en\nREPLY-TO: 2026-11-03_1001_alpha-agent_T001_weird.txt\nSTATUS: INFO\nPOSTED-AT: 2026-11-03T09:02:00.000Z\nSUBTHREAD: 2026-11-03_1001_alpha-agent_T001_weird.txt\n---\nBody of side\n"
+    },
+    {
+     "name": "repairs/99999999999999999999999999999999.json",
+     "text": "{\"version\": 1, \"target\": \"rooms/general/2026-11-03_1001_alpha-agent_T001_weird.txt\", \"sha256\": \"a9977e602d23e89734fbbaebe6db785a7f501a8a6a98d6cb315ca9cc1bd29c9f\", \"by\": \"alpha-agent\", \"at\": \"2026-11-03T10:30:00.000Z\", \"reason\": \"Bad status\", \"replacement\": null}"
+    }
+   ],
+   "argv": [
+    "promote",
+    "--path",
+    "PROJECT",
+    "--room",
+    "general",
+    "--root",
+    "2026-11-03_1001_alpha-agent_T001_weird.txt",
+    "--from",
+    "alpha-agent",
+    "--title",
+    "Moved",
+    "--at",
+    "2026-11-03 11:00"
+   ],
+   "exit": 2,
+   "error": "--root 2026-11-03_1001_alpha-agent_T001_weird.txt is quarantined by a repair record; promote a valid root instead",
+   "rule": "promote.root-quarantined",
+   "written": null
+  },
+  {
+   "id": "post-quarantined-root",
+   "auditRows": [
+    33
+   ],
+   "files": [
+    {
+     "name": "2026-11-03_1001_alpha-agent_T001_weird.txt",
+     "text": "FROM: alpha-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:01\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: WEIRD\nPOSTED-AT: 2026-11-03T09:01:00.000Z\n---\nBody of weird\n"
+    },
+    {
+     "name": "2026-11-03_1002_bravo-agent_T001_side.txt",
+     "text": "FROM: bravo-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:02\nLANGUAGE: en\nREPLY-TO: 2026-11-03_1001_alpha-agent_T001_weird.txt\nSTATUS: INFO\nPOSTED-AT: 2026-11-03T09:02:00.000Z\nSUBTHREAD: 2026-11-03_1001_alpha-agent_T001_weird.txt\n---\nBody of side\n"
+    },
+    {
+     "name": "repairs/99999999999999999999999999999999.json",
+     "text": "{\"version\": 1, \"target\": \"rooms/general/2026-11-03_1001_alpha-agent_T001_weird.txt\", \"sha256\": \"a9977e602d23e89734fbbaebe6db785a7f501a8a6a98d6cb315ca9cc1bd29c9f\", \"by\": \"alpha-agent\", \"at\": \"2026-11-03T10:30:00.000Z\", \"reason\": \"Bad status\", \"replacement\": null}"
+    }
+   ],
+   "argv": [
+    "post",
+    "--path",
+    "PROJECT",
+    "--from",
+    "bravo-agent",
+    "--to",
+    "all",
+    "--scope",
+    "room",
+    "--room",
+    "general",
+    "--thread",
+    "T001",
+    "--slug",
+    "new",
+    "--body",
+    "New",
+    "--subthread",
+    "2026-11-03_1001_alpha-agent_T001_weird.txt",
+    "--at",
+    "2026-11-03 11:00"
+   ],
+   "exit": 2,
+   "error": "rooms/general/2026-11-03_1001_alpha-agent_T001_weird.txt: unknown sender, status, or language",
+   "rule": "subthread.root-invalid",
+   "written": null
+  },
   {
    "id": "post-missing-root",
    "auditRows": [

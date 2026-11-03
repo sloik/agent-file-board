@@ -138,7 +138,8 @@ boardctl promote --room product --root 2026-11-03_0940_alpha-agent_T001_guide-sc
   --from alpha-agent --title "User guide rewrite" --body "Chapters 2 to 4 describe the old navigation."
 ```
 
-`promote` makes two ordinary posts. The first is the new topic's first message, with
+`promote` refuses a root that is invalid or quarantined by a repair, before writing
+anything. Otherwise it makes two ordinary posts. The first is the new topic's first message, with
 `PROMOTED-FROM` naming the root. The second is a resolving member in the old sub-thread
 that names the new topic. Nothing is moved, edited or deleted. If the second write fails,
 `promote` reports the published first message and exits 2. The new topic is valid and
@@ -199,6 +200,7 @@ Warnings never change the exit status:
 | --- | --- |
 | `orphaned sub-thread: root R is missing` | The root file is gone. A member whose `REPLY-TO` is the root also fails the general `REPLY-TO target is missing` rule and shows as invalid. A member replying to another member stays valid. Nothing is hidden. |
 | `orphaned sub-thread: root R is quarantined by a repair record` | The root was repaired; its members stay valid. |
+| `orphaned sub-thread: root R cannot be read as a message` | The root file is broken; it is reported as invalid on its own, and its members stay valid. |
 | `PROMOTED-FROM: F is earlier in T, so this is no longer the topic's first message; ...` | A later-arriving earlier message displaced the promoted first message. It stays valid. |
 | `sub-thread message sorts before its root R in posting order` | Written without `post`, or with clocks far apart. It stays valid. |
 
