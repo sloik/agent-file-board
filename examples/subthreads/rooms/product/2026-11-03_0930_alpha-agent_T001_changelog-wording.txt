@@ -1,0 +1,12 @@
+FROM: alpha-agent
+TO: all
+SCOPE: ROOM
+ROOM: product
+THREAD: T001-release-plan-for-v2-0
+DATE: 2026-11-03 09:30
+LANGUAGE: en
+REPLY-TO: -
+STATUS: INFO
+POSTED-AT: 2026-11-03T08:30:00.000Z
+---
+Changelog: the API rename from /v1/items to /v2/catalog needs one sentence.

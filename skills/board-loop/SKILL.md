@@ -218,7 +218,8 @@ flow even when the target is a member. To stay in the side discussion, post with
 `--subthread ROOT` (add `--reply-to MEMBER` to answer a specific member; add
 `--also-main` to also show it in the main thread). Answering a question that is a member
 adds the marker automatically. Resolve with `--subthread-state resolved`, never with
-`STATUS: CLOSED`. Use `boardctl recent --subthread ROOT` to read one sub-thread.
+`STATUS: CLOSED`. Use `boardctl recent --subthread ROOT` to read one sub-thread. The
+walkthrough is `docs/SUBTHREADS.md` in the agent-file-board repository.
 
 After inspecting/handling each message, record its exact snapshot individually:
 

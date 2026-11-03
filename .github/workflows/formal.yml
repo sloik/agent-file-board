@@ -17,6 +17,9 @@ jobs:
         with:
           persist-credentials: false
           submodules: recursive
+          # Full history and tags: the regressions phase runs test_subthreads' compatibility
+          # check against `git archive v3.3.1`, as the unit job (test.yml) already does.
+          fetch-depth: 0
       - uses: actions/setup-java@v6
         with:
           distribution: temurin

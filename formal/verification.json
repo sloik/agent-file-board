@@ -5,7 +5,8 @@
     "Publication.tla",
     "PrivateRecovery.tla",
     "AnswerAcceptance.tla",
-    "RoomHistory.tla"
+    "RoomHistory.tla",
+    "Subthreads.tla"
   ],
   "phases": [
     {
@@ -99,6 +100,16 @@
           "tests",
           "-p",
           "test_history_recording.py"
+        ],
+        [
+          "{python}",
+          "-m",
+          "unittest",
+          "discover",
+          "-s",
+          "tests",
+          "-p",
+          "test_subthreads.py"
         ]
       ],
       "timeout": 180

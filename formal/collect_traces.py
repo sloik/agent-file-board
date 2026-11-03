@@ -131,9 +131,10 @@ def traces(mutant=False):
     from collect_private_state import traces as private_traces
     from collect_publication import traces as publication_traces
     from collect_room_history import traces as history_traces
+    from collect_subthreads import traces as subthread_traces
     return ([scenario(k, mutant) for k in (['stale', 'orphan'] if mutant else ['saved', 'noop', 'failure', 'stale', 'stale-noop', 'orphan', 'crash'])]
             + private_traces(mutant) + publication_traces(mutant) + answer_traces(mutant)
-            + history_traces(mutant))
+            + history_traces(mutant) + subthread_traces(mutant))
 
 
 if __name__ == '__main__':

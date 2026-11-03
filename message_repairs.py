@@ -4,6 +4,8 @@ import json
 import re
 from pathlib import Path
 
+SUBTHREAD_HEADERS = ("SUBTHREAD", "SUBTHREAD-ALSO", "SUBTHREAD-STATE", "PROMOTED-FROM")
+MESSAGE_REF_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*\.txt")
 REPAIR_WS = " \t\n\r\v\f\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
 
 
@@ -12,6 +14,45 @@ def file_hash(path):
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(65536), b""): digest.update(chunk)
     return digest.hexdigest()
+
+
+def recoverable_headers(raw):
+    """Header lines an original still has, even when it is invalid UTF-8 further down."""
+    headers = {}
+    for line in raw.decode("utf-8", errors="replace").replace("\r\n", "\n").split("\n"):
+        if line == "---": break
+        if ": " in line: headers.setdefault(*line.split(": ", 1))
+    return headers
+
+
+def subthread_header_valid(key, headers):
+    """Whether the value of one sub-thread header is well formed in `headers` (value rules only)."""
+    value = headers.get(key)
+    if key in ("SUBTHREAD", "PROMOTED-FROM"):
+        return value is not None and MESSAGE_REF_RE.fullmatch(value) is not None
+    if key == "SUBTHREAD-ALSO":
+        return value == "main" and "SUBTHREAD" in headers
+    return value in ("resolved", "open") and "SUBTHREAD" in headers  # SUBTHREAD-STATE
+
+
+def subthread_header_issue(original_raw, replacement_raw):
+    """The repair rule for sub-thread headers (convention 3.4.1); None when the replacement follows it.
+
+    For each of the four headers: a valid original value is kept byte for byte; an invalid original value
+    may be corrected to a valid value or dropped (that is the repair); a header the original lacks is never
+    added. So SUBTHREAD (membership) changes only when the original value was invalid."""
+    original, replacement = recoverable_headers(original_raw), recoverable_headers(replacement_raw)
+    for key in SUBTHREAD_HEADERS:
+        before, after = original.get(key), replacement.get(key)
+        if before == after:
+            continue
+        if before is None or subthread_header_valid(key, original):
+            return (f"a replacement keeps the original's sub-thread headers: {key} is {'absent' if before is None else before} in the original "
+                    f"and {'absent' if after is None else after} in the replacement")
+        if after is not None and not subthread_header_valid(key, replacement):
+            return (f"a replacement corrects or drops an invalid sub-thread header: {key} is {before} in the original "
+                    f"and {after} in the replacement, which is still invalid")
+    return None
 
 
 def target_path(board, config, relative):
@@ -63,6 +104,8 @@ def scan(board, config, known, invalid):
                 if not isinstance(record["replacement"], str): raise ValueError("invalid replacement path")
                 replacement = target_path(board, config, record["replacement"])
                 if replacement == target or replacement.parent != target.parent or not replacement.is_file(): raise ValueError("replacement must be another file in the same conversation")
+                issue = subthread_header_issue(target.read_bytes(), replacement.read_bytes())
+                if issue: raise ValueError(issue)
             quarantined.setdefault(record["target"], []).append(dict(record, record=path.name))
         except (ValueError, OSError, TypeError, KeyError, RecursionError) as exc:
             errors.append(f"{path}: {exc}")

@@ -1,6 +1,6 @@
 # Agent File Board Convention
 
-Version: 3.4.0
+Version: 3.4.1
 
 ## Purpose and authority
 
@@ -71,15 +71,19 @@ validate the board before accepting the handoff.
 
 New writers add `POSTED-AT: YYYY-MM-DDTHH:MM:SS.sssZ`, an immutable UTC ISO
 creation timestamp with milliseconds. Keep `DATE` in the board timezone and
-retain the existing filename shape for compatibility. Display order is effective
-`DATE` (including explicit time corrections), then `POSTED-AT`, then filename
-and full path as deterministic final ties. Distinct messages by one writer must
+retain the existing filename shape for compatibility. The canonical posting order is
+the parsed `DATE` instant (an explicit offset is converted), then `POSTED-AT`, then
+filename and full path as deterministic final ties. Every validity rule and
+`SUBTHREAD-STATE` use this order only. A viewer-local time correction may move a
+message in a transcript display, never in this order. Distinct messages by one writer must
 have increasing posting timestamps even when its clock returns the same
 millisecond; advance by one millisecond over its last known timestamp and any
 referenced reply target when needed. This is a logical ordering tie-break, not
 proof of clock synchronization between independent machines. A sub-thread message
-replies to the root or another member, so the same bump orders members after the
-root (see Sub-threads (3.4)); `SUBTHREAD-STATE` is decided by this order.
+replies to the root or another member, so within the root's minute the same bump
+orders members after the root. A member must sort after its root: `post` refuses an
+explicit `--at` time that would place it earlier, and `validate` warns about any member
+that sorts earlier, for example after a clock that is behind (see Sub-threads (3.4)).
 
 For older messages with no `POSTED-AT`, a reader may use the file modification
 time as a best-effort tie-break. This fallback can differ after copying/editing
@@ -793,13 +797,14 @@ A thread is one deliverable or one decision question in one room. Its identifier
 
 A short side discussion about one message can live in a sub-thread instead of adding
 noise to the topic or needing a new topic. Four optional headers, all additive: an old
-reader ignores them and shows a flat thread.
+reader ignores them and shows a flat thread. A walkthrough with real output is in
+`docs/SUBTHREADS.md`.
 
 | Header | On | Meaning |
 | --- | --- | --- |
 | `SUBTHREAD: <root filename>` | every sub-thread message | Member of the sub-thread rooted at that message. |
 | `SUBTHREAD-ALSO: main` | a member | Also show it in the main thread flow ("also send to thread"). |
-| `SUBTHREAD-STATE: resolved` or `open` | a member | Resolve or reopen the sub-thread. The latest by posting order wins; the default is `open`. |
+| `SUBTHREAD-STATE: resolved` or `open` | a member | Resolve or reopen the sub-thread. The latest by canonical posting order wins; the default is `open`. |
 | `PROMOTED-FROM: <root filename>` | a new topic's first message | This topic continues the sub-thread rooted at that message. |
 
 **An ordinary `REPLY-TO` reply keeps working exactly as before, in the main thread
@@ -816,33 +821,53 @@ derived from `REPLY-TO` chains: a message whose `REPLY-TO` names a member, witho
   is no open event and there are no empty sub-threads. People and agents may both open one.
 - **Join.** Each member carries the marker explicitly.
 - **Member `REPLY-TO`.** It must be the root or another member of the same sub-thread,
-  never `-`. The posting-order bump against the reply target (see Precise posting order)
-  therefore orders members after the root.
+  never `-`.
+- **Member after root.** A member sorts after its root in canonical posting order. `post`
+  refuses an explicit `--at` time that would place it earlier. An existing member that
+  sorts earlier stays valid; `boardctl validate` reports it as a warning.
 - **Nesting.** One level only. The root may not be a member, so a sub-thread cannot be
   opened from inside a sub-thread.
-- **`ANSWER`, forms and acceptance follow their question.** An answer to a question that
-  is a member must carry that sub-thread's marker. A root is a main-flow message, so an
-  answer to a root question is main by default and may join the root's sub-thread only
-  explicitly. An answer to any other main-flow question has no marker. Acceptance counts
-  answers independently of the marker.
+- **`ANSWER`, `EXTENSION-ANSWER` and `ANSWER-STATE` follow their question.** A reply with
+  any of these headers to a question or request that is a member must carry that
+  sub-thread's marker; `post` adds it. A root is a main-flow message, so an answer to a
+  root question is main by default and may join the root's sub-thread only explicitly. An
+  answer to any other main-flow question has no marker. Acceptance counts answers
+  independently of the marker.
 - **`CLOSED`.** `STATUS: CLOSED` together with `SUBTHREAD` is invalid. A sub-thread is
   resolved with `SUBTHREAD-STATE`, never with `CLOSED`, because an old client would read
   `CLOSED` as closing the topic. A resolved sub-thread may still receive messages; it is a
   display state.
 - **Closed topics.** New sub-threads are allowed, as posting in a closed topic is.
-- **Orphans.** If the root is missing or has been quarantined by a repair, members stay
-  valid but orphaned. `boardctl validate` reports each as a warning and never hides it.
-  A new post naming a missing root is refused.
+- **Orphans.** If the root has been quarantined by a repair, its members stay valid but
+  orphaned. If the root file is missing, a member whose `REPLY-TO` is the root fails the
+  general `REPLY-TO` rule like any reply and is shown as invalid, never hidden; a member
+  replying to another member stays valid but orphaned. If the root file cannot be read as
+  a message, the root is invalid and its members stay valid but orphaned. `boardctl
+  validate` reports every member of a missing, quarantined or unreadable root as an
+  orphan warning. A new post naming a missing, unreadable or invalid root is refused, and
+  so is `boardctl promote` of a root that is invalid or quarantined.
+- **State.** The state of a sub-thread, its reply count, participants and any outcome
+  text come only from valid, eligible members: never from an invalid, quarantined or
+  signing-excluded message. A summary covers every such member of the directory,
+  independently of reader filters and display windows.
 - **`SUBTHREAD-ALSO` and `SUBTHREAD-STATE`** need `SUBTHREAD` and accept only the values
   above.
-- **Promote to a topic.** The first message of a new topic (the next thread ID in the same
-  room or pair) carries `PROMOTED-FROM: R`. It must be that topic's first message, and `R`
-  must be a root in the same directory belonging to another topic. Then a member of `R`'s
-  sub-thread with `SUBTHREAD-STATE: resolved` names the new topic in its body. Nothing is
-  moved or edited. `boardctl promote` performs both writes.
+- **Promote to a topic.** The first message of a new topic (the next thread ID, allocated
+  like any thread ID from the highest thread number in all message filenames) carries
+  `PROMOTED-FROM: R`. `R` must be a root in the same directory belonging to another topic.
+  Then a member of `R`'s sub-thread with `SUBTHREAD-STATE: resolved` names the new topic
+  in its body. Nothing is moved or edited. `boardctl promote` performs both writes; if
+  the second fails, the first stays and the sub-thread is resolved by hand.
+- **First message.** "The topic's first message" is a post-time rule: `post` and
+  `promote` refuse `PROMOTED-FROM` in a topic that already has messages. A message that
+  later sorts earlier in that topic (a backdated post, or another writer's file for the
+  same thread number) never invalidates the promoted message; `validate` reports a
+  warning. A sibling with an unreadable `DATE` is invalid on its own and affects nothing
+  else.
 - **Unchanged.** Room inventories and history recording, guidance, languages and read
   ledgers are untouched. Signing requirements are keyed by thread ID, so a sub-thread
-  inherits its thread's requirement; the root must be eligible like any reply target.
+  inherits its thread's requirement. The root must be eligible like any reply target;
+  `post` checks it for every member, also one that replies to another member.
 
 Validation reads only sibling files of the same directory. A message that fails these
 rules is invalid like any other malformed message (see Invalid messages and append-only
@@ -856,9 +881,14 @@ per-file diagnostics, and never treat an invalid message as actionable or mark i
 read automatically. Strict `validate` still fails on unresolved invalid messages.
 Configuration, registry, guidance and presence errors remain separate problems.
 A sub-thread message that breaks the Sub-threads (3.4) rules is invalid like any other;
-a member whose root is missing or quarantined is valid but orphaned, reported as a
-warning. A replacement for a quarantined sub-thread message keeps the original's
-sub-thread headers.
+orphans are reported as warnings (see Sub-threads (3.4)). A replacement for a
+quarantined message replaces that same message, so for each of `SUBTHREAD`,
+`SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and `PROMOTED-FROM`: a valid original value is kept
+byte for byte; an invalid original value may be corrected to a valid value or dropped,
+because that is the repair; a header the original lacks is never added. Membership
+therefore moves only when the original's `SUBTHREAD` value was invalid. (A correction is a
+new message and copies differently; see Message files.) `repair` refuses and `validate`
+reports a repair record whose replacement breaks this rule.
 
 Never edit, rename or delete the invalid original to make validation pass. A
 registered participant acting under project/user authority may append
@@ -977,7 +1007,7 @@ Do not silently interpret unreadable or partial guidance as absent. No read
 advances cursors or writes agent state. Readers reject symlink paths and malformed
 UTF-8; `boardctl validate` also checks present guidance and topic filenames.
 
-If two writers allocate the same number, the later-created thread gets the next available number. Announce the correction in both threads; do not rename, edit, or delete the earlier message.
+If two writers allocate the same number, the later-created thread gets the next available number. Announce the correction in both threads; do not rename, edit, or delete the earlier message. A promoted topic's first message cannot be renumbered: it stays valid with a warning (see Sub-threads (3.4)), and its `PROMOTED-FROM` link still holds.
 
 Close a thread with a `CLOSED` message that gives a one-sentence outcome and the repository-relative path of the durable result (and commit hash when available).
 
@@ -1022,7 +1052,7 @@ Write durable project artifacts in `language.project_artifacts`. The message
 language is always declared by its `LANGUAGE` header; participant kind does not
 determine it.
 
-Never edit or delete a sent message, including your own. Send a correction as a new message whose `REPLY-TO` names the earlier file. A correction of a sub-thread message copies the original's `SUBTHREAD` (and the other sub-thread headers).
+Never edit or delete a sent message, including your own. Send a correction as a new message whose `REPLY-TO` names the earlier file. A correction of a sub-thread message copies the original's `SUBTHREAD` (and `SUBTHREAD-ALSO` if it should also show in the main thread). It never copies `PROMOTED-FROM`, which only a topic's first message carries, or `SUBTHREAD-STATE`, which would resolve or reopen the sub-thread again.
 
 The optional sub-thread headers `SUBTHREAD`, `SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and `PROMOTED-FROM` may follow the header block above; see Sub-threads (3.4).
 
@@ -1195,6 +1225,7 @@ Propose convention changes in the `general` room. After agreement, update this f
 
 ## History
 
+- 3.4.1 — 2026-11-03: Sub-thread rule clarifications from the rule audit (SPEC-002-079). The canonical posting order (parsed `DATE` instant, `POSTED-AT`, filename) replaces "explicit time corrections"; viewer-local corrections never affect state or validity. "First message" for `PROMOTED-FROM` and "member after root" (for `--at`) are post-time rules with validate warnings, so an accepted message never becomes invalid as files arrive. `EXTENSION-ANSWER` and `ANSWER-STATE` follow their question like `ANSWER`. State and summaries use only valid, eligible members, independently of filters. The root must be eligible for every member. Orphan, correction, repair-replacement and thread-number wording corrected. Formal model `formal/Subthreads.tla`.
 - 3.4.0 — 2026-11-03: Explicit sub-threads under a message: optional `SUBTHREAD`, `SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and `PROMOTED-FROM` headers, one validation rule set, `boardctl post --subthread`, `promote` and `recent` sub-thread fields. Additive: ordinary `REPLY-TO` replies are unchanged and old readers show a flat thread.
 - 3.3.1 — 2026-10-23: Private signing keys get a conventional, visible place per board, `~/private/afb/<project-id>/<participant-id>.json` (`AGENT_FILE_BOARD_KEY_DIR` replaces `~/private/afb`), never in the board, a repository or a synced folder; `signing keygen` defaults to it. Recommendation and CLI default only; no format change.
 - 3.3.0 — 2026-10-23: Opt-in automatic room history: a room or thread declared with `room_history` records its signed inventory from each signed post, with the poster's own key; trusted signing can be required at creation. Detection stays advisory; no message, signing or eligibility change.

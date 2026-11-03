@@ -138,6 +138,25 @@
         "history mutant: record on post blesses anomalies",
         "history mutant: record on post with unapproved own key"
       ]
+    },
+    "Subthreads": {
+      "mode": "record",
+      "collector": "formal/collect_subthreads.py",
+      "positive": [
+        "subthreads: offline writers, refusals and a conflicting resolve decided by posting order",
+        "subthreads: promote fails after the first write, a topic collision and recovery",
+        "subthreads: answers follow their question and acceptance counts members"
+      ],
+      "mutants": [
+        "subthreads mutant: membership inherited through REPLY-TO",
+        "subthreads mutant: nesting check skipped",
+        "subthreads mutant: reply closure skipped",
+        "subthreads mutant: last arrival wins",
+        "subthreads mutant: PROMOTED-FROM accepted on a non-first message",
+        "subthreads mutant: displaced first message is an error",
+        "subthreads mutant: promote deletes on failure",
+        "subthreads mutant: acceptance ignores member answers"
+      ]
     }
   }
 }

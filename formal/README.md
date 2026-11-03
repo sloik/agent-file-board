@@ -238,3 +238,58 @@ saves reuse the lock and expected-byte replacement covered by `PrivateState` and
 `PrivateRecovery`. Sidecar loss, conflicting commitments, several sources,
 flooding budgets, capacity and format rules are unit-tested in
 `tests/test_room_history.py`, not modelled.
+
+## Subthreads
+
+`Subthreads.tla` models sub-threads (convention 3.4.1, SPEC-002-079) in one room with two
+topics. Two participants each write offline into their own copy of the board and read
+that copy; every accepted file reaches the other copy at any time, so files arrive in any
+order. Fourteen candidate messages have fixed headers and a fixed canonical posting order:
+ten that `post` accepts and four it must refuse (a nested member, a member replying
+outside its sub-thread, a member sorting before its root and an unmarked answer to a
+member question). `promote` is two writes; the second may fail, after which the
+resolving member can be posted by hand. A hand-written `PROMOTED-FROM` post is refused
+while its topic already has a message in the writer's copy. The faithful configuration
+explores 65,043 distinct states. The four refused attempts are tried in a fixed order: a refusal writes
+nothing, so this removes only equivalent interleavings.
+
+Each copy's observations are the production views: valid files, members of the root,
+the main flow, files with validate warnings, the root's `SUBTHREAD-STATE` and the
+acceptance projection of two questions. Invariants: `ExplicitMembership` (S1, only
+`SUBTHREAD` makes a member), `OneLevel` (S2), `ReplyClosure` (S3), `DeterministicState`
+(S4, state is the latest by canonical order over the visible set; equal sets agree),
+`MonotonicValidity` (S5, an accepted message stays valid in every copy that holds what it
+references, including a displaced `PROMOTED-FROM` first message and a T-ID collision),
+`PromoteAppendOnly` (S6, nothing is deleted or modified; after the first write the new
+topic is a valid main-flow message), `AnswersFollowQuestion` (S7) and
+`AcceptanceIgnoresMarker` (S8). S8 is a contract with `AnswerAcceptance`: the model reuses
+that module's `Projection` operator and requires that acceptance is computed over every
+valid answer, whatever its marker. It does not compose the two models' behaviours.
+`ObservationsConsistent` checks the per-copy projections.
+
+Eight configurations inject one fault each and must fail on the named invariant:
+`InheritMembership`, `SkipNesting`, `ReplyOutside`, `LastArrival`, `FirstIsError`,
+`PromoteDeletes`, `AnswerUnmarked` and `AcceptIgnoresMembers`. `SubthreadsReachable`
+must reach one state that witnesses every property positively: a plain reply to a member
+in the main flow, all four refusals, a resolve and a later reopen of the same sub-thread,
+a displaced first message that stays valid with a warning, a failed second promote write
+recovered by hand, member and joined answers, and member answers that acceptance counts.
+
+`collect_subthreads.py` gives each participant a real board copy and a shared folder.
+It runs `boardctl post` and `boardctl promote` (observing promote between its two
+writes), copies files between copies to model arrival, and reads each changed copy with
+`validate_report`, `recent` and `answers inspect`. Three positive traces cover offline
+writers with refusals and a resolve/reopen tie decided by filename, a failed promote with
+a topic collision and recovery, and answers. Eight implementation mutants must be
+rejected: membership inherited through `REPLY-TO`, a skipped nesting check, a skipped
+reply-closure check, last-arrival-wins state, `PROMOTED-FROM` accepted on a non-first
+message, a displaced first message reported as an error, a promote that deletes its first
+write on failure, and acceptance that ignores member answers. The unmarked answer is
+attempted through the production `subthread_check` with `new_post`, because `post` adds the
+marker itself.
+
+Limits: one room, one root with a sub-thread, two writers and fourteen fixed candidates.
+Signing eligibility, quarantine by repair records, direct pairs, `SUBTHREAD-ALSO` beyond
+one member, bad header values and wording are unit-tested in `tests/test_subthreads.py`
+and pinned in `tests/fixtures/subthreads/cases.json`, not modelled. Bounded sampled
+traces, not a refinement proof.

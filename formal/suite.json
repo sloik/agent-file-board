@@ -125,6 +125,57 @@
       "module": "RoomHistory.tla",
       "config": "RoomHistoryBadAck.cfg",
       "counterexample": "AckBoundToObserved"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "Subthreads.cfg",
+      "timeout": 180
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsReachable.cfg",
+      "counterexample": "NeverAllWitnessed",
+      "timeout": 180
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadMembership.cfg",
+      "counterexample": "ExplicitMembership"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadNesting.cfg",
+      "counterexample": "OneLevel"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadReplyTo.cfg",
+      "counterexample": "ReplyClosure"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadState.cfg",
+      "counterexample": "DeterministicState"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadFirst.cfg",
+      "counterexample": "MonotonicValidity"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadPromote.cfg",
+      "counterexample": "PromoteAppendOnly"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadAnswer.cfg",
+      "counterexample": "AnswersFollowQuestion"
+    },
+    {
+      "module": "Subthreads.tla",
+      "config": "SubthreadsBadAcceptance.cfg",
+      "counterexample": "AcceptanceIgnoresMarker"
     }
   ]
 }

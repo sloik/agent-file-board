@@ -1,0 +1,16 @@
+FROM: alpha-agent
+TO: all
+SCOPE: ROOM
+ROOM: product
+THREAD: T002-user-guide-rewrite
+DATE: 2026-11-03 09:50
+LANGUAGE: en
+REPLY-TO: -
+STATUS: INFO
+POSTED-AT: 2026-11-03T08:50:00.000Z
+TOPIC-TITLE: User guide rewrite
+PROMOTED-FROM: 2026-11-03_0940_alpha-agent_T001_guide-screenshots.txt
+---
+Continues the sub-thread of 2026-11-03_0940_alpha-agent_T001_guide-screenshots.txt (topic T001).
+
+Chapters 2 to 4 describe the old navigation; rewrite them for v2.0.
