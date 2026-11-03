@@ -209,6 +209,12 @@ def command_post(args: argparse.Namespace) -> int:
     explicit_title = getattr(args, "topic_title", None)
     if explicit_title is not None:
         explicit_title = topic_title(explicit_title.strip())
+    subthread_extra = {key: value for key, value in (("SUBTHREAD", getattr(args, "subthread", None)),
+                                                      ("SUBTHREAD-ALSO", "main" if getattr(args, "also_main", False) else None),
+                                                      ("SUBTHREAD-STATE", getattr(args, "subthread_state", None)),
+                                                      ("PROMOTED-FROM", getattr(args, "promoted_from", None))) if value}
+    if "SUBTHREAD" in subthread_extra and not args.reply_to:
+        args.reply_to = subthread_extra["SUBTHREAD"]  # a sub-thread message replies to its root unless told otherwise
     current = resolve_topic(directory, args.thread, config)
     declaration = creation_declaration(args, directory, current, root)
     label = current["label"] if current else getattr(args, "thread_label", args.slug)
@@ -273,8 +279,13 @@ def command_post(args: argparse.Namespace) -> int:
             source = check_message(target, board, config, known)
         if source["FROM"] not in known or source["STATUS"] not in config["statuses"] or source["LANGUAGE"] not in allowed:
             raise BoardError("ANSWER reply target has invalid author/status/language")
+    if source is not None and "SUBTHREAD" not in subthread_extra and source.get("SUBTHREAD") and ("ANSWER" in extra or "ANSWER-STATE" in extra):
+        subthread_extra["SUBTHREAD"] = source["SUBTHREAD"]  # an answer follows its question into the sub-thread
+    extra.update(subthread_extra)
+    header_map.update(subthread_extra)
     try:
         validate_extensions(header_map, source)
+        subthread_check(header_map, directory, filename, config, None, source, new_post=True)
     except ValueError as exc:
         raise BoardError(str(exc)) from exc
     extension_packages.validate_message(board, path, header_map, body, active=True)
@@ -348,6 +359,72 @@ def command_post(args: argparse.Namespace) -> int:
             print(hint, file=sys.stderr)
     if not getattr(args, "presence_notice", False):
         warn_agent_presence(root, board, registry, args.sender, known)
+    return 0
+
+
+def next_thread(board: Path, config: dict) -> str:
+    """Highest thread number in all message filenames plus one (there is no shared counter)."""
+    digits = config["board"]["thread_digits"]
+    highest = 0
+    for path in list((board / "rooms").glob("*/*.txt")) + list((board / config["board"]["direct_directory"]).glob("*/*.txt")):
+        match = re.search(r"_T(\d{%d})_" % digits, path.name)
+        if match: highest = max(highest, int(match.group(1)))
+    if highest + 1 >= 10 ** digits: raise BoardError("no thread numbers left for the configured width")
+    return f"T{highest + 1:0{digits}d}"
+
+
+def command_promote(args: argparse.Namespace) -> int:
+    """Two ordinary posts: the new topic's first message (PROMOTED-FROM), then a resolving sub-thread message naming it."""
+    import contextlib
+    import io
+    root = Path(args.path).resolve()
+    board, config, _, registry = board_paths(root)
+    known = ids(registry)
+    if not MESSAGE_REF_RE.fullmatch(args.root): raise BoardError("--root expects a message filename (no slashes)")
+    if bool(args.room) == bool(args.direct): raise BoardError("name exactly one of --room or --direct for the sub-thread's root")
+    title = topic_title(args.title.strip())
+    if args.room:
+        if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", args.room): raise BoardError("invalid room")
+        directory, scope = board / "rooms" / args.room, "room"
+    else:
+        if not re.fullmatch(r"[a-z][a-z0-9-]*--[a-z][a-z0-9-]*", args.direct): raise BoardError("invalid direct pair")
+        directory, scope = board / config["board"]["direct_directory"] / args.direct, "direct"
+    origin = directory / args.root
+    if origin.is_symlink() or not origin.is_file(): raise BoardError(f"root {args.root} does not exist in {directory.relative_to(board).as_posix()}")
+    origin_headers = parse_message(origin)
+    if "SUBTHREAD" in origin_headers: raise BoardError("--root names a sub-thread message; sub-threads nest one level only")
+    old_topic = thread_id(origin_headers)
+    recipient = args.recipient or ("all" if scope == "room" else next(item for item in args.direct.split("--") if item != args.sender))
+    if scope == "direct" and "--".join(sorted((args.sender, recipient))) != args.direct: raise BoardError("--from and --to must be the two participants of the direct pair")
+    new_topic = next_thread(board, config)
+    slug = re.sub(r"[^a-z0-9]+", "-", title.lower()).strip("-")[:60].strip("-") or "topic"
+    common = dict(path=str(root), sender=args.sender, recipient=recipient, scope=scope, room=args.room, status="INFO", language=args.language,
+                  body_file=None, runtime=args.runtime, at=args.at, content_type=None, question_file=None, answer_file=None,
+                  signing_key_file=getattr(args, "signing_key_file", None), signing_state_dir=getattr(args, "signing_state_dir", None))
+    intro = (args.body_file and Path(args.body_file).read_text(encoding="utf-8")) or args.body
+    first = argparse.Namespace(**common, thread=new_topic, slug=slug, topic_title=title, reply_to=None, new_thread=True, promoted_from=args.root,
+                               require_signing=args.require_signing, record_history=args.record_history,
+                               body=(f"Continues the sub-thread of {args.root} (topic {old_topic}).\n\n" + intro).rstrip())
+
+    def publish(namespace) -> str:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            code = command_post(namespace)
+        lines = [line for line in out.getvalue().splitlines() if line.strip()]
+        if code != 0 or not lines: raise BoardError("post did not publish a message")
+        return lines[-1]
+
+    first_path = publish(first)
+    resolution = argparse.Namespace(**common, thread=old_topic, slug=f"promoted-to-{new_topic.lower()}", reply_to=args.root, subthread=args.root, subthread_state="resolved",
+                                    body=f"Continued as {new_topic} \"{title}\" ({Path(first_path).name}). This sub-thread is resolved.")
+    try:
+        resolution_path = publish(resolution)
+    except (ValueError, OSError) as exc:
+        print(json.dumps({"thread": new_topic, "title": title, "root": args.root, "first_message": first_path, "resolution_message": None, "error": str(exc)}, ensure_ascii=False))
+        print(f"boardctl: the new topic {new_topic} was published ({first_path}) but the resolving sub-thread message failed: {exc}. "
+              f"Nothing was deleted; resolve the sub-thread with: boardctl post --subthread {args.root} --subthread-state resolved ...", file=sys.stderr)
+        return 2
+    print(json.dumps({"thread": new_topic, "title": title, "root": args.root, "first_message": first_path, "resolution_message": resolution_path}, ensure_ascii=False))
     return 0
 
 
@@ -430,6 +507,91 @@ def parse_message(path: Path) -> dict[str, str]:
     return headers
 
 
+SUBTHREAD_HEADERS = ("SUBTHREAD", "SUBTHREAD-ALSO", "SUBTHREAD-STATE", "PROMOTED-FROM")
+MESSAGE_REF_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*\.txt")
+
+
+def thread_id(headers: dict) -> str:
+    return headers["THREAD"].split("-", 1)[0]
+
+
+def soft_parse(path: Path, strict: bool):
+    """Headers of a sibling, or None when it is unreadable and the caller is validating an existing file
+    (an invalid or quarantined sibling leaves its members valid-but-orphaned; validate reports that)."""
+    try:
+        return parse_message(path)
+    except (ValueError, OSError):
+        if strict: raise
+        return None
+
+
+def subthread_check(headers: dict, directory: Path, name: str, config: dict, source_path: Path | None = None,
+                    source: dict | None = None, new_post: bool = False) -> None:
+    """Validate the optional sub-thread headers (convention 3.4); raise ValueError naming the rule.
+
+    One helper for check_message, post and promote. It reads only sibling files of `directory`, and only the
+    ones it must (root, REPLY-TO target, the topic's other messages for PROMOTED-FROM); it never calls
+    check_message on them. With new_post a missing root is an error; for an existing file it is an orphan,
+    reported by validate as a warning.
+    """
+    if not any(key in headers for key in SUBTHREAD_HEADERS) and not (source is not None and source.get("SUBTHREAD") and ("ANSWER" in headers or "ANSWER-STATE" in headers)):
+        return
+    sub = headers.get("SUBTHREAD")
+    for key in ("SUBTHREAD", "PROMOTED-FROM"):
+        if key in headers and not MESSAGE_REF_RE.fullmatch(headers[key]):
+            raise ValueError(f"{key}: expected the filename of a .txt message in the same directory (no slashes, traversal or other extensions)")
+    if "SUBTHREAD-ALSO" in headers:
+        if sub is None: raise ValueError("SUBTHREAD-ALSO: only a sub-thread message (with SUBTHREAD) can also show in the main thread")
+        if headers["SUBTHREAD-ALSO"] != "main": raise ValueError("SUBTHREAD-ALSO: the only value is main")
+    if "SUBTHREAD-STATE" in headers:
+        if sub is None: raise ValueError("SUBTHREAD-STATE: only a sub-thread message (with SUBTHREAD) can resolve or reopen a sub-thread")
+        if headers["SUBTHREAD-STATE"] not in ("resolved", "open"): raise ValueError("SUBTHREAD-STATE: expected resolved or open")
+    own_thread = thread_id(headers)
+    if sub is not None:
+        if "PROMOTED-FROM" in headers: raise ValueError("PROMOTED-FROM: a topic's first message cannot also be a sub-thread message")
+        if headers["STATUS"] == "CLOSED":
+            raise ValueError("SUBTHREAD: STATUS CLOSED is invalid on a sub-thread message; resolve with SUBTHREAD-STATE: resolved (old readers would read CLOSED as closing the topic)")
+        root = directory / sub
+        if root.is_symlink(): raise ValueError("SUBTHREAD: root must be a regular file")
+        root_headers = soft_parse(root, strict=new_post) if root.is_file() else None
+        if root_headers is not None:
+            if thread_id(root_headers) != own_thread:
+                raise ValueError(f"SUBTHREAD: root {sub} is in another thread ({thread_id(root_headers)}), not {own_thread}")
+            if "SUBTHREAD" in root_headers:
+                raise ValueError(f"SUBTHREAD: root {sub} is itself a sub-thread message; sub-threads nest one level only")
+        elif new_post:
+            raise ValueError(f"SUBTHREAD: root {sub} does not exist in this directory")
+        reply = headers["REPLY-TO"]
+        if reply == "-":
+            raise ValueError("SUBTHREAD: REPLY-TO must name the root or another message of the same sub-thread, not -")
+        if reply != sub:
+            if not MESSAGE_REF_RE.fullmatch(reply) or not (directory / reply).is_file():
+                if new_post: raise ValueError("SUBTHREAD: REPLY-TO target does not exist in this directory")
+            else:
+                target = source if source is not None and ("ANSWER" in headers or "ANSWER-STATE" in headers) else soft_parse(directory / reply, strict=new_post)
+                if target is not None and target.get("SUBTHREAD") != sub:
+                    raise ValueError(f"SUBTHREAD: REPLY-TO {reply} is neither the root {sub} nor a message of its sub-thread")
+    if source is not None and ("ANSWER" in headers or "ANSWER-STATE" in headers) and source.get("SUBTHREAD") != sub:
+        if source.get("SUBTHREAD") is not None:
+            raise ValueError(f"SUBTHREAD: an ANSWER to a question inside a sub-thread must carry SUBTHREAD: {source['SUBTHREAD']}")
+    if "PROMOTED-FROM" in headers:
+        origin = directory / headers["PROMOTED-FROM"]
+        if origin.is_symlink() or not origin.is_file():
+            raise ValueError(f"PROMOTED-FROM: {headers['PROMOTED-FROM']} is not a message in this directory")
+        origin_headers = parse_message(origin)
+        if "SUBTHREAD" in origin_headers:
+            raise ValueError("PROMOTED-FROM: names a sub-thread message, not a root")
+        if thread_id(origin_headers) == own_thread:
+            raise ValueError("PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic")
+        own_order = message_order(headers, source_path or directory / name, config)
+        for sibling in directory.glob("*.txt"):
+            if sibling.name == name: continue
+            try: other = parse_message(sibling)
+            except (ValueError, OSError): continue
+            if thread_id(other) == own_thread and (new_post or message_order(other, sibling, config) < own_order):
+                raise ValueError(f"PROMOTED-FROM: only the first message of a topic can carry it, but {sibling.name} is earlier in {own_thread}")
+
+
 def check_message(path, board, config, known, source_path=None, require_semantics=False):
     source_path = source_path or path
     if not source_path.is_file() or source_path.is_symlink(): raise BoardError(f"{path}: message must be a regular file")
@@ -473,6 +635,10 @@ def check_message(path, board, config, known, source_path=None, require_semantic
         raise BoardError(f"{path}: {exc}") from exc
     if headers["REPLY-TO"] != "-" and ("/" in headers["REPLY-TO"] or "\\" in headers["REPLY-TO"] or not (path.parent / headers["REPLY-TO"]).is_file()):
         raise BoardError(f"{path}: REPLY-TO target is missing")
+    try:
+        subthread_check(headers, path.parent, path.name, config, source_path, source)
+    except ValueError as exc:
+        raise BoardError(f"{path}: {exc}") from exc
     message_order(headers, source_path, config)
     import codecs
     decoder = codecs.getincrementaldecoder("utf-8")("strict")
@@ -509,12 +675,35 @@ def message_error(path, board, config, known, require_semantics=False):
 
 
 def validate(root: Path) -> list[str]:
+    return validate_report(root)[0]
+
+
+def subthread_warnings(board: Path, config: dict, quarantined: dict) -> list[str]:
+    """Orphaned sub-thread members: root missing or quarantined. Reported, never hidden, never an error."""
+    warnings = []
+    paths = sorted((board / "rooms").glob("*/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("*/*.txt"))
+    for path in paths:
+        if ".DS_Store" in path.relative_to(board).parts or path.is_symlink(): continue
+        try: headers = parse_message(path)
+        except (ValueError, OSError): continue
+        root = headers.get("SUBTHREAD")
+        if root is None or not MESSAGE_REF_RE.fullmatch(root): continue
+        target = path.parent / root
+        if not target.is_file():
+            warnings.append(f"{path.relative_to(board).as_posix()}: orphaned sub-thread: root {root} is missing")
+        elif target.relative_to(board).as_posix() in quarantined:
+            warnings.append(f"{path.relative_to(board).as_posix()}: orphaned sub-thread: root {root} is quarantined by a repair record")
+    return warnings
+
+
+def validate_report(root: Path) -> tuple[list[str], list[str]]:
+    """Return (errors, warnings). Warnings never change the exit status."""
     errors: list[str] = []
     try:
         board, config, _, registry = board_paths(root)
         known = ids(registry)
     except BoardError as exc:
-        return [str(exc)]
+        return [str(exc)], []
     errors.extend(board_presence.validation_errors(board, known))
     for person in registry["participants"]:
         error = operator_error(person, registry)
@@ -525,7 +714,7 @@ def validate(root: Path) -> list[str]:
     try:
         allowed = allowed_languages(config)
     except BoardError as exc:
-        return [str(exc)]
+        return [str(exc)], []
     quarantined, repair_errors = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
     errors.extend(repair_errors)
     for path in sorted((board / "rooms").glob("**/*.txt")) + sorted((board / config["board"]["direct_directory"]).glob("**/*.txt")):
@@ -533,14 +722,19 @@ def validate(root: Path) -> list[str]:
         if path.relative_to(board).as_posix() in quarantined: continue
         error = message_error(path, board, config, known, require_semantics=True)
         if error: errors.append(error)
-    return errors
+    return errors, subthread_warnings(board, config, quarantined)
 
 
 def command_validate(args: argparse.Namespace) -> int:
-    errors = validate(Path(args.path).resolve())
+    errors, warnings = validate_report(Path(args.path).resolve())
+    if getattr(args, "json", False):
+        print(json.dumps({"valid": not errors, "errors": errors, "warnings": warnings}, ensure_ascii=False))
+        return 1 if errors else 0
     if errors:
         print("\n".join(errors), file=sys.stderr)
+        if warnings: print("\n".join("warning: " + item for item in warnings), file=sys.stderr)
         return 1
+    if warnings: print("\n".join("warning: " + item for item in warnings), file=sys.stderr)
     print("board is valid")
     return 0
 
@@ -708,6 +902,23 @@ def command_guidance(args: argparse.Namespace) -> int:
     return 0
 
 
+def subthread_summaries(checked: list) -> list[dict]:
+    """Per sub-thread {root, path, replies, participants, last_posted_at, state} over eligible matching rows, newest activity first."""
+    groups: dict = {}
+    for order, row in checked:
+        if row["subthread"] is not None:
+            groups.setdefault((str(Path(row["path"]).parent), row["subthread"]), []).append((order, row))
+    result = []
+    for (directory, root), members in groups.items():
+        members.sort(key=lambda item: item[0])
+        states = [row["subthread_state"] for _, row in members if row["subthread_state"]]
+        result.append((members[-1][0], {"root": root, "path": directory + "/" + root, "replies": len(members),
+                                        "participants": sorted({row["from"] for _, row in members}),
+                                        "last_posted_at": members[-1][1]["posted_at"], "state": states[-1] if states else "open"}))
+    result.sort(key=lambda item: item[0], reverse=True)
+    return [item for _, item in result]
+
+
 def command_recent(args: argparse.Namespace) -> int:
     root = Path(args.path).resolve()
     board, config, _, registry = board_paths(root)
@@ -718,6 +929,9 @@ def command_recent(args: argparse.Namespace) -> int:
     if not 256 <= args.max_bytes <= 1048576: raise BoardError("max-bytes must be between 256 and 1048576")
     if args.room and not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", args.room): raise BoardError("invalid room")
     if args.topic and not re.fullmatch(r"T\d{%d}" % config["board"]["thread_digits"], args.topic): raise BoardError("invalid topic")
+    wanted_root = getattr(args, "subthread", None)
+    if wanted_root is not None and not (MESSAGE_REF_RE.fullmatch(Path(wanted_root).name) and ".." not in Path(wanted_root).parts):
+        raise BoardError("--subthread expects a root message filename (or ROOM/FILE)")
     rows = []
     invalid = []
     quarantined, repair_errors = message_repairs.scan(board, config, known, lambda p: message_error(p, board, config, known))
@@ -742,12 +956,26 @@ def command_recent(args: argparse.Namespace) -> int:
         if args.sender and headers["FROM"] != args.sender: continue
         if args.room and (headers["SCOPE"] != "ROOM" or headers.get("ROOM") != args.room): continue
         if args.topic and headers["THREAD"].split("-", 1)[0] != args.topic: continue
-        rows.append((message_order(headers, path, config), {"path": str(path.relative_to(root)), "from": headers["FROM"], "to": headers["TO"], "scope": headers["SCOPE"], "room": headers.get("ROOM"), "topic": headers["THREAD"].split("-", 1)[0], "thread": headers["THREAD"], "status": headers["STATUS"], "date": headers["DATE"], "posted_at": headers.get("POSTED-AT")}))
+        member = headers.get("SUBTHREAD")
+        if wanted_root is not None:
+            parts = Path(wanted_root).parts
+            if len(parts) > 1 and path.parent.name != parts[-2]: continue
+            if not ((member is None and path.name == parts[-1]) or member == parts[-1]): continue
+        hidden = bool(getattr(args, "main_flow", False) and member is not None and headers.get("SUBTHREAD-ALSO") != "main")
+        if hidden and not getattr(args, "subthreads", False): continue  # kept only so --subthreads still summarizes every member
+        rows.append((message_order(headers, path, config), {"path": str(path.relative_to(root)), "from": headers["FROM"], "to": headers["TO"], "scope": headers["SCOPE"], "room": headers.get("ROOM"), "topic": headers["THREAD"].split("-", 1)[0], "thread": headers["THREAD"], "status": headers["STATUS"], "date": headers["DATE"], "posted_at": headers.get("POSTED-AT"),
+                                                          "reply_to": None if headers["REPLY-TO"] == "-" else headers["REPLY-TO"], "subthread": member, "subthread_also": member is not None and headers.get("SUBTHREAD-ALSO") == "main", "subthread_state": headers.get("SUBTHREAD-STATE") if member is not None else None, "promoted_from": headers.get("PROMOTED-FROM"), "_hidden": hidden}))
     rows.sort(key=lambda row: row[0], reverse=True)
     import signing_commands
     signing = signing_commands.session(root, getattr(args, "signing_state_dir", None))
     checked, excluded = [], []
-    for order, row in rows[:200]:
+    window, visible = [], 0
+    for item in rows:
+        if not item[1]["_hidden"]:
+            if visible == 200: break
+            visible += 1
+        window.append(item)
+    for order, row in window:
         source = root / row["path"]
         decision = signing.evaluate(source, parse_message(source))
         if decision["signature"] != "unsigned" or decision["minimum"] != "optional":
@@ -755,15 +983,24 @@ def command_recent(args: argparse.Namespace) -> int:
         if decision["eligibility"] == "eligible" or args.inspect_excluded:
             if decision["eligibility"] != "eligible": row["inspection_only"] = True
             checked.append((order, row))
-        if decision["eligibility"] != "eligible":
+        if decision["eligibility"] != "eligible" and not row["_hidden"]:
             excluded.append({"path": row["path"], **decision})
-    result = {"messages": [], "total_matching": len(rows), "truncated": len(rows) > args.limit, "invalid_count": len(invalid), "invalid_messages": [], "repair_error_count": len(repair_errors)}
+    shown = [item for item in rows if not item[1]["_hidden"]]
+    result = {"messages": [], "total_matching": len(shown), "truncated": len(shown) > args.limit, "invalid_count": len(invalid), "invalid_messages": [], "repair_error_count": len(repair_errors)}
     if excluded:
         result.update(excluded_count=len(excluded), pending_verification_count=sum(x["eligibility"] == "pending-verification" for x in excluded))
     for issue in invalid[:10]:
         candidate = dict(result, invalid_messages=[*result["invalid_messages"], issue])
         if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 <= args.max_bytes: result = candidate
-    for _, row in checked[:args.limit]:
+    if getattr(args, "subthreads", False):
+        result["subthreads"] = []
+        for item in subthread_summaries([c for c in checked if not c[1].get("inspection_only")]):
+            candidate = dict(result, subthreads=[*result["subthreads"], item])
+            if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 > args.max_bytes:
+                result["truncated"] = True
+                break
+            result = candidate
+    for _, row in [c for c in checked if not c[1]["_hidden"]][:args.limit]:
         source = root / row["path"]
         digest = hashlib.sha256()
         with source.open("rb") as handle:
@@ -773,7 +1010,7 @@ def command_recent(args: argparse.Namespace) -> int:
             for line in handle:
                 if line.rstrip("\r\n") == "---": break
             preview = " ".join(handle.read(160).split())
-        row = dict(row, sha256=digest.hexdigest(), preview=preview)
+        row = dict({k: v for k, v in row.items() if k != "_hidden"}, sha256=digest.hexdigest(), preview=preview)
         for records in quarantined.values():
             for record in records:
                 if record["replacement"] == source.relative_to(board).as_posix(): row["repair"] = {"original": record["target"], "by": record["by"], "record": "repairs/" + record["record"]}
@@ -807,6 +1044,14 @@ def command_repair(args):
         with __import__("tempfile").TemporaryDirectory() as tmp:
             draft = Path(tmp) / "draft.txt"; draft.write_bytes(raw); headers = parse_message(draft)
         if not ID_RE.fullmatch(headers["FROM"]) or not re.fullmatch(r"T\d{%d}-[a-z0-9]+(?:-[a-z0-9]+)*" % config["board"]["thread_digits"], headers["THREAD"]): raise BoardError("invalid replacement author/thread")
+        # Recover whatever header lines the original still has (it may be invalid UTF-8 further down).
+        original_headers = {}
+        for line in target.read_bytes().decode("utf-8", errors="replace").replace("\r\n", "\n").split("\n"):
+            if line == "---": break
+            if ": " in line: original_headers.setdefault(*line.split(": ", 1))
+        for key in SUBTHREAD_HEADERS:
+            if original_headers.get(key) != headers.get(key):
+                raise BoardError(f"a replacement keeps the original's sub-thread headers: {key} is {original_headers.get(key, 'absent')} in the original and {headers.get(key, 'absent')} in the replacement")
         stamp = now_for(config, headers["DATE"])
         name = f"{stamp:%Y-%m-%d_%H%M}_{headers['FROM']}_{headers['THREAD'].split('-',1)[0]}_amend-{uuid.uuid4().hex}.txt"
         replacement = target.parent / name
@@ -874,6 +1119,19 @@ def parser() -> argparse.ArgumentParser:
     post.add_argument("--new-thread", action="store_true", help="assert this post creates the thread; policy flags then apply to the thread")
     post.add_argument("--require-signing", choices=("trusted",), help="with --new-room/--new-thread: require trusted signatures there (message_signing)")
     post.add_argument("--record-history", action="store_true", help="with --new-room/--new-thread: record signed room history on every signed post there (room_history)")
+    post.add_argument("--subthread", metavar="ROOT", help="post into the sub-thread rooted at this message (filename in the same room/pair); --reply-to defaults to ROOT")
+    post.add_argument("--also-main", action="store_true", help="with --subthread: also show this message in the main thread (SUBTHREAD-ALSO: main)")
+    post.add_argument("--subthread-state", choices=("resolved", "open"), help="with --subthread: resolve or reopen the sub-thread")
+    post.add_argument("--promoted-from", metavar="ROOT", help="with --new-thread: this topic continues the sub-thread rooted at that message")
+    promote = commands.add_parser("promote", help="Continue a sub-thread as a new topic: first message of the new topic, then a resolving sub-thread message naming it")
+    promote.add_argument("--path", default="."); promote.add_argument("--root", required=True, help="root message filename of the sub-thread")
+    promote.add_argument("--room", help="room of the root (omit for a direct pair, which is found from the root)"); promote.add_argument("--direct", metavar="PAIR", help="direct pair directory of the root, for example id-a--id-b")
+    promote.add_argument("--from", dest="sender", required=True); promote.add_argument("--to", dest="recipient"); promote.add_argument("--title", required=True)
+    promote.add_argument("--body", default=""); promote.add_argument("--body-file"); promote.add_argument("--language"); promote.add_argument("--runtime"); promote.add_argument("--at")
+    promote.add_argument("--signing-key-file", help="explicit private Ed25519 JWK outside the shared project, used for both messages")
+    promote.add_argument("--signing-state-dir", help="private local trust/policy directory")
+    promote.add_argument("--require-signing", choices=("trusted",)); promote.add_argument("--record-history", action="store_true")
+    promote.set_defaults(func=command_promote)
     inbox = commands.add_parser("inbox"); inbox.add_argument("participant_id"); inbox.add_argument("--path", default="."); inbox.add_argument("--state-dir"); inbox.add_argument("--mark-read", action="store_true"); inbox.set_defaults(func=command_inbox)
     rel = commands.add_parser("release-check"); rel.add_argument("--path", default="."); rel.add_argument("--tag"); rel.set_defaults(func=command_release_check)
     repair = commands.add_parser("repair"); repair.add_argument("--path", default="."); repair.add_argument("--message", required=True); repair.add_argument("--by", dest="actor", required=True); repair.add_argument("--reason", required=True); repair.add_argument("--replacement-file"); repair.set_defaults(func=command_repair)
@@ -881,7 +1139,7 @@ def parser() -> argparse.ArgumentParser:
     upgrade.add_argument("--path", default="."); upgrade.add_argument("--expect")
     upgrade_mode = upgrade.add_mutually_exclusive_group()
     upgrade_mode.add_argument("--apply", action="store_true"); upgrade_mode.add_argument("--check-latest", action="store_true", help="Opt-in GitHub stable-tag check; never downloads code"); upgrade.set_defaults(func=board_upgrade.command)
-    valid = commands.add_parser("validate"); valid.add_argument("--path", default="."); valid.set_defaults(func=command_validate)
+    valid = commands.add_parser("validate"); valid.add_argument("--path", default="."); valid.add_argument("--json", action="store_true", help="print {valid, errors, warnings} as one JSON object; exit status is unchanged"); valid.set_defaults(func=command_validate)
     session = commands.add_parser("session")
     actions = session.add_subparsers(dest="session_action", required=True)
     for action in ("start", "heartbeat", "release", "list"):
@@ -906,6 +1164,9 @@ def parser() -> argparse.ArgumentParser:
     recent.add_argument("--from", dest="sender"); recent.add_argument("--room"); recent.add_argument("--topic")
     recent.add_argument("--limit", type=int, default=20); recent.add_argument("--max-bytes", type=int, default=16384)
     recent.set_defaults(func=command_recent)
+    recent.add_argument("--subthread", metavar="ROOT", help="only the sub-thread rooted at this message: the root and its members (a bare filename matches in every room/pair you can see; narrow with --room or give ROOM/FILE)")
+    recent.add_argument("--main-flow", action="store_true", help="exclude sub-thread members that do not carry SUBTHREAD-ALSO: main")
+    recent.add_argument("--subthreads", action="store_true", help="add a per-root summary of the matching sub-thread members")
     recent.add_argument("--inspect-excluded", action="store_true", help="explicit non-actionable signing inspection")
     recent.add_argument("--signing-state-dir", help="private local trust/policy directory")
     guidance = commands.add_parser("guidance")

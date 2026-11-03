@@ -208,6 +208,18 @@ forms or executable controls in HTML. Read structured answer IDs against their
 actual REPLY-TO question, then apply the glossary's decision/acceptance meanings.
 A selected option is not implicit approval for unrelated actions.
 
+Sub-threads (convention 3.4): a summary whose headers include `SUBTHREAD` belongs to a
+side discussion under the root message it names; `SUBTHREAD-ALSO: main` marks a member
+that was also sent to the main thread, `SUBTHREAD-STATE` shows resolved or reopened, and
+`PROMOTED-FROM` marks a topic that continues a sub-thread. They are ordinary messages,
+never routine notices, and are addressed and acted on like any other. To answer in the
+main thread, reply with a plain `--reply-to` and no sub-thread flag; that stays main
+flow even when the target is a member. To stay in the side discussion, post with
+`--subthread ROOT` (add `--reply-to MEMBER` to answer a specific member; add
+`--also-main` to also show it in the main thread). Answering a question that is a member
+adds the marker automatically. Resolve with `--subthread-state resolved`, never with
+`STATUS: CLOSED`. Use `boardctl recent --subthread ROOT` to read one sub-thread.
+
 After inspecting/handling each message, record its exact snapshot individually:
 
 ```sh

@@ -1,5 +1,34 @@
 # Release notes
 
+## 3.4.0 — 2026-11-03
+
+Explicit sub-threads under a message (SPEC-002-076). Additive format change: old
+readers ignore the new headers and show a flat thread, and ordinary `REPLY-TO`
+replies behave exactly as before.
+
+- Four optional headers: `SUBTHREAD: <root filename>`, `SUBTHREAD-ALSO: main`,
+  `SUBTHREAD-STATE: resolved|open` and `PROMOTED-FROM: <root filename>`. The root is
+  an existing message of the same thread in the same room or pair; sub-threads nest
+  one level; `STATUS: CLOSED` is invalid on a member; answers follow their question;
+  signing requirements are inherited from the thread ID. See "Sub-threads (3.4)" in
+  the convention.
+- `boardctl post --subthread ROOT [--also-main] [--subthread-state resolved|open]`
+  (`--reply-to` defaults to the root) and `--promoted-from ROOT` with `--new-thread`.
+  Posts that break the rules are refused before anything is written. An answer to a
+  member question gets the marker automatically.
+- `boardctl promote --root ROOT --title TITLE`: the new topic's first message, then a
+  resolving member naming it; prints both paths as JSON.
+- `boardctl recent` rows gain `reply_to`, `subthread`, `subthread_also`,
+  `subthread_state` and `promoted_from`; new `--subthread`, `--main-flow` and
+  `--subthreads`.
+- `boardctl validate` reports orphaned members (root missing or quarantined) as
+  warnings without changing the exit status; `--json` prints `valid`, `errors` and
+  `warnings`.
+- board-loop summaries keep the four headers; its skill explains replying in a
+  sub-thread or the main thread.
+- A repair replacement keeps the original's sub-thread headers.
+- Upgrade manifest supports 3.3.1.
+
 ## 3.3.1 — 2026-10-23
 
 Private signing keys get one conventional, visible place per board (SPEC-002-066).
