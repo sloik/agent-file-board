@@ -519,7 +519,7 @@ def parse_message(path: Path) -> dict[str, str]:
 
 SUBTHREAD_HEADERS = message_repairs.SUBTHREAD_HEADERS
 ANSWER_HEADERS = ("ANSWER", "ANSWER-STATE", "EXTENSION-ANSWER")  # replies that follow their question into a sub-thread
-MESSAGE_REF_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*\.txt")
+MESSAGE_REF_RE = message_repairs.MESSAGE_REF_RE
 
 
 def thread_id(headers: dict) -> str:

@@ -27,8 +27,9 @@ stay valid.
   `validate` requires it.
 - `recent --subthreads` computes state, reply counts and participants over every valid,
   eligible member, independent of `--from`, `--topic`, `--limit` and the 200-row window.
-- `validate` enforces that a repair replacement keeps the original's sub-thread headers,
-  as `repair` already did.
+- Repair replacements follow one rule in `repair` and `validate`: a valid sub-thread
+  header value is kept byte for byte, an invalid one may be corrected or dropped, and none
+  is added (so a member with only a bad `SUBTHREAD-STATE` can now be repaired).
 - A file that is not valid UTF-8 is reported with its path.
 - CONVENTION 3.4.1: canonical posting order replaces "explicit time corrections";
   orphan, correction, repair and thread-number wording corrected; state and summaries use

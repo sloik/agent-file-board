@@ -15,6 +15,7 @@ import tempfile
 import unittest
 
 import boardctl
+import message_repairs
 import test_history_recording
 import test_room_history
 
@@ -710,6 +711,63 @@ class AuditFixes(SubthreadBase):
         self.assertEqual(boardctl.validate_report(self.root)[0], [])
 
 
+class RepairHeaderRule(SubthreadBase):
+    """SPEC-002-079 decision #37 (refined): the four sub-thread headers on a repair replacement."""
+
+    ROOT = "2026-11-03_1000_alpha-agent_T001_root.txt"
+
+    def raw_headers(self, **headers):
+        base = {"FROM": "bravo-agent", "TO": "all", "SCOPE": "ROOM", "ROOM": "general", "THREAD": "T001-demo", "DATE": "2026-11-03 10:01",
+                "LANGUAGE": "en", "REPLY-TO": self.ROOT, "STATUS": "INFO", **headers}
+        return ("".join(f"{k}: {v}\n" for k, v in base.items() if v is not None) + "---\nBody\n").encode()
+
+    def issue(self, original, replacement):
+        return message_repairs.subthread_header_issue(self.raw_headers(**original), self.raw_headers(**replacement))
+
+    def test_a_valid_value_is_kept_byte_for_byte(self):
+        member = {"SUBTHREAD": self.ROOT, "SUBTHREAD-STATE": "resolved", "SUBTHREAD-ALSO": "main"}
+        self.assertIsNone(self.issue(member, member))
+        self.assertEqual(self.issue(member, {**member, "SUBTHREAD-STATE": "open"}),
+                         "a replacement keeps the original's sub-thread headers: SUBTHREAD-STATE is resolved in the original and open in the replacement")
+        self.assertEqual(self.issue(member, {**member, "SUBTHREAD-ALSO": None}),
+                         "a replacement keeps the original's sub-thread headers: SUBTHREAD-ALSO is main in the original and absent in the replacement")
+
+    def test_an_invalid_value_may_be_corrected_or_dropped(self):
+        bad = {"SUBTHREAD": self.ROOT, "SUBTHREAD-STATE": "done"}
+        self.assertIsNone(self.issue(bad, {**bad, "SUBTHREAD-STATE": "resolved"}))
+        self.assertIsNone(self.issue(bad, {**bad, "SUBTHREAD-STATE": None}))
+        self.assertEqual(self.issue(bad, {**bad, "SUBTHREAD-STATE": "closed"}),
+                         "a replacement corrects or drops an invalid sub-thread header: SUBTHREAD-STATE is done in the original and closed in the replacement, which is still invalid")
+        # ALSO/STATE without SUBTHREAD are invalid values: they may be dropped.
+        self.assertIsNone(self.issue({"SUBTHREAD-ALSO": "main"}, {}))
+
+    def test_a_header_the_original_lacked_is_never_added(self):
+        self.assertEqual(self.issue({"SUBTHREAD": self.ROOT}, {"SUBTHREAD": self.ROOT, "SUBTHREAD-ALSO": "main"}),
+                         "a replacement keeps the original's sub-thread headers: SUBTHREAD-ALSO is absent in the original and main in the replacement")
+        self.assertIsNotNone(self.issue({}, {"SUBTHREAD": self.ROOT}))
+
+    def test_membership_changes_only_when_the_original_value_was_invalid(self):
+        other = "2026-11-03_1005_alpha-agent_T001_other.txt"
+        self.assertEqual(self.issue({"SUBTHREAD": self.ROOT}, {"SUBTHREAD": other}),
+                         f"a replacement keeps the original's sub-thread headers: SUBTHREAD is {self.ROOT} in the original and {other} in the replacement")
+        self.assertIsNone(self.issue({"SUBTHREAD": "../root.txt"}, {"SUBTHREAD": self.ROOT}))
+
+    def test_repair_command_and_validate_accept_a_corrected_state(self):
+        root = self.raw(0, "alpha-agent", "T001", "root")
+        broken = self.raw(1, "bravo-agent", "T001", "side", {"SUBTHREAD": root.name, "SUBTHREAD-STATE": "done"}, reply=root.name)
+        self.assertRejects(broken, "SUBTHREAD-STATE: expected resolved or open")
+        fixed = Path(self.tmp.name) / "fixed.txt"
+        fixed.write_text(broken.read_text().replace("SUBTHREAD-STATE: done", "SUBTHREAD-STATE: resolved"))
+        self.cli("repair", "--path", str(self.root), "--message", "rooms/general/" + broken.name, "--by", "bravo-agent", "--reason", "Bad state value",
+                 "--replacement-file", str(fixed))
+        self.assertEqual(boardctl.validate_report(self.root), ([], []))
+        self.assertEqual(self.recent("--subthreads")["subthreads"][0]["state"], "resolved")
+        fixed.write_text(broken.read_text().replace("SUBTHREAD-STATE: done", "SUBTHREAD-STATE: resolved\nSUBTHREAD-ALSO: main"))
+        self.cli("repair", "--path", str(self.root), "--message", "rooms/general/" + broken.name, "--by", "bravo-agent", "--reason", "Again",
+                 "--replacement-file", str(fixed), expected=2)
+        self.assertIn("SUBTHREAD-ALSO is absent in the original and main in the replacement", self.err)
+
+
 class Proof(SubthreadBase):
     """SPEC-002-079 AC5: S4 arrival order and ties, S5 concurrent writers, S6 a failed second promote write."""
 
@@ -819,3 +877,14 @@ class SharedFixture(unittest.TestCase):
                 for order in case.get("arrivals", []):
                     self.assertEqual(sorted(order), sorted(names))
         self.assertTrue(any(len(c.get("arrivals", [])) >= 2 for c in data["cases"] if c["property"] == "S4"))
+        # Every expected error and warning carries a stable rule id (the viewer's parity key).
+        for case in data["cases"]:
+            for name, verdict in case["expect"]["files"].items():
+                self.assertEqual(verdict["rule"] is None, verdict["valid"], (case["id"], name))
+            for item in case["expect"]["warnings"] + case["expect"]["otherErrors"]:
+                self.assertRegex(item["rule"], r"^[a-z-]+\.[a-z-]+$")
+        for post in data["posts"]:
+            self.assertEqual(post["rule"] is None, post["exit"] == 0, post["id"])
+        repairs = {c["id"] for c in data["cases"] if 37 in c["auditRows"]}
+        self.assertLessEqual({"repair-corrects-invalid-state", "repair-drops-invalid-state", "repair-refuses-added-header",
+                              "repair-refuses-membership-change", "repair-keeps-state-header"}, repairs)

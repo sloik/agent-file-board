@@ -453,7 +453,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "54ab7c5102be29eed241dd6d154099cc1011ac37ad98cc50dd3aed081825dd1d"
+      "sha256": "e9cf02aa2426f6eb5b17f32b6624e137966c525db0fb34160a22b23ac78390be"
     },
     "tests/test_answer_state.py": {
       "path": "tests/test_answer_state.py",
@@ -684,28 +684,28 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "ac247222949303f36ab6dac3aba4c69dd247d603123d1d7a8ee97fde7635a3a2"
+      "sha256": "39a0046516af74a08aaae4f3a014968e26b5645bd6d6a98274897b861e0a0c6e"
     },
     "tests/fixtures/subthreads/cases.json": {
       "path": "tests/fixtures/subthreads/cases.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "5368605b3c0df3e2abe6fefb828249e1ce7f12e946e065f946cdd42f75cc1298"
+      "sha256": "a79b3173843866bf84c857c4136e74172dae3da233fc24da7780fc5bd8254607"
     },
     "scripts/build_subthread_cases.py": {
       "path": "scripts/build_subthread_cases.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "2f78574398b6de2f418787f6e99ce7eb979f9a204fa88d023d975b551eb6c72f"
+      "sha256": "cdb4560031c84623a79856c70c9833d09178e11e8da3f9d6771023228b82c0ec"
     },
     "message_repairs.py": {
       "path": "message_repairs.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "407f2d7f89b9d99595802eadce6870164727263fcac4161f17e6acfdd9f73729"
+      "sha256": "77c8bd60e50b6a059dec6fbef21741a4734e686753eae7bd9301f06ff6f834d0"
     },
     "subthread-check": {
       "path": "boardctl.py",
@@ -2618,7 +2618,7 @@
     },
     {
       "module": "Subthreads.tla",
-      "review": "2026-11-03 (SPEC-002-079): New hand-written bounded model of sub-threads (convention 3.4.1). Reviewed against boardctl subthread_check, check_message, command_post, command_promote, next_thread, message_order, subthread_warnings, validate_report, subthread_summaries, command_recent and answer_workflow.scan. The collector runs the real commands on two board copies and a shared folder; three positive traces conform and eight implementation mutants are rejected by TraceConforms. Acceptance reuses AnswerAcceptance!Projection as a contract (S8), not composed behaviours; AnswerAcceptance.tla is unchanged. The fixed refusal order is a symmetry reduction: a refusal writes nothing. Faithful TLC: 65,043 distinct states.",
+      "review": "2026-11-03 (SPEC-002-079): New hand-written bounded model of sub-threads (convention 3.4.1). Reviewed against boardctl subthread_check, check_message, command_post, command_promote, next_thread, message_order, subthread_warnings, validate_report, subthread_summaries, command_recent and answer_workflow.scan. The collector runs the real commands on two board copies and a shared folder; three positive traces conform and eight implementation mutants are rejected by TraceConforms. Acceptance reuses AnswerAcceptance!Projection as a contract (S8), not composed behaviours; AnswerAcceptance.tla is unchanged. The fixed refusal order is a symmetry reduction: a refusal writes nothing. Faithful TLC: 65,043 distinct states. Refined repair rule (decision #37) in message_repairs.subthread_header_issue is outside the model (unit-tested, pinned in cases.json); MESSAGE_REF_RE now lives in message_repairs and boardctl aliases it.",
       "states": {
         "state": {
           "anchors": [

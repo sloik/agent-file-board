@@ -67,6 +67,11 @@ def cases():
                      "sha256": hashlib.sha256(broken_root[1].encode()).hexdigest(), "by": A, "at": "2026-11-03T10:00:00.000Z",
                      "reason": "Malformed output", "replacement": None}))
     broken_member = (member(1, "badbytes")[0], member(1, "badbytes")[1] + "\udcff")
+    bad_state = member(1, "badstate", **{"SUBTHREAD-STATE": "done"})
+    fixed_state = member(2, "amend-" + "4" * 32, **{"SUBTHREAD-STATE": "resolved"})
+    dropped_state = member(2, "amend-" + "5" * 32)
+    added_also = member(2, "amend-" + "6" * 32, **{"SUBTHREAD-ALSO": "main"})
+    moved = msg(2, B, "T001", "amend-" + "7" * 32, {"SUBTHREAD": msg(1, A, "T001", "otherroot")[0]}, reply=msg(1, A, "T001", "otherroot")[0])
     broken_resolve = (member(1, "badresolve", **{"SUBTHREAD-STATE": "resolved"})[0], member(1, "badresolve", **{"SUBTHREAD-STATE": "resolved"})[1] + "\udcff")
     return [
         ("membership-explicit", [1, 4, 7, 40], "S1", "Only SUBTHREAD makes a member; plain replies to the root or a member stay in the main flow.",
@@ -127,6 +132,18 @@ def cases():
         ("repair-keeps-state-header", [37], "S5", "The four-header rule: a replacement that keeps SUBTHREAD but drops SUBTHREAD-STATE is also refused.",
          [ROOT_MSG, broken_resolve, msg(2, B, "T001", "amend-" + "d" * 32, {"SUBTHREAD": R}, reply=R),
           ("repairs/" + "e" * 32 + ".json", None)], {"repair": ("rooms/general/" + broken_resolve[0], "rooms/general/" + msg(2, B, "T001", "amend-" + "d" * 32, {"SUBTHREAD": R}, reply=R)[0])}),
+        ("repair-corrects-invalid-state", [37], "S5", "An invalid SUBTHREAD-STATE value may be corrected: the original is quarantined and the replacement counts.",
+         [ROOT_MSG, bad_state, fixed_state, ("repairs/" + "f" * 32 + ".json", None)],
+         {"repair": ("rooms/general/" + bad_state[0], "rooms/general/" + fixed_state[0])}),
+        ("repair-drops-invalid-state", [37], "S5", "An invalid SUBTHREAD-STATE value may be dropped.",
+         [ROOT_MSG, bad_state, dropped_state, ("repairs/" + "1" * 32 + ".json", None)],
+         {"repair": ("rooms/general/" + bad_state[0], "rooms/general/" + dropped_state[0])}),
+        ("repair-refuses-added-header", [37], "S5", "A replacement never adds a sub-thread header the original lacked.",
+         [ROOT_MSG, broken_member, added_also, ("repairs/" + "2" * 32 + ".json", None)],
+         {"repair": ("rooms/general/" + broken_member[0], "rooms/general/" + added_also[0])}),
+        ("repair-refuses-membership-change", [37], "S5", "A valid SUBTHREAD is kept: membership never moves through a repair.",
+         [ROOT_MSG, msg(1, A, "T001", "otherroot"), broken_member, moved, ("repairs/" + "3" * 32 + ".json", None)],
+         {"repair": ("rooms/general/" + broken_member[0], "rooms/general/" + moved[0])}),
         ("concurrent-writers", [26], "S5", "Two writers offline: one promotes into T002, the other opens T002 earlier and reopens the sub-thread. "
          "The merged board is valid; the displaced first message is a warning.",
          [ROOT_MSG, side, msg(17, A, "T002", "plan", {"PROMOTED-FROM": R, "TOPIC-TITLE": "Plan"}),
@@ -159,6 +176,72 @@ def posts():
         ("post-answer-gets-marker", [12], [ROOT_MSG, member(10, "qmember", sender=A, QUESTION=QUESTION, STATUS="QUESTION")],
          args("--reply-to", member(10, "qmember", sender=A, QUESTION=QUESTION, STATUS="QUESTION")[0], "--answer-file", "{ANSWER_FILE}", "--at", "2026-11-03 11:00")),
     ]
+
+
+# Stable rule ids (documented in tests/fixtures/subthreads/README.md). The viewer matches rule id and verdict
+# for every case, and the exact text for sub-thread rules. An unknown text fails the build (fail closed).
+RULES = [
+    (r"^SUBTHREAD: expected the filename of a \.txt message", "subthread.value"),
+    (r"^PROMOTED-FROM: expected the filename of a \.txt message", "promoted.value"),
+    (r"^SUBTHREAD-ALSO: only a sub-thread message", "also.needs-subthread"),
+    (r"^SUBTHREAD-ALSO: the only value is main$", "also.value"),
+    (r"^SUBTHREAD-STATE: only a sub-thread message", "state.needs-subthread"),
+    (r"^SUBTHREAD-STATE: expected resolved or open$", "state.value"),
+    (r"^PROMOTED-FROM: a topic's first message cannot also be a sub-thread message$", "promoted.with-subthread"),
+    (r"^SUBTHREAD: STATUS CLOSED is invalid on a sub-thread message", "subthread.closed"),
+    (r"^SUBTHREAD: root must be a regular file$", "subthread.root-not-file"),
+    (r"^SUBTHREAD: root \S+ is in another thread", "subthread.root-other-thread"),
+    (r"^SUBTHREAD: root \S+ is itself a sub-thread message; sub-threads nest one level only$", "subthread.nesting"),
+    (r"^SUBTHREAD: a sub-thread message must sort after its root", "member.before-root"),
+    (r"^SUBTHREAD: root \S+ does not exist in this directory$", "subthread.root-missing"),
+    (r"^SUBTHREAD: REPLY-TO must name the root or another message of the same sub-thread, not -$", "subthread.reply-dash"),
+    (r"^SUBTHREAD: REPLY-TO target does not exist in this directory$", "subthread.reply-missing"),
+    (r"^SUBTHREAD: REPLY-TO \S+ is neither the root", "subthread.reply-to"),
+    (r"^SUBTHREAD: an ANSWER to a question inside a sub-thread must carry SUBTHREAD", "subthread.answer-marker"),
+    (r"^PROMOTED-FROM: \S+ is not a message in this directory$", "promoted.origin-missing"),
+    (r"^PROMOTED-FROM: names a sub-thread message, not a root$", "promoted.origin-member"),
+    (r"^PROMOTED-FROM: a promoted sub-thread continues in a new topic", "promoted.same-topic"),
+    (r"^PROMOTED-FROM: only the first message of a topic can carry it", "promoted.not-first"),
+    (r"^sub-thread root is not eligible under signing requirements", "subthread.root-ineligible"),
+    (r"^REPLY-TO target is missing$", "reply-to.missing"),
+    (r"^ANSWER reply target is missing$", "answer.target-missing"),
+    (r"^ANSWER requires a question filename$", "answer.target-name"),
+    (r"^DATE must be an ISO date/time", "file.date"),
+    (r"^'utf-8' codec can't decode", "file.utf8"),
+    (r"^missing header separator$", "file.separator"),
+    (r"^duplicate header ", "file.duplicate-header"),
+    (r"^missing header\(s\): ", "file.missing-headers"),
+    (r"^a replacement keeps the original's sub-thread headers: ", "repair.subthread-header"),
+    (r"^a replacement corrects or drops an invalid sub-thread header: ", "repair.subthread-header"),
+    (r"^orphaned sub-thread: root \S+ is missing$", "orphan.root-missing"),
+    (r"^orphaned sub-thread: root \S+ is quarantined by a repair record$", "orphan.root-quarantined"),
+    (r"^PROMOTED-FROM: \S+ is earlier in T\d+, so this is no longer the topic's first message", "promoted.displaced"),
+    (r"^sub-thread message sorts before its root \S+ in posting order$", "member.before-root"),
+]
+
+
+def rule(text, headers=None):
+    """The stable id of one error or warning text (after its `<path>: ` prefix)."""
+    other = re.match(r"^rooms/[^/]+/([^/:]+\.txt): (.*)$", text)
+    if other:  # the parse error of another file this one depends on (decision #30 keeps the wording)
+        name, inner = other.groups()
+        headers = headers or {}
+        kind = ("promoted.origin-unreadable" if headers.get("PROMOTED-FROM") == name
+                else "subthread.root-unreadable" if headers.get("SUBTHREAD") == name else None)
+        if kind is None or rule(inner) not in ("file.separator", "file.utf8", "file.duplicate-header", "file.missing-headers"):
+            raise RuntimeError("unclassified dependency error: " + text)
+        return kind
+    for pattern, rule_id in RULES:
+        if re.search(pattern, text):
+            return rule_id
+    raise RuntimeError("no rule id for: " + text)
+
+
+def soft_headers(path):
+    try:
+        return boardctl.parse_message(path)
+    except (ValueError, OSError):
+        return {}
 
 
 class Board:
@@ -197,11 +280,15 @@ class Board:
         verdicts = {}
         for name in files:
             own = [e for e in relative if e.startswith(f"rooms/general/{name}: ")]
-            verdicts[name] = {"valid": not own, "error": own[0].split(": ", 1)[1] if own else None}
+            error = own[0].split(": ", 1)[1] if own else None
+            verdicts[name] = {"valid": not own, "error": error, "rule": rule(error, soft_headers(self.room / name)) if own else None}
+        def located(text):
+            where, _, body = text.partition(": ")
+            return {"file": where, "rule": rule(body), "text": text}
         by_name = {Path(m["path"]).name: m for m in listed["messages"]}
         return {"files": verdicts,
-                "otherErrors": [e for e in relative if not any(e.startswith(f"rooms/general/{n}: ") for n in files)],
-                "warnings": [self.relative(w) for w in warnings],
+                "otherErrors": [located(e) for e in relative if not any(e.startswith(f"rooms/general/{n}: ") for n in files)],
+                "warnings": [located(self.relative(w)) for w in warnings],
                 "orphans": sorted(w.split(": ", 1)[0].rsplit("/", 1)[1] for w in warnings if "orphaned sub-thread" in w),
                 "membership": {name: (by_name[name]["subthread"] if name in by_name else None) for name in files if name in by_name},
                 "listed": sorted(by_name),
@@ -276,6 +363,7 @@ def build():
                 out["posts"].append({"id": case_id, "auditRows": rows, "files": [{"name": n, "text": t} for n, t in files],
                                      "argv": ["post", "--path", "PROJECT", *argv], "exit": code,
                                      "error": board.relative(stderr.strip().removeprefix("boardctl: ")) if code else None,
+                                     "rule": rule(board.relative(stderr.strip().removeprefix("boardctl: ")), {"SUBTHREAD": argv[argv.index("--subthread") + 1]} if "--subthread" in argv else {}) if code else None,
                                      "written": {k: v for k, v in headers.items() if k in boardctl.SUBTHREAD_HEADERS + ("REPLY-TO",)} if written else None})
     finally:
         if previous is None:

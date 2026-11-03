@@ -136,6 +136,13 @@ The audit row numbers refer to `docs/SUBTHREAD-RULE-AUDIT.md`. These decisions a
   values that would place it earlier. `validate` warns (monotonic, as #26).
 - **#39, eligibility:** "the root must be eligible" is checked when posting any member,
   including replies to members.
-- **#37, repairs:** a repair replacement must carry exactly the original's `SUBTHREAD` and
-  `SUBTHREAD-ALSO` headers. `validate` and the viewer repair flow both enforce it.
+- **#37, repairs (refined 2026-11-03, supersedes the earlier two-header text):** a repair
+  replaces the same message, while a correction (#38) is a new message, so the two rules
+  differ on purpose. For each of `SUBTHREAD`, `SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and
+  `PROMOTED-FROM`: (a) a valid original value is kept byte for byte; (b) an invalid original
+  value may be corrected to a valid value or dropped, because that is the repair; (c) a
+  replacement never adds a header the original lacked; (d) `SUBTHREAD` changes only under
+  (b). "Valid" is the value rule only: a plain `.txt` filename for `SUBTHREAD` and
+  `PROMOTED-FROM`; `main`, or `resolved`/`open`, with `SUBTHREAD` present, for the other
+  two. `repair`, `validate` and the viewer repair flow all enforce it.
 - **#10, #30, wording:** canonical wording is authoritative; the viewer adopts it exactly.

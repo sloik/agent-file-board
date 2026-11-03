@@ -44,9 +44,9 @@ time never decides an order.
 
 | Key | Meaning |
 | --- | --- |
-| `files` | Per message file name: `{valid, error}`. `error` is the exact `validate` text after the `<path>: ` prefix, or `null`. Text inside an error that names another file is relative to `.agent-board/`. |
-| `otherErrors` | Validate errors not attributed to a message file, such as a refused repair record (`repairs/<hex>.json: ...`). Paths are relative to `.agent-board/`. |
-| `warnings` | Exact `validate` warning lines (`rooms/<room>/<file>: ...`), in output order. Warnings never change the exit status. |
+| `files` | Per message file name: `{valid, error, rule}`. `error` is the exact `validate` text after the `<path>: ` prefix, or `null`; `rule` is its stable id (below), or `null`. Text inside an error that names another file is relative to `.agent-board/`. |
+| `otherErrors` | `{file, rule, text}` for validate errors not attributed to a message file, such as a refused repair record (`file` is `repairs/<hex>.json`). `text` is the whole line; paths are relative to `.agent-board/`. |
+| `warnings` | `{file, rule, text}` for each `validate` warning, in output order. `text` is the exact line (`rooms/<room>/<file>: ...`). Warnings never change the exit status. |
 | `orphans` | File names with an `orphaned sub-thread` warning (root missing or quarantined). A member whose `REPLY-TO` target is the missing root is also invalid; see `files`. |
 | `membership` | Per message listed by `recent` (valid and eligible): its `SUBTHREAD` root, or `null` for the main flow. |
 | `listed` | The file names `recent` lists. Invalid and quarantined files are absent. |
@@ -62,9 +62,66 @@ time never decides an order.
 | `argv` | The `boardctl` arguments. `PROJECT` is the board's project root. `{ANSWER_FILE}` is a file holding `{"question":"go","selected":["yes"]}`. |
 | `exit` | `0` (written) or `2` (refused, nothing written). |
 | `error` | The refusal text without the `boardctl: ` prefix, or `null`. Paths are relative to `.agent-board/`. |
+| `rule` | Its stable id, or `null`. |
 | `written` | For an accepted post, its `REPLY-TO` and sub-thread headers, for example the marker `post` adds to an answer to a member question. |
 
-## Wording
+## Rule ids
+
+Every expected error and warning has a stable `rule` id. A parity consumer matches the
+`rule` and the verdict for every case, and the exact text for the sub-thread rules
+(`subthread.*`, `also.*`, `state.*`, `promoted.*`, `member.*`, `orphan.*`, `repair.*`).
+`build_subthread_cases.py` fails when a text has no id, so a new rule needs a new id here.
+
+| Rule id | Text (after the `<path>: ` prefix) | Kind |
+| --- | --- | --- |
+| `subthread.value` | `SUBTHREAD: expected the filename of a .txt message in the same directory ...` | error |
+| `promoted.value` | `PROMOTED-FROM: expected the filename of a .txt message in the same directory ...` | error |
+| `also.needs-subthread` | `SUBTHREAD-ALSO: only a sub-thread message (with SUBTHREAD) can also show in the main thread` | error |
+| `also.value` | `SUBTHREAD-ALSO: the only value is main` | error |
+| `state.needs-subthread` | `SUBTHREAD-STATE: only a sub-thread message (with SUBTHREAD) can resolve or reopen a sub-thread` | error |
+| `state.value` | `SUBTHREAD-STATE: expected resolved or open` | error |
+| `promoted.with-subthread` | `PROMOTED-FROM: a topic's first message cannot also be a sub-thread message` | error |
+| `subthread.closed` | `SUBTHREAD: STATUS CLOSED is invalid on a sub-thread message; ...` | error |
+| `subthread.root-not-file` | `SUBTHREAD: root must be a regular file` | error |
+| `subthread.root-other-thread` | `SUBTHREAD: root R is in another thread (T), not T'` | error |
+| `subthread.nesting` | `SUBTHREAD: root R is itself a sub-thread message; sub-threads nest one level only` | error, post |
+| `subthread.root-missing` | `SUBTHREAD: root R does not exist in this directory` | post |
+| `subthread.root-unreadable` | the root's own parse error, `rooms/ROOM/R: missing header separator` (or another parse error) | post |
+| `subthread.root-ineligible` | `sub-thread root is not eligible under signing requirements; inspect it separately. ...` | post |
+| `subthread.reply-dash` | `SUBTHREAD: REPLY-TO must name the root or another message of the same sub-thread, not -` | error, post |
+| `subthread.reply-missing` | `SUBTHREAD: REPLY-TO target does not exist in this directory` | post |
+| `subthread.reply-to` | `SUBTHREAD: REPLY-TO F is neither the root R nor a message of its sub-thread` | error, post |
+| `subthread.answer-marker` | `SUBTHREAD: an ANSWER to a question inside a sub-thread must carry SUBTHREAD: R` | error |
+| `member.before-root` | post: `SUBTHREAD: a sub-thread message must sort after its root R in posting order (DATE, then POSTED-AT); use a later --at`; warning: `sub-thread message sorts before its root R in posting order` | post, warning |
+| `promoted.origin-missing` | `PROMOTED-FROM: R is not a message in this directory` | error |
+| `promoted.origin-member` | `PROMOTED-FROM: names a sub-thread message, not a root` | error |
+| `promoted.origin-unreadable` | the origin's own parse error, `rooms/ROOM/R: missing header separator` (or another parse error) | error |
+| `promoted.same-topic` | `PROMOTED-FROM: a promoted sub-thread continues in a new topic, not in the root's own topic` | error |
+| `promoted.not-first` | `PROMOTED-FROM: only the first message of a topic can carry it, but F is earlier in T` | post |
+| `promoted.displaced` | `PROMOTED-FROM: F is earlier in T, so this is no longer the topic's first message; it still continues the sub-thread of R` | warning |
+| `orphan.root-missing` | `orphaned sub-thread: root R is missing` | warning |
+| `orphan.root-quarantined` | `orphaned sub-thread: root R is quarantined by a repair record` | warning |
+| `repair.subthread-header` | `a replacement keeps the original's sub-thread headers: K is V in the original and V' in the replacement` (a valid value changed or dropped, or a header added; `absent` for a missing header), or `a replacement corrects or drops an invalid sub-thread header: K is V in the original and V' in the replacement, which is still invalid` | error on `repairs/<hex>.json` |
+| `reply-to.missing` | `REPLY-TO target is missing` | error |
+| `answer.target-missing` | `ANSWER reply target is missing` | error |
+| `answer.target-name` | `ANSWER requires a question filename` | error |
+| `file.separator` | `missing header separator` | error |
+| `file.duplicate-header` | `duplicate header K` | error |
+| `file.missing-headers` | `missing header(s): ...` | error |
+| `file.date` | `DATE must be an ISO date/time in the board time zone, optionally with seconds, fractional seconds or an offset` | error |
+| `file.utf8` | `'utf-8' codec can't decode ...` (Python's decoder text) | error |
 
 Canonical wording is authoritative (decisions #10 and #30 in SPEC-002-079). A viewer that
 reports these rules uses the same text.
+
+## Repair replacements (decision #37)
+
+For each of `SUBTHREAD`, `SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and `PROMOTED-FROM` a valid
+original value is kept byte for byte; an invalid original value may be corrected to a
+valid value or dropped; a header the original lacks is never added; so `SUBTHREAD`
+changes only when its original value was invalid. "Valid" uses the value rules only:
+`SUBTHREAD` and `PROMOTED-FROM` are a plain `.txt` filename; `SUBTHREAD-ALSO` is `main`
+and `SUBTHREAD-STATE` is `resolved` or `open`, each with `SUBTHREAD` present in the same
+message. `boardctl repair` refuses a violating replacement, and `validate` reports a
+violating existing record as `repair.subthread-header` on the record (the record then
+quarantines nothing, so its target is reported too). The `repair-*` cases pin each clause.

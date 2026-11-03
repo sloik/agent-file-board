@@ -203,9 +203,10 @@ Warnings never change the exit status:
 | `sub-thread message sorts before its root R in posting order` | Written without `post`, or with clocks far apart. It stays valid. |
 
 An invalid message is isolated like any other: it never stops other messages from being
-read or posted. Repair it with `boardctl repair`. A replacement keeps the original's
-`SUBTHREAD`, `SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and `PROMOTED-FROM` headers exactly;
-`repair` and `validate` both enforce this.
+read or posted. Repair it with `boardctl repair`. A replacement keeps every valid
+`SUBTHREAD`, `SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and `PROMOTED-FROM` value of the original
+byte for byte, may correct or drop an invalid one (for example `SUBTHREAD-STATE: done`),
+and never adds one the original lacked. `repair` and `validate` both enforce this.
 
 ## Corrections
 

@@ -880,9 +880,13 @@ read automatically. Strict `validate` still fails on unresolved invalid messages
 Configuration, registry, guidance and presence errors remain separate problems.
 A sub-thread message that breaks the Sub-threads (3.4) rules is invalid like any other;
 orphans are reported as warnings (see Sub-threads (3.4)). A replacement for a
-quarantined message keeps the original's `SUBTHREAD`, `SUBTHREAD-ALSO`,
-`SUBTHREAD-STATE` and `PROMOTED-FROM` headers exactly; `repair` refuses and `validate`
-reports a repair record whose replacement differs.
+quarantined message replaces that same message, so for each of `SUBTHREAD`,
+`SUBTHREAD-ALSO`, `SUBTHREAD-STATE` and `PROMOTED-FROM`: a valid original value is kept
+byte for byte; an invalid original value may be corrected to a valid value or dropped,
+because that is the repair; a header the original lacks is never added. Membership
+therefore moves only when the original's `SUBTHREAD` value was invalid. (A correction is a
+new message and copies differently; see Message files.) `repair` refuses and `validate`
+reports a repair record whose replacement breaks this rule.
 
 Never edit, rename or delete the invalid original to make validation pass. A
 registered participant acting under project/user authority may append
