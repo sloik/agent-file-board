@@ -4,6 +4,7 @@ import json
 import re
 from pathlib import Path
 
+SUBTHREAD_HEADERS = ("SUBTHREAD", "SUBTHREAD-ALSO", "SUBTHREAD-STATE", "PROMOTED-FROM")
 REPAIR_WS = " \t\n\r\v\f\u00a0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200a\u2028\u2029\u202f\u205f\u3000\ufeff"
 
 
@@ -12,6 +13,25 @@ def file_hash(path):
     with path.open("rb") as handle:
         for chunk in iter(lambda: handle.read(65536), b""): digest.update(chunk)
     return digest.hexdigest()
+
+
+def recoverable_headers(raw):
+    """Header lines an original still has, even when it is invalid UTF-8 further down."""
+    headers = {}
+    for line in raw.decode("utf-8", errors="replace").replace("\r\n", "\n").split("\n"):
+        if line == "---": break
+        if ": " in line: headers.setdefault(*line.split(": ", 1))
+    return headers
+
+
+def subthread_header_issue(original_raw, replacement_raw):
+    """A replacement keeps the original's sub-thread headers exactly (convention 3.4.1); None when it does."""
+    original, replacement = recoverable_headers(original_raw), recoverable_headers(replacement_raw)
+    for key in SUBTHREAD_HEADERS:
+        if original.get(key) != replacement.get(key):
+            return (f"a replacement keeps the original's sub-thread headers: {key} is {original.get(key, 'absent')} in the original "
+                    f"and {replacement.get(key, 'absent')} in the replacement")
+    return None
 
 
 def target_path(board, config, relative):
@@ -63,6 +83,8 @@ def scan(board, config, known, invalid):
                 if not isinstance(record["replacement"], str): raise ValueError("invalid replacement path")
                 replacement = target_path(board, config, record["replacement"])
                 if replacement == target or replacement.parent != target.parent or not replacement.is_file(): raise ValueError("replacement must be another file in the same conversation")
+                issue = subthread_header_issue(target.read_bytes(), replacement.read_bytes())
+                if issue: raise ValueError(issue)
             quarantined.setdefault(record["target"], []).append(dict(record, record=path.name))
         except (ValueError, OSError, TypeError, KeyError, RecursionError) as exc:
             errors.append(f"{path}: {exc}")

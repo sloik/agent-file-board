@@ -1,5 +1,9 @@
 """SPEC-002-076: explicit sub-threads (SUBTHREAD headers, validation, post, promote, recent)."""
 import contextlib
+import hashlib
+import itertools
+import os
+import shutil
 import importlib.util
 import io
 import json
@@ -24,7 +28,7 @@ class SubthreadBase(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory()
         self.addCleanup(self.tmp.cleanup)
-        self.root = Path(self.tmp.name) / "project"
+        self.root = Path(self.tmp.name).resolve() / "project"
         self.board = self.root / ".agent-board"
         self.room = self.board / "rooms/general"
         self.cli("init", str(self.root), "--project-id", "subs", "--project-name", "Subs")
@@ -165,7 +169,9 @@ class ValidationRules(SubthreadBase):
         first = self.raw(1, "bravo-agent", "T002", "first", {"PROMOTED-FROM": self.rname})
         self.assertValid(first)
         later = self.raw(2, "alpha-agent", "T002", "later", {"PROMOTED-FROM": self.rname})
-        self.assertRejects(later, "only the first message")
+        # SPEC-002-079 #26: first-message is a post-time rule; an existing later one is valid with a warning (monotonic validity).
+        self.assertValid(later)
+        self.assertIn(f"rooms/general/{later.name}: PROMOTED-FROM: {first.name} is earlier in T002", "\n".join(boardctl.validate_report(self.root)[1]))
         self.assertValid(first)
         self.assertRejects(self.raw(3, "alpha-agent", "T003", "gone", {"PROMOTED-FROM": "2026-11-03_1000_alpha-agent_T001_nothing.txt"}), "not a message in this directory")
         self.assertRejects(self.raw(4, "alpha-agent", "T001", "sametopic", {"PROMOTED-FROM": self.rname}, reply=self.rname), "new topic")
@@ -297,10 +303,20 @@ class PostAndRead(SubthreadBase):
         self.assertLessEqual(len(json.dumps(data, ensure_ascii=False).encode()) + 1, 700)
 
     def test_posting_order_bump_orders_members_after_the_root(self):
-        root = self.post("root", "--at", "2030-01-01 12:00")
-        member = self.post("member", "--subthread", root.name, sender="bravo-agent", to="alpha-agent")
-        self.assertEqual(boardctl.parse_message(member)["POSTED-AT"], "2030-01-01T11:00:00.001Z")
-        self.assertEqual(boardctl.validate(self.root), [])
+        # Within the root's minute the bump against the reply target orders the member after the root.
+        root = self.raw(0, "alpha-agent", "T001", "root", headers={"DATE": "2030-01-01 12:00", "POSTED-AT": "2030-01-01T11:00:30.000Z"})
+        real_now_for = boardctl.now_for
+        boardctl.now_for = lambda config, supplied: real_now_for(config, supplied or "2030-01-01 12:00:10")
+        try:
+            member = self.post("member", "--subthread", root.name, sender="bravo-agent", to="alpha-agent")
+        finally:
+            boardctl.now_for = real_now_for
+        self.assertEqual(boardctl.parse_message(member)["POSTED-AT"], "2030-01-01T11:00:30.001Z")
+        self.assertEqual(boardctl.validate_report(self.root), ([], []))
+        # A root in a later minute cannot be outrun by the bump (DATE decides first), so the post is refused (SPEC-002-079 #11).
+        later = self.post("later", "--at", "2030-01-01 12:05")
+        self.post("refused", "--subthread", later.name, sender="bravo-agent", to="alpha-agent", expected=2)
+        self.assertIn("must sort after its root", self.err)
 
     def test_promote_writes_both_messages_and_reports_json(self):
         root = self.post("root")
@@ -475,3 +491,296 @@ class SigningAndHistory(unittest.TestCase):
         recorded = {e["path"] for inventory in self.inventories() for e in self.statement(inventory)["entries"]}
         self.assertEqual(recorded, {self.rel(p) for p in created})  # all three messages, both from promote, are in the room's inventories
         self.assertEqual(self.status("--scope", self.scope, expected=0)[0]["scopes"][self.scope]["coverage"]["uncovered"], 0)
+
+
+    # SPEC-002-079 audit rows 23 and 39: only eligible members count, and the root must be eligible for any member.
+    def unsigned(self, slug, minute, **headers):
+        values = {"FROM": self.participant, "TO": "human-owner-01", "SCOPE": "ROOM", "ROOM": "releases", "THREAD": "T002-root", "DATE": f"2026-11-03 10:{minute:02d}",
+                  "LANGUAGE": "en", "REPLY-TO": headers.pop("reply", "-"), "STATUS": "INFO", "POSTED-AT": f"2026-11-03T09:{minute:02d}:00.000Z", **headers}
+        path = self.board / "rooms/releases" / f"2026-11-03_10{minute:02d}_{self.participant}_T002_{slug}.txt"
+        path.write_text("".join(f"{k}: {v}\n" for k, v in values.items()) + "---\nRaw\n", encoding="utf-8")
+        return path
+
+    def summaries(self):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
+            self.assertEqual(boardctl.main(["recent", "--path", str(self.root), "--participant", self.participant, "--subthreads"]), 0)
+        return json.loads(out.getvalue())
+
+    def test_row23_an_excluded_member_never_resolves_or_counts(self):
+        self.trust()
+        root, _ = self.send("--new-thread", "--require-signing", "trusted", slug="root", thread="T002")
+        self.send("--subthread", root.name, slug="side", thread="T002")
+        excluded = self.unsigned("resolve", 59, reply=root.name, SUBTHREAD=root.name, **{"SUBTHREAD-STATE": "resolved"})
+        self.assertNotEqual(self.decision(excluded)["eligibility"], "eligible")
+        data = self.summaries()
+        self.assertEqual([(row["root"], row["state"], row["replies"]) for row in data["subthreads"]], [(root.name, "open", 1)])
+        self.assertNotIn("Raw", json.dumps(data["subthreads"]))  # an excluded body is never a resolution outcome
+
+    def test_row39_the_root_must_be_eligible_also_when_replying_to_a_member(self):
+        self.trust()
+        self.send("--new-thread", slug="seed", thread="T003")
+        raw_root = self.unsigned("rawroot", 1, THREAD="T003-root")
+        raw_root = raw_root.rename(raw_root.with_name(raw_root.name.replace("_T002_", "_T003_")))
+        member, _ = self.send("--subthread", raw_root.name, slug="side", thread="T003")  # optional thread: the unsigned root is eligible
+        self.ctl("signing", "require", "--scope", "rooms/releases", "--thread", "T003", "--minimum", "trusted")
+        self.assertNotEqual(self.decision(raw_root)["eligibility"], "eligible")
+        self.assertEqual(self.decision(member)["eligibility"], "eligible")  # the signed member stays eligible
+        _, err = self.send("--subthread", raw_root.name, "--reply-to", member.name, slug="refused", thread="T003", expected=2)
+        self.assertIn("sub-thread root is not eligible under signing requirements", err)
+        self.assertIn(raw_root.name, err)
+        self.assertFalse(list(self.board.glob("rooms/releases/*_refused.txt")))
+
+
+class AuditFixes(SubthreadBase):
+    """SPEC-002-079: fixes for the canonical rows of docs/SUBTHREAD-RULE-AUDIT.md (row numbers in the names)."""
+
+    def setUp(self):
+        super().setUp()
+        self.base = self.raw(0, "alpha-agent", "T001", "root")
+        self.rname = self.base.name
+
+    def member(self, minute, slug, reply=None, sender="bravo-agent", **headers):
+        values = {"SUBTHREAD": self.rname}
+        values.update(headers)
+        return self.raw(minute, sender, "T001", slug, values, reply=self.rname if reply is None else reply)
+
+    def summary(self, *extra):
+        rows = self.recent("--subthreads", *extra)["subthreads"]
+        return {row["root"]: row for row in rows}
+
+    def test_row26_a_backdated_sibling_turns_promoted_from_into_a_warning_not_an_error(self):
+        out = json.loads(self.cli("promote", "--path", str(self.root), "--room", "general", "--root", self.rname, "--from", "alpha-agent",
+                                  "--title", "Moved", "--at", "2026-11-03 10:05"))
+        first = self.root / out["first_message"]
+        self.assertEqual(boardctl.validate_report(self.root), ([], []))
+        # An ordinary accepted post backdated into the new topic (R1): the promoted message stays valid.
+        self.post("late", "--at", "2026-11-03 10:04", sender="bravo-agent", thread="T002")
+        errors, warnings = boardctl.validate_report(self.root)
+        self.assertEqual(errors, [])
+        late = next(self.room.glob("*_late.txt"))
+        self.assertEqual(warnings, [f"rooms/general/{first.name}: PROMOTED-FROM: {late.name} is earlier in T002, so this is no longer "
+                                    f"the topic's first message; it still continues the sub-thread of {self.rname}"])
+        self.assertValid(first)
+        # Post time still refuses a second PROMOTED-FROM in a topic that already has a message.
+        self.post("again", "--promoted-from", self.rname, thread="T002", expected=2)
+        self.assertIn("only the first message of a topic can carry it", self.err)
+
+    def test_row26_a_thread_id_collision_leaves_both_first_messages_valid(self):
+        # R1b: two writers allocated T002 offline; the later PROMOTED-FROM message is valid with a warning.
+        other = self.raw(1, "bravo-agent", "T001", "rootwo")
+        self.raw(5, "alpha-agent", "T002", "first", {"PROMOTED-FROM": self.rname})
+        second = self.raw(6, "bravo-agent", "T002", "second", {"PROMOTED-FROM": other.name})
+        errors, warnings = boardctl.validate_report(self.root)
+        self.assertEqual(errors, [])
+        self.assertEqual(len(warnings), 1)
+        self.assertTrue(warnings[0].startswith(f"rooms/general/{second.name}: PROMOTED-FROM: "))
+
+    def test_row28_a_sibling_with_an_unparseable_date_never_invalidates_a_valid_message(self):
+        first = self.raw(5, "alpha-agent", "T002", "first", {"PROMOTED-FROM": self.rname})
+        bad = self.raw(4, "bravo-agent", "T002", "baddate", {"DATE": "yesterday"})
+        self.assertValid(first)
+        self.assertEqual(self.error(bad), f"{bad}: DATE must be an ISO date/time in the board time zone, optionally with seconds, fractional seconds or an offset")
+        errors, warnings = boardctl.validate_report(self.root)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("baddate.txt: DATE must be", errors[0])
+        self.assertEqual(warnings, [])
+
+    def test_row11_a_member_must_sort_after_its_root(self):
+        root = self.post("posted", "--at", "2026-11-03 10:05")
+        self.post("early", "--subthread", root.name, "--at", "2026-11-03 10:01", sender="bravo-agent", to="alpha-agent", expected=2)
+        self.assertIn(f"SUBTHREAD: a sub-thread message must sort after its root {root.name}", self.err)
+        self.assertFalse(list(self.room.glob("*_early.txt")))
+        # A raw early member stays valid (monotonic) and is reported as a warning.
+        early = self.raw(1, "bravo-agent", "T001", "rawearly", {"SUBTHREAD": root.name}, reply=root.name)
+        self.assertValid(early)
+        errors, warnings = boardctl.validate_report(self.root)
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [f"rooms/general/{early.name}: sub-thread message sorts before its root {root.name} in posting order"])
+
+    def test_row24_summary_state_and_counts_ignore_from_topic_and_window(self):
+        root = self.post("posted")
+        self.post("resolve", "--subthread", root.name, "--subthread-state", "resolved")
+        self.post("reopen", "--subthread", root.name, "--subthread-state", "open", sender="bravo-agent", to="alpha-agent")
+        expected = self.summary()[root.name]
+        self.assertEqual((expected["state"], expected["replies"], expected["participants"]), ("open", 2, ["alpha-agent", "bravo-agent"]))
+        self.assertEqual(self.summary("--from", "alpha-agent")[root.name], expected)  # R4
+        self.assertEqual(self.summary("--topic", "T001")[root.name], expected)
+        self.assertEqual(self.summary("--limit", "1")[root.name], expected)
+        self.assertNotIn(root.name, self.summary("--topic", "T002"))
+        for index in range(205):  # R10d: newer main-flow messages push the members out of the 200-row window
+            self.raw(index % 60, "alpha-agent", "T003", f"noise-{index}", posted=f"2026-12-0{1 + index // 60}T09:{index % 60:02d}:00.000Z",
+                     headers={"DATE": f"2026-12-0{1 + index // 60} 10:{index % 60:02d}"})
+        self.assertEqual(self.summary()[root.name], expected)
+        self.assertEqual(self.summary("--main-flow")[root.name], expected)
+
+    def test_row22_state_uses_canonical_order_offsets_and_ignores_time_corrections(self):
+        self.member(5, "resolve", **{"SUBTHREAD-STATE": "resolved"})
+        reopen = self.member(6, "reopen", sender="alpha-agent", **{"SUBTHREAD-STATE": "open"})
+        (self.board / "time-corrections.txt").write_text(f"{reopen.name} | 2026-11-03 10:01 | clock was wrong\n", encoding="utf-8")
+        self.assertEqual(self.summary()[self.rname]["state"], "open")  # R2: the correction file never moves STATE
+        reopen.unlink()
+        self.member(7, "offset", sender="alpha-agent", **{"SUBTHREAD-STATE": "open", "DATE": "2026-11-03 10:07+05:00"})
+        self.assertEqual(self.summary()[self.rname]["state"], "resolved")  # R2b: 10:07+05:00 is earlier than 10:05 in Warsaw
+
+    def test_row21_a_posting_order_tie_is_broken_by_filename(self):
+        self.member(5, "reopen", sender="alpha-agent", **{"SUBTHREAD-STATE": "open"}, **{"POSTED-AT": "2026-11-03T09:05:00.000Z"})
+        self.member(5, "resolve", sender="bravo-agent", **{"SUBTHREAD-STATE": "resolved"}, **{"POSTED-AT": "2026-11-03T09:05:00.000Z"})
+        self.assertEqual(self.summary()[self.rname]["state"], "resolved")  # R3: bravo-agent's filename sorts last
+
+    def test_row19_new_sub_threads_are_allowed_in_closed_topics(self):
+        self.raw(1, "alpha-agent", "T001", "closing", reply=self.rname, status="CLOSED")
+        self.post("side", "--subthread", self.rname, sender="bravo-agent", to="alpha-agent")
+        self.assertEqual(boardctl.validate_report(self.root), ([], []))
+        self.assertEqual(self.summary()[self.rname]["state"], "open")
+
+    def test_row15_an_answer_state_winner_record_follows_its_question(self):
+        root = self.post("posted")
+        question = Path(self.tmp.name) / "q.json"
+        question.write_text(json.dumps({"id": "go", "type": "single", "prompt": "Go?", "options": [{"id": "yes", "label": "Yes"}, {"id": "no", "label": "No"}]}))
+        answer = Path(self.tmp.name) / "a.json"
+        answer.write_text(json.dumps({"question": "go", "selected": ["yes"]}))
+        q_member = self.post("qmember", "--subthread", root.name, "--status", "QUESTION", "--question-file", str(question))
+        first = self.post("first", "--answer-file", str(answer), "--reply-to", q_member.name, sender="bravo-agent", to="alpha-agent")
+        # A second offline first claim makes a conflict the question author must resolve.
+        raw = first.read_text().replace("_first", "_second")
+        second = first.with_name(first.name.replace("_first", "_second"))
+        second.write_text(raw.replace(boardctl.parse_message(first)["POSTED-AT"], "2026-11-03T23:59:00.000Z"))
+        inspect = lambda: json.loads(self.cli("answers", "inspect", "--path", str(self.root), "--question", str(q_member.relative_to(self.board))))
+        conflict = inspect()
+        self.assertEqual(conflict["status"], "conflict")
+        self.cli("answers", "accept", "--path", str(self.root), "--question", str(q_member.relative_to(self.board)), "--from", "alpha-agent",
+                 "--winner", first.name, "--expected-heads", json.dumps(conflict["heads"]))
+        record = next(p for p in self.room.glob("*.txt") if "ANSWER-STATE" in boardctl.parse_message(p) and "ANSWER" not in boardctl.parse_message(p))
+        self.assertEqual(boardctl.parse_message(record)["SUBTHREAD"], root.name)  # the winner record joins the question's sub-thread
+        self.assertEqual(boardctl.validate_report(self.root), ([], []))
+        self.assertEqual((inspect()["status"], inspect()["winner"]["file"]), ("accepted", first.name))
+        # Without the marker the same winner record is invalid.
+        lines = [line for line in record.read_text().splitlines() if not line.startswith("SUBTHREAD: ")]
+        unmarked = record.with_name(record.name.replace(".txt", "-unmarked.txt"))
+        unmarked.write_text("\n".join(lines) + "\n")
+        self.assertRejects(unmarked, "must carry SUBTHREAD")
+
+    def test_row16_an_extension_answer_follows_its_question(self):
+        import extension_packages as ext
+        import test_extension_packages
+        artifact = Path(self.tmp.name) / "plugin.afb-plugin.json"
+        artifact.write_bytes(test_extension_packages.raw(test_extension_packages.package()))
+        receipt = ext.install(self.root, artifact)
+        contract = ext.decode_package(artifact.read_bytes())["contracts"][0]
+        identity = {"version": 1, "package": receipt["artifact"], "contract": contract["id"], "contractVersion": contract["version"], "contractDigest": contract["digest"]}
+        request = Path(self.tmp.name) / "request.json"
+        request.write_text(json.dumps({**identity, "data": {"title": "Review"}}))
+        root = self.post("posted")
+        source = self.post("request", "--subthread", root.name, "--extension-file", str(request))
+        reply = Path(self.tmp.name) / "reply.json"
+        reply.write_text(json.dumps({**identity, "data": {"approved": True},
+                                     "source": {"message": str(source.relative_to(self.board)), "sha256": hashlib.sha256(source.read_bytes()).hexdigest()}}))
+        answer = self.post("answer", "--reply-to", source.name, "--extension-answer-file", str(reply), sender="bravo-agent", to="alpha-agent")
+        self.assertEqual(boardctl.parse_message(answer)["SUBTHREAD"], root.name)  # post adds the marker, as for ANSWER
+        self.assertEqual(boardctl.validate_report(self.root), ([], []))
+        lines = [line for line in answer.read_text().splitlines() if not line.startswith("SUBTHREAD: ")]
+        unmarked = answer.with_name(answer.name.replace("_answer", "_unmarked"))
+        unmarked.write_text("\n".join(lines) + "\n")
+        self.assertRejects(unmarked, "must carry SUBTHREAD")
+
+    def test_row37_validate_enforces_that_a_replacement_keeps_sub_thread_headers(self):
+        member = self.member(1, "side", **{"SUBTHREAD-STATE": "resolved"})
+        member.write_bytes(member.read_bytes() + b"\xff")
+        replacement = self.raw(2, "bravo-agent", "T001", "amend-" + "a" * 32, reply="-")  # R9: SUBTHREAD dropped
+        record = {"version": 1, "target": "rooms/general/" + member.name, "sha256": hashlib.sha256(member.read_bytes()).hexdigest(), "by": "bravo-agent",
+                  "at": "2026-11-03T10:00:00.000Z", "reason": "Bad bytes", "replacement": "rooms/general/" + replacement.name}
+        (self.board / "repairs").mkdir()
+        (self.board / "repairs" / ("b" * 32 + ".json")).write_text(json.dumps(record))
+        errors, _ = boardctl.validate_report(self.root)
+        self.assertEqual(len(errors), 2)  # the refused record, and the original it therefore does not quarantine
+        self.assertTrue(errors[0].endswith(".json: a replacement keeps the original's sub-thread headers: SUBTHREAD is " + self.rname + " in the original and absent in the replacement"))
+        self.assertIn("codec can't decode", errors[1])
+        replacement.unlink()
+        self.member(2, "amend-" + "a" * 32, **{"SUBTHREAD-STATE": "resolved"})
+        self.assertEqual(boardctl.validate_report(self.root)[0], [])
+
+
+class Proof(SubthreadBase):
+    """SPEC-002-079 AC5: S4 arrival order and ties, S5 concurrent writers, S6 a failed second promote write."""
+
+    def copy_board(self, name, files):
+        """A reader's copy of the board, receiving `files` in the given order (each a later mtime)."""
+        target = Path(self.tmp.name) / name
+        shutil.copytree(self.root, target, ignore=shutil.ignore_patterns("*.txt"))
+        for index, source in enumerate(files):
+            destination = target / source.relative_to(source.parents[3])  # PROJECT/.agent-board/rooms/ROOM/FILE
+            shutil.copyfile(source, destination)
+            os.utime(destination, ns=(10**18 + index * 10**9, 10**18 + index * 10**9))
+        return target
+
+    def state_of(self, root):
+        out = json.loads(self.cli("recent", "--path", str(root), "--participant", "alpha-agent", "--subthreads"))
+        return [(row["root"], row["state"], row["replies"]) for row in out["subthreads"]]
+
+    def test_s4_same_set_in_any_arrival_order_gives_the_same_state(self):
+        root = self.post("posted", "--at", "2026-11-03 10:00")
+        resolve = self.post("resolve", "--subthread", root.name, "--subthread-state", "resolved", "--at", "2026-11-03 10:05")
+        tie_a = self.post("reopen", "--subthread", root.name, "--subthread-state", "open", "--at", "2026-11-03 10:07")
+        tie_b = self.post("again", "--subthread", root.name, "--subthread-state", "resolved", "--at", "2026-11-03 10:07", sender="bravo-agent", to="alpha-agent")
+        files = [root, resolve, tie_a, tie_b]
+        states = {tuple(self.state_of(self.copy_board(f"order-{n}", order))) for n, order in enumerate(itertools.permutations(files))}
+        self.assertEqual(states, {((root.name, "resolved", 3),)})  # bravo-agent's filename wins the DATE/POSTED-AT tie
+        partial = {tuple(self.state_of(self.copy_board(f"part-{n}", order))) for n, order in enumerate(itertools.permutations([root, resolve, tie_a]))}
+        self.assertEqual(partial, {((root.name, "open", 2),)})
+
+    def test_s5_concurrent_writers_stay_valid_when_merged(self):
+        root = self.post("posted")
+        self.post("side", "--subthread", root.name, sender="bravo-agent", to="alpha-agent")
+        alpha = self.copy_board("alpha", sorted(self.room.glob("*.txt")))
+        bravo = self.copy_board("bravo", sorted(self.room.glob("*.txt")))
+        def run(project, *args):
+            out = self.cli(*args[:1], "--path", str(project), *args[1:])
+            return project / out
+        # Offline: each writer allocates T002 for a promotion or a new topic and resolves or reopens the sub-thread.
+        promoted = json.loads(self.cli("promote", "--path", str(alpha), "--room", "general", "--root", root.name, "--from", "alpha-agent", "--title", "Alpha plan"))
+        bravo_topic = run(bravo, "post", "--from", "bravo-agent", "--to", "all", "--scope", "room", "--room", "general", "--thread", "T002", "--slug", "bravo-topic",
+                          "--body", "New topic", "--new-thread", "--at", "2026-11-03 09:00")
+        reopen = run(bravo, "post", "--from", "bravo-agent", "--to", "all", "--scope", "room", "--room", "general", "--thread", "T001", "--slug", "reopen",
+                     "--body", "Not done", "--subthread", root.name, "--subthread-state", "open")
+        for project in (alpha, bravo):
+            self.assertEqual(boardctl.validate_report(project)[0], [])
+        merged = self.copy_board("merged", sorted({*alpha.glob(".agent-board/rooms/general/*.txt")}, key=lambda p: p.name)
+                                 + sorted(bravo.glob(".agent-board/rooms/general/*.txt")))
+        errors, warnings = boardctl.validate_report(merged)
+        self.assertEqual(errors, [])  # every accepted message is still valid in the union
+        first = Path(promoted["first_message"]).name
+        self.assertEqual(warnings, [f"rooms/general/{first}: PROMOTED-FROM: {bravo_topic.name} is earlier in T002, so this is no longer "
+                                    f"the topic's first message; it still continues the sub-thread of {root.name}"])
+        self.assertEqual(self.state_of(merged), [(root.name, "open", 3)])  # bravo's reopen is the latest by posting order
+        self.assertTrue(reopen.name)
+
+    def test_s6_a_failure_after_the_first_promote_write_leaves_a_valid_visible_topic(self):
+        root = self.post("posted")
+        self.post("side", "--subthread", root.name, sender="bravo-agent", to="alpha-agent")
+        before = {p: p.read_bytes() for p in self.room.glob("*.txt")}
+        original = boardctl.command_post
+        calls = []
+
+        def flaky(args):
+            calls.append(args.thread)
+            if len(calls) == 2:
+                raise boardctl.BoardError("disk full")
+            return original(args)
+        boardctl.command_post = flaky
+        try:
+            out, err = io.StringIO(), io.StringIO()
+            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+                code = boardctl.main(["promote", "--path", str(self.root), "--room", "general", "--root", root.name, "--from", "alpha-agent", "--title", "Half"])
+        finally:
+            boardctl.command_post = original
+        self.assertEqual(code, 2)
+        first = self.root / json.loads(out.getvalue())["first_message"]
+        self.assertIn("Nothing was deleted", err.getvalue())
+        self.assertEqual({p: p.read_bytes() for p in before}, before)  # nothing modified
+        self.assertEqual(set(self.room.glob("*.txt")), set(before) | {first})  # nothing deleted, only the first write added
+        self.assertEqual(boardctl.validate_report(self.root), ([], []))
+        main = {Path(m["path"]).name for m in self.recent("--main-flow")["messages"]}
+        self.assertIn(first.name, main)  # the new topic is visible, and it names its origin
+        self.assertEqual(boardctl.parse_message(first)["PROMOTED-FROM"], root.name)
+        self.assertEqual(self.recent("--subthreads")["subthreads"][0]["state"], "open")  # not resolved until the second write succeeds
