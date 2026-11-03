@@ -67,12 +67,13 @@ Rules:
 
 ## Acceptance criteria
 
-- [ ] AC1 (convention): CONVENTION.md gains a "Sub-threads (3.4)" subsection under "Rooms,
+- [x] AC1 (convention): CONVENTION.md gains a "Sub-threads (3.4)" subsection under "Rooms,
   direct messages, and threads" stating every rule above, plus one-line cross-references
   in Message files (header list and correction rule), Precise posting order, Signed
   messages, Recorded answer acceptance, Invalid messages and repairs, and the board-loop
   reading guidance. Version 3.4.0 and a History entry.
-- [ ] AC2 (validation): `check_message` / `validate` reject, with a clear message naming the
+  Evidence: CONVENTION.md 3.4.0: subsection "Sub-threads (3.4)", cross-references in Message files, Precise posting order, Signed messages, Recorded answer acceptance, Invalid messages and repairs, Reading and resuming; History entry. Evidence: `boardctl release-check` ok (v3.4.0).
+- [x] AC2 (validation): `check_message` / `validate` reject, with a clear message naming the
   rule: a malformed `SUBTHREAD` or `PROMOTED-FROM` value (slashes, traversal, non-.txt); a
   root missing from the directory (error for new posts, orphan warning for existing files
   in validate); a root in another thread; a root that itself carries `SUBTHREAD`; member
@@ -82,36 +83,44 @@ Rules:
   names a root not in the same directory; an ANSWER whose question is a member but which
   lacks that marker, or an ANSWER with a marker whose question is neither that root nor a
   member of it.
-- [ ] AC3 (post): `boardctl post --subthread ROOT [--also-main] [--subthread-state
+  Evidence: `subthread_check` in boardctl.py, used by check_message/post/promote; every rule has a failing and valid fixture in tests/test_subthreads.py::ValidationRules. Orphans are warnings via `validate_report` / `validate --json`, exit codes unchanged.
+- [x] AC3 (post): `boardctl post --subthread ROOT [--also-main] [--subthread-state
   resolved|open] [--reply-to X]` writes the headers. `--reply-to` defaults to ROOT. The
   post is refused before writing when the rules fail. `--promoted-from ROOT` is accepted
   together with `--new-thread`. Answer posting (`--answer`/form paths) to a member
   question adds the marker automatically.
-- [ ] AC4 (promote): `boardctl promote --root ROOT --title TITLE [--body ...]` writes the new
+  Evidence: `post --subthread/--also-main/--subthread-state/--promoted-from`; tests PostAndRead (refusal before writing, default reply-to, auto answer marker).
+- [x] AC4 (promote): `boardctl promote --root ROOT --title TITLE [--body ...]` writes the new
   topic's first message with `PROMOTED-FROM`, then the resolving member naming the new
   topic (T-ID and title), with signing and history recording applied as for normal posts.
   It prints both paths as JSON. Failure of the second write is reported and the first is
   not deleted (append-only).
-- [ ] AC5 (read): `boardctl recent` rows gain `reply_to`, `subthread` (root filename or
+  Evidence: `boardctl promote`; tests test_promote_* (JSON shape, signing+history, direct pair, second-write failure keeps first).
+- [x] AC5 (read): `boardctl recent` rows gain `reply_to`, `subthread` (root filename or
   null), `subthread_also` (bool), `subthread_state` (or null) and `promoted_from` (or null).
   New filters `--subthread ROOT` (root plus members) and `--main-flow` (exclude members
   without `SUBTHREAD-ALSO: main`). Optional `--subthreads` summary: per root
   `{root, replies, participants, last_posted_at, state}`.
-- [ ] AC6 (board-loop): `skills/board-loop/scripts/board_loop.py` keeps the four headers in
+  Evidence: recent rows and `--subthread/--main-flow/--subthreads`; test_recent_rows_filters_and_summary, test_summary_respects_the_byte_bound.
+- [x] AC6 (board-loop): `skills/board-loop/scripts/board_loop.py` keeps the four headers in
   message summaries and treats sub-thread messages as normal (not notices). SKILL.md
   explains how an agent replies in a sub-thread vs the main thread.
-- [ ] AC7 (compatibility): a board written with 3.4 headers validates on 3.3.1 boardctl
+  Evidence: board_loop.py summaries keep the four headers; SKILL.md paragraph; tests BoardLoop.
+- [x] AC7 (compatibility): a board written with 3.4 headers validates on 3.3.1 boardctl
   (unknown headers ignored) and every message appears in its thread. A test proves a
   plain reply to a member has `subthread: null`.
-- [ ] AC8 (tests): unit tests cover every AC2 rule (each rule has a failing fixture and the
+  Evidence: Compatibility test runs `git archive v3.3.1` boardctl: validate exits 0 and `recent` lists the same messages; plain reply to a member has `subthread: null`.
+- [x] AC8 (tests): unit tests cover every AC2 rule (each rule has a failing fixture and the
   valid counterpart), post/promote/recent output, signing of a member (signature still
   verifies; requirement inherited from the T-ID), history recording of a member, answer
   inside a sub-thread, posting-order bump. Full existing suite stays green with no
   skipped or weakened tests. Formal alignment (`formal/check_alignment.py` and reviewed
   anchors) updated where touched sections move.
+  Evidence: tests/test_subthreads.py (28 tests); full suite 372 tests OK in a venv with requirements-signing.txt; formal check_alignment current, TLC and trace conformance pass after review-based repin of boardctl.py.
 - [ ] AC9 (docs and release): README feature row and example, CHANGELOG 3.4.0 entry, upgrade
   manifest baseline 3.3.1, `build_upgrade_manifest.py`, release-check, protected PR with
   all required checks green, tag `v3.4.0`, GitHub Release with the CHANGELOG section.
+  Docs part done (README section, CHANGELOG 3.4.0, CONVENTION 3.4.0 + History, manifest baseline 3.3.1 rebuilt, test_upgrades source). PR, protected checks, tag and GitHub Release remain for the parent.
 
 ## Out of scope
 
