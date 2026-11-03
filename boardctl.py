@@ -961,14 +961,21 @@ def command_recent(args: argparse.Namespace) -> int:
             parts = Path(wanted_root).parts
             if len(parts) > 1 and path.parent.name != parts[-2]: continue
             if not ((member is None and path.name == parts[-1]) or member == parts[-1]): continue
-        if getattr(args, "main_flow", False) and member is not None and headers.get("SUBTHREAD-ALSO") != "main": continue
+        hidden = bool(getattr(args, "main_flow", False) and member is not None and headers.get("SUBTHREAD-ALSO") != "main")
+        if hidden and not getattr(args, "subthreads", False): continue  # kept only so --subthreads still summarizes every member
         rows.append((message_order(headers, path, config), {"path": str(path.relative_to(root)), "from": headers["FROM"], "to": headers["TO"], "scope": headers["SCOPE"], "room": headers.get("ROOM"), "topic": headers["THREAD"].split("-", 1)[0], "thread": headers["THREAD"], "status": headers["STATUS"], "date": headers["DATE"], "posted_at": headers.get("POSTED-AT"),
-                                                          "reply_to": None if headers["REPLY-TO"] == "-" else headers["REPLY-TO"], "subthread": member, "subthread_also": member is not None and headers.get("SUBTHREAD-ALSO") == "main", "subthread_state": headers.get("SUBTHREAD-STATE") if member is not None else None, "promoted_from": headers.get("PROMOTED-FROM")}))
+                                                          "reply_to": None if headers["REPLY-TO"] == "-" else headers["REPLY-TO"], "subthread": member, "subthread_also": member is not None and headers.get("SUBTHREAD-ALSO") == "main", "subthread_state": headers.get("SUBTHREAD-STATE") if member is not None else None, "promoted_from": headers.get("PROMOTED-FROM"), "_hidden": hidden}))
     rows.sort(key=lambda row: row[0], reverse=True)
     import signing_commands
     signing = signing_commands.session(root, getattr(args, "signing_state_dir", None))
     checked, excluded = [], []
-    for order, row in rows[:200]:
+    window, visible = [], 0
+    for item in rows:
+        if not item[1]["_hidden"]:
+            if visible == 200: break
+            visible += 1
+        window.append(item)
+    for order, row in window:
         source = root / row["path"]
         decision = signing.evaluate(source, parse_message(source))
         if decision["signature"] != "unsigned" or decision["minimum"] != "optional":
@@ -976,9 +983,10 @@ def command_recent(args: argparse.Namespace) -> int:
         if decision["eligibility"] == "eligible" or args.inspect_excluded:
             if decision["eligibility"] != "eligible": row["inspection_only"] = True
             checked.append((order, row))
-        if decision["eligibility"] != "eligible":
+        if decision["eligibility"] != "eligible" and not row["_hidden"]:
             excluded.append({"path": row["path"], **decision})
-    result = {"messages": [], "total_matching": len(rows), "truncated": len(rows) > args.limit, "invalid_count": len(invalid), "invalid_messages": [], "repair_error_count": len(repair_errors)}
+    shown = [item for item in rows if not item[1]["_hidden"]]
+    result = {"messages": [], "total_matching": len(shown), "truncated": len(shown) > args.limit, "invalid_count": len(invalid), "invalid_messages": [], "repair_error_count": len(repair_errors)}
     if excluded:
         result.update(excluded_count=len(excluded), pending_verification_count=sum(x["eligibility"] == "pending-verification" for x in excluded))
     for issue in invalid[:10]:
@@ -986,13 +994,13 @@ def command_recent(args: argparse.Namespace) -> int:
         if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 <= args.max_bytes: result = candidate
     if getattr(args, "subthreads", False):
         result["subthreads"] = []
-        for item in subthread_summaries(checked):
+        for item in subthread_summaries([c for c in checked if not c[1].get("inspection_only")]):
             candidate = dict(result, subthreads=[*result["subthreads"], item])
             if len(json.dumps(candidate, ensure_ascii=False).encode("utf-8")) + 1 > args.max_bytes:
                 result["truncated"] = True
                 break
             result = candidate
-    for _, row in checked[:args.limit]:
+    for _, row in [c for c in checked if not c[1]["_hidden"]][:args.limit]:
         source = root / row["path"]
         digest = hashlib.sha256()
         with source.open("rb") as handle:
@@ -1002,7 +1010,7 @@ def command_recent(args: argparse.Namespace) -> int:
             for line in handle:
                 if line.rstrip("\r\n") == "---": break
             preview = " ".join(handle.read(160).split())
-        row = dict(row, sha256=digest.hexdigest(), preview=preview)
+        row = dict({k: v for k, v in row.items() if k != "_hidden"}, sha256=digest.hexdigest(), preview=preview)
         for records in quarantined.values():
             for record in records:
                 if record["replacement"] == source.relative_to(board).as_posix(): row["repair"] = {"original": record["target"], "by": record["by"], "record": "repairs/" + record["record"]}

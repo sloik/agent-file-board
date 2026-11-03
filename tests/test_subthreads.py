@@ -279,6 +279,13 @@ class PostAndRead(SubthreadBase):
         self.assertEqual(row["last_posted_at"], boardctl.parse_message(done)["POSTED-AT"])
         self.assertEqual(row["path"], f"{self.room.relative_to(self.root)}/{root.name}")
         self.assertNotIn("subthreads", self.recent())
+        # --main-flow hides members from messages but the summary still counts every member.
+        both = self.recent("--main-flow", "--subthreads")
+        self.assertEqual(both["subthreads"], summary)
+        self.assertEqual(names(both), {root.name, plain.name, also.name, other.name, reply_to_member.name})
+        self.assertEqual(both["total_matching"], 5)
+        self.assertEqual(self.recent("--main-flow")["total_matching"], 5)
+        self.assertNotIn("_hidden", json.dumps(both))
         self.post("reopen", "--subthread", root.name, "--subthread-state", "open")
         self.assertEqual(self.recent("--subthreads")["subthreads"][0]["state"], "open")
         self.cli("recent", "--path", str(self.root), "--participant", "alpha-agent", "--subthread", "../x.txt", expected=2)
@@ -465,3 +472,6 @@ class SigningAndHistory(unittest.TestCase):
         self.assertEqual(len(created), 3)
         for path in created:
             self.assertNotEqual(self.decision(path)["signature"], "unsigned", path.name)
+        recorded = {e["path"] for inventory in self.inventories() for e in self.statement(inventory)["entries"]}
+        self.assertEqual(recorded, {self.rel(p) for p in created})  # all three messages, both from promote, are in the room's inventories
+        self.assertEqual(self.status("--scope", self.scope, expected=0)[0]["scopes"][self.scope]["coverage"]["uncovered"], 0)
