@@ -15,11 +15,12 @@ stay valid.
   `post`, `promote`, `validate`, `recent` and `answers inspect` on two board copies and
   checks every step against the model; eight implementation mutants are rejected.
 - Monotonic validity: "first message of its topic" for `PROMOTED-FROM` and "member after
-  its root" are post-time rules. `post` and `promote` refuse; `validate` reports a later
+  its root" (for `--at`) are post-time rules. `post` and `promote` refuse; `validate` reports a later
   violation (a backdated post, a T-ID collision, an early raw member) as a warning, never
   an error. A sibling with an unreadable `DATE` no longer invalidates a valid promoted
   message, and its own error names the file and the `DATE` header.
-- `post` refuses a member that would sort before its root (for example an earlier `--at`).
+- `post --at` refuses a member that would sort before its root; `validate` warns about any
+  member that sorts before its root.
 - `post` refuses a member whose root is not eligible under signing requirements, also when
   replying to another member.
 - `EXTENSION-ANSWER` follows its question like `ANSWER`: `post` adds the marker and

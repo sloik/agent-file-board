@@ -163,7 +163,9 @@ Nesting is one level, so a member cannot be a root:
 boardctl: SUBTHREAD: root 2026-11-03_0910_bravo-agent_T001_dry-run-question.txt is itself a sub-thread message; sub-threads nest one level only
 ```
 
-A member must sort after its root (here `--at` is earlier than the root):
+A member must sort after its root. `post` refuses an explicit `--at` that is earlier than
+the root (without `--at`, a member posted from a clock that is behind is accepted and
+`validate` warns):
 
 <!-- example:refusal-early -->
 ```text

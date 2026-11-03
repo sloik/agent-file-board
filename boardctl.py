@@ -285,7 +285,7 @@ def command_post(args: argparse.Namespace) -> int:
     header_map.update(subthread_extra)
     try:
         validate_extensions(header_map, source)
-        subthread_check(header_map, directory, filename, config, None, source, new_post=True)
+        subthread_check(header_map, directory, filename, config, None, source, new_post=True, explicit_time=bool(args.at))
     except ValueError as exc:
         raise BoardError(str(exc)) from exc
     extension_packages.validate_message(board, path, header_map, body, active=True)
@@ -537,14 +537,15 @@ def soft_parse(path: Path, strict: bool):
 
 
 def subthread_check(headers: dict, directory: Path, name: str, config: dict, source_path: Path | None = None,
-                    source: dict | None = None, new_post: bool = False) -> None:
+                    source: dict | None = None, new_post: bool = False, explicit_time: bool = False) -> None:
     """Validate the optional sub-thread headers (convention 3.4); raise ValueError naming the rule.
 
     One helper for check_message, post and promote. It reads only sibling files of `directory`, and only the
     ones it must (root, REPLY-TO target, the topic's other messages for PROMOTED-FROM); it never calls
-    check_message on them. With new_post a missing root, a member that would sort before its root and a
-    PROMOTED-FROM message in a topic that already has messages are errors. For an existing file they are
-    warnings from validate (subthread_warnings), so an accepted message never becomes invalid later.
+    check_message on them. With new_post a missing root and a PROMOTED-FROM message in a topic that already
+    has messages are errors, and so is a member that would sort before its root when the post gives its time
+    explicitly (explicit_time, `--at`). For an existing file they are warnings from validate
+    (subthread_warnings), so an accepted message never becomes invalid later.
     """
     follows = source is not None and any(key in headers for key in ANSWER_HEADERS)
     if not any(key in headers for key in SUBTHREAD_HEADERS) and not (follows and source.get("SUBTHREAD")):
@@ -572,7 +573,7 @@ def subthread_check(headers: dict, directory: Path, name: str, config: dict, sou
                 raise ValueError(f"SUBTHREAD: root {sub} is in another thread ({thread_id(root_headers)}), not {own_thread}")
             if "SUBTHREAD" in root_headers:
                 raise ValueError(f"SUBTHREAD: root {sub} is itself a sub-thread message; sub-threads nest one level only")
-            if new_post and message_order(headers, directory / name, config) <= message_order(root_headers, root, config):
+            if new_post and explicit_time and message_order(headers, directory / name, config) <= message_order(root_headers, root, config):
                 raise ValueError(f"SUBTHREAD: a sub-thread message must sort after its root {sub} in posting order (DATE, then POSTED-AT); use a later --at")
         elif new_post:
             raise ValueError(f"SUBTHREAD: root {sub} does not exist in this directory")

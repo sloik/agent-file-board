@@ -303,6 +303,15 @@ class PostAndRead(SubthreadBase):
         self.assertLessEqual(len(json.dumps(data, ensure_ascii=False).encode()) + 1, 700)
 
     def test_posting_order_bump_orders_members_after_the_root(self):
+        root = self.post("root", "--at", "2030-01-01 12:00")
+        member = self.post("member", "--subthread", root.name, sender="bravo-agent", to="alpha-agent")
+        self.assertEqual(boardctl.parse_message(member)["POSTED-AT"], "2030-01-01T11:00:00.001Z")
+        self.assertEqual(boardctl.validate(self.root), [])
+        # SPEC-002-079 #11: the member's DATE (now) is earlier than the root's, so validate warns; post refuses only with --at.
+        self.assertEqual(boardctl.validate_report(self.root)[1],
+                         [f"rooms/general/{member.name}: sub-thread message sorts before its root {root.name} in posting order"])
+
+    def test_posting_order_bump_within_the_root_minute(self):
         # Within the root's minute the bump against the reply target orders the member after the root.
         root = self.raw(0, "alpha-agent", "T001", "root", headers={"DATE": "2030-01-01 12:00", "POSTED-AT": "2030-01-01T11:00:30.000Z"})
         real_now_for = boardctl.now_for
@@ -313,9 +322,9 @@ class PostAndRead(SubthreadBase):
             boardctl.now_for = real_now_for
         self.assertEqual(boardctl.parse_message(member)["POSTED-AT"], "2030-01-01T11:00:30.001Z")
         self.assertEqual(boardctl.validate_report(self.root), ([], []))
-        # A root in a later minute cannot be outrun by the bump (DATE decides first), so the post is refused (SPEC-002-079 #11).
+        # An explicit --at that sorts before the root is refused (SPEC-002-079 #11).
         later = self.post("later", "--at", "2030-01-01 12:05")
-        self.post("refused", "--subthread", later.name, sender="bravo-agent", to="alpha-agent", expected=2)
+        self.post("refused", "--subthread", later.name, "--at", "2030-01-01 12:04", sender="bravo-agent", to="alpha-agent", expected=2)
         self.assertIn("must sort after its root", self.err)
 
     def test_promote_writes_both_messages_and_reports_json(self):

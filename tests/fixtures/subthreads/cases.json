@@ -1182,6 +1182,74 @@
    }
   },
   {
+   "id": "repair-keeps-state-header",
+   "auditRows": [
+    37
+   ],
+   "property": "S5",
+   "description": "The four-header rule: a replacement that keeps SUBTHREAD but drops SUBTHREAD-STATE is also refused.",
+   "files": [
+    {
+     "name": "2026-11-03_1000_alpha-agent_T001_root.txt",
+     "text": "FROM: alpha-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:00\nLANGUAGE: en\nREPLY-TO: -\nSTATUS: INFO\nPOSTED-AT: 2026-11-03T09:00:00.000Z\n---\nBody of root\n"
+    },
+    {
+     "name": "2026-11-03_1001_bravo-agent_T001_badresolve.txt",
+     "base64": "RlJPTTogYnJhdm8tYWdlbnQKVE86IGFsbApTQ09QRTogUk9PTQpST09NOiBnZW5lcmFsClRIUkVBRDogVDAwMS1kZW1vCkRBVEU6IDIwMjYtMTEtMDMgMTA6MDEKTEFOR1VBR0U6IGVuClJFUExZLVRPOiAyMDI2LTExLTAzXzEwMDBfYWxwaGEtYWdlbnRfVDAwMV9yb290LnR4dApTVEFUVVM6IElORk8KUE9TVEVELUFUOiAyMDI2LTExLTAzVDA5OjAxOjAwLjAwMFoKU1VCVEhSRUFEOiAyMDI2LTExLTAzXzEwMDBfYWxwaGEtYWdlbnRfVDAwMV9yb290LnR4dApTVUJUSFJFQUQtU1RBVEU6IHJlc29sdmVkCi0tLQpCb2R5IG9mIGJhZHJlc29sdmUK/w=="
+    },
+    {
+     "name": "2026-11-03_1002_bravo-agent_T001_amend-dddddddddddddddddddddddddddddddd.txt",
+     "text": "FROM: bravo-agent\nTO: all\nSCOPE: ROOM\nROOM: general\nTHREAD: T001-demo\nDATE: 2026-11-03 10:02\nLANGUAGE: en\nREPLY-TO: 2026-11-03_1000_alpha-agent_T001_root.txt\nSTATUS: INFO\nPOSTED-AT: 2026-11-03T09:02:00.000Z\nSUBTHREAD: 2026-11-03_1000_alpha-agent_T001_root.txt\n---\nBody of amend-dddddddddddddddddddddddddddddddd\n"
+    },
+    {
+     "name": "repairs/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.json",
+     "text": "{\"version\": 1, \"target\": \"rooms/general/2026-11-03_1001_bravo-agent_T001_badresolve.txt\", \"sha256\": \"6552b8a6ea0fb234c4f91018969d4e3ad1ea4f1d83db51d902cc4c6535d4d37a\", \"by\": \"bravo-agent\", \"at\": \"2026-11-03T10:30:00.000Z\", \"reason\": \"Bad bytes\", \"replacement\": \"rooms/general/2026-11-03_1002_bravo-agent_T001_amend-dddddddddddddddddddddddddddddddd.txt\"}"
+    }
+   ],
+   "expect": {
+    "files": {
+     "2026-11-03_1000_alpha-agent_T001_root.txt": {
+      "valid": true,
+      "error": null
+     },
+     "2026-11-03_1001_bravo-agent_T001_badresolve.txt": {
+      "valid": false,
+      "error": "'utf-8' codec can't decode byte 0xff in position 309: invalid start byte"
+     },
+     "2026-11-03_1002_bravo-agent_T001_amend-dddddddddddddddddddddddddddddddd.txt": {
+      "valid": true,
+      "error": null
+     }
+    },
+    "otherErrors": [
+     "repairs/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee.json: a replacement keeps the original's sub-thread headers: SUBTHREAD-STATE is resolved in the original and absent in the replacement"
+    ],
+    "warnings": [],
+    "orphans": [],
+    "membership": {
+     "2026-11-03_1000_alpha-agent_T001_root.txt": null,
+     "2026-11-03_1002_bravo-agent_T001_amend-dddddddddddddddddddddddddddddddd.txt": "2026-11-03_1000_alpha-agent_T001_root.txt"
+    },
+    "listed": [
+     "2026-11-03_1000_alpha-agent_T001_root.txt",
+     "2026-11-03_1002_bravo-agent_T001_amend-dddddddddddddddddddddddddddddddd.txt"
+    ],
+    "mainFlow": [
+     "2026-11-03_1000_alpha-agent_T001_root.txt"
+    ],
+    "subthreads": [
+     {
+      "root": "2026-11-03_1000_alpha-agent_T001_root.txt",
+      "state": "open",
+      "replies": 1,
+      "participants": [
+       "bravo-agent"
+      ]
+     }
+    ]
+   }
+  },
+  {
    "id": "concurrent-writers",
    "auditRows": [
     26

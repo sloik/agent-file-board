@@ -67,6 +67,7 @@ def cases():
                      "sha256": hashlib.sha256(broken_root[1].encode()).hexdigest(), "by": A, "at": "2026-11-03T10:00:00.000Z",
                      "reason": "Malformed output", "replacement": None}))
     broken_member = (member(1, "badbytes")[0], member(1, "badbytes")[1] + "\udcff")
+    broken_resolve = (member(1, "badresolve", **{"SUBTHREAD-STATE": "resolved"})[0], member(1, "badresolve", **{"SUBTHREAD-STATE": "resolved"})[1] + "\udcff")
     return [
         ("membership-explicit", [1, 4, 7, 40], "S1", "Only SUBTHREAD makes a member; plain replies to the root or a member stay in the main flow.",
          [ROOT_MSG, msg(1, B, "T001", "plain", reply=R), side, msg(3, A, "T001", "replytomember", reply=side[0]),
@@ -123,6 +124,9 @@ def cases():
         ("repair-keeps-headers", [37], "S5", "validate refuses a repair record whose replacement drops the original's sub-thread headers.",
          [ROOT_MSG, broken_member, msg(2, B, "T001", "amend-" + "a" * 32, reply=R),
           ("repairs/" + "b" * 32 + ".json", None)], {"repair": ("rooms/general/" + broken_member[0], "rooms/general/" + msg(2, B, "T001", "amend-" + "a" * 32, reply=R)[0])}),
+        ("repair-keeps-state-header", [37], "S5", "The four-header rule: a replacement that keeps SUBTHREAD but drops SUBTHREAD-STATE is also refused.",
+         [ROOT_MSG, broken_resolve, msg(2, B, "T001", "amend-" + "d" * 32, {"SUBTHREAD": R}, reply=R),
+          ("repairs/" + "e" * 32 + ".json", None)], {"repair": ("rooms/general/" + broken_resolve[0], "rooms/general/" + msg(2, B, "T001", "amend-" + "d" * 32, {"SUBTHREAD": R}, reply=R)[0])}),
         ("concurrent-writers", [26], "S5", "Two writers offline: one promotes into T002, the other opens T002 earlier and reopens the sub-thread. "
          "The merged board is valid; the displaced first message is a warning.",
          [ROOT_MSG, side, msg(17, A, "T002", "plan", {"PROMOTED-FROM": R, "TOPIC-TITLE": "Plan"}),

@@ -56,7 +56,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "2ab59440b67ace20f9e640e2eb2d6be2f351ae093206ea289b1d8212fd855542"
+      "sha256": "02bbd2e742d9c4f20f0def821e95d5370ee537fbfd6969a7f34d915930810a01"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
@@ -453,7 +453,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "97c4eb2e0b4b3c4b2233990c9f19fd17b85b766a9d383a9b0dfd58cd6b559810"
+      "sha256": "54ab7c5102be29eed241dd6d154099cc1011ac37ad98cc50dd3aed081825dd1d"
     },
     "tests/test_answer_state.py": {
       "path": "tests/test_answer_state.py",
@@ -600,7 +600,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "f17c735a7cffcdb4b5369c4f8bc9fb1de9f6af312021b5397d7ed9e43000a5fb"
+      "sha256": "4efd4eb9e4ae22c38eb46c8ed50283eaed647de1aa08d72d097be5cc7ebfd99a"
     },
     "formal/Subthreads.cfg": {
       "path": "formal/Subthreads.cfg",
@@ -677,28 +677,28 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "1e143e59e88b3e65492a2db050cab28808e5db5990b8590863e265d983062d0d"
+      "sha256": "6f9d35c028698d21154ea3ea84ff7c6ace344f72810e1bc5b49fd23472c7f53a"
     },
     "tests/test_subthreads.py": {
       "path": "tests/test_subthreads.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "c890aab752290413a8e20e30dbce4479d2a05e44cda4727fe450bbfe5259e490"
+      "sha256": "ac247222949303f36ab6dac3aba4c69dd247d603123d1d7a8ee97fde7635a3a2"
     },
     "tests/fixtures/subthreads/cases.json": {
       "path": "tests/fixtures/subthreads/cases.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "4d1e78f35479d45d6696e5608b6ec1b8c0d12851dc8c6ec8314abaed69d98e6c"
+      "sha256": "5368605b3c0df3e2abe6fefb828249e1ce7f12e946e065f946cdd42f75cc1298"
     },
     "scripts/build_subthread_cases.py": {
       "path": "scripts/build_subthread_cases.py",
       "selector": {
         "kind": "file"
       },
-      "sha256": "c75b39b335c28a216fdeb5cff7ed187f6a81650aaa777a6d0acae4fc6e74537b"
+      "sha256": "2f78574398b6de2f418787f6e99ce7eb979f9a204fa88d023d975b551eb6c72f"
     },
     "message_repairs.py": {
       "path": "message_repairs.py",
@@ -713,7 +713,7 @@
         "kind": "python",
         "name": "subthread_check"
       },
-      "sha256": "ab8883a1cf492089c02a3ee113bb987d27234684676a8d9eb60828ae1594e1de"
+      "sha256": "392ffd8a684a9fb669a0a52a163910ac2d00e967f751ff8468bde4414e37d71d"
     },
     "subthread-check-message": {
       "path": "boardctl.py",
@@ -729,7 +729,7 @@
         "kind": "python",
         "name": "command_post"
       },
-      "sha256": "7079f6bc3dc04bbf7522c3f9208bcbd4e67fc65670d3eb96613ad40a388f1404"
+      "sha256": "494f8ce00aaefc2cf5f400464563e22d9a735ef3760ec4447377672e9b569889"
     },
     "subthread-promote": {
       "path": "boardctl.py",
@@ -2618,7 +2618,7 @@
     },
     {
       "module": "Subthreads.tla",
-      "review": "2026-11-03 (SPEC-002-079): New hand-written bounded model of sub-threads (convention 3.4.1). Reviewed against boardctl subthread_check, check_message, command_post, command_promote, next_thread, message_order, subthread_warnings, validate_report, subthread_summaries, command_recent and answer_workflow.scan. The collector runs the real commands on two board copies and a shared folder; three positive traces conform and eight implementation mutants are rejected by TraceConforms. Acceptance reuses AnswerAcceptance!Projection as a contract (S8), not composed behaviours; AnswerAcceptance.tla is unchanged. The fixed refusal order is a symmetry reduction: a refusal writes nothing. Faithful TLC: 63,417 distinct states.",
+      "review": "2026-11-03 (SPEC-002-079): New hand-written bounded model of sub-threads (convention 3.4.1). Reviewed against boardctl subthread_check, check_message, command_post, command_promote, next_thread, message_order, subthread_warnings, validate_report, subthread_summaries, command_recent and answer_workflow.scan. The collector runs the real commands on two board copies and a shared folder; three positive traces conform and eight implementation mutants are rejected by TraceConforms. Acceptance reuses AnswerAcceptance!Projection as a contract (S8), not composed behaviours; AnswerAcceptance.tla is unchanged. The fixed refusal order is a symmetry reduction: a refusal writes nothing. Faithful TLC: 65,043 distinct states.",
       "states": {
         "state": {
           "anchors": [
@@ -2913,6 +2913,14 @@
             "formal/collect_subthreads.py"
           ],
           "reason": "Candidates post accepts."
+        },
+        "HandFirstRefused": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "A hand-written PROMOTED-FROM post refused because the topic already has a message in the copy."
         },
         "Init": {
           "anchors": [

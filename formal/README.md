@@ -248,8 +248,9 @@ order. Fourteen candidate messages have fixed headers and a fixed canonical post
 ten that `post` accepts and four it must refuse (a nested member, a member replying
 outside its sub-thread, a member sorting before its root and an unmarked answer to a
 member question). `promote` is two writes; the second may fail, after which the
-resolving member can be posted by hand. The faithful configuration explores 63,417
-distinct states. The four refused attempts are tried in a fixed order: a refusal writes
+resolving member can be posted by hand. A hand-written `PROMOTED-FROM` post is refused
+while its topic already has a message in the writer's copy. The faithful configuration
+explores 65,043 distinct states. The four refused attempts are tried in a fixed order: a refusal writes
 nothing, so this removes only equivalent interleavings.
 
 Each copy's observations are the production views: valid files, members of the root,

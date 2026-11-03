@@ -7,7 +7,8 @@
    ten that post accepts and four that post must refuse. Each candidate is posted at most
    once. Every accepted file reaches the other copy at any time, so files arrive in any
    order. `boardctl promote` is two writes (f, then z); the second may fail, after which
-   z can still be posted by hand. One root (r) has a sub-thread; acceptance is observed
+   z can still be posted by hand. A hand-written PROMOTED-FROM post of f is refused while
+   the topic has a message in w1's copy. One root (r) has a sub-thread; acceptance is observed
    for the two questions r and m1.
 
    Candidates (Rank, author, headers):
@@ -168,7 +169,8 @@ Post(s, t, w, m) ==
 \* promote, first write: the new topic's first message. It allocates a topic number that is
 \* free in its own copy, so it is disabled once g is visible to w1 (it would pick T3).
 PromoteFirst(s, t) ==
-  /\ s.phase = "idle" /\ Need("f") \subseteq s.view["w1"] /\ PostOk("f", s.view["w1"], Mutation)
+  /\ s.phase = "idle" /\ "f" \notin s.posted \cup s.refused
+  /\ Need("f") \subseteq s.view["w1"] /\ PostOk("f", s.view["w1"], Mutation)
   /\ t = Refresh(s, [s EXCEPT !.posted = @ \cup {"f"}, !.board = @ \cup {"f"},
                               !.view["w1"] = @ \cup {"f"}, !.phase = "half"],
                  "w1", "f")
@@ -184,10 +186,17 @@ PromoteFails(s, t) ==
      /\ t = Refresh(s, [s EXCEPT !.phase = "failed",
                                  !.board = IF delete THEN @ \ {"f"} ELSE @,
                                  !.view["w1"] = IF delete THEN @ \ {"f"} ELSE @], "w1", "none")
+\* A hand-written first message (post --promoted-from) where post must refuse it, because the
+\* topic already has a message in w1's copy. An accepted hand-written one is the same file as
+\* promote's first write and is not modelled separately.
+HandFirstRefused(s, t) ==
+  /\ "f" \notin s.posted \cup s.refused /\ Need("f") \subseteq s.view["w1"]
+  /\ ~PostOk("f", s.view["w1"], Mutation)
+  /\ t = [s EXCEPT !.refused = @ \cup {"f"}]
 Deliver(s, t, w, m) ==
   /\ m \in s.board \ s.view[w]
   /\ t = Refresh(s, [s EXCEPT !.view[w] = @ \cup {m}], w, m)
-Step(s, t) == \/ PromoteFirst(s, t) \/ PromoteSecond(s, t) \/ PromoteFails(s, t)
+Step(s, t) == \/ PromoteFirst(s, t) \/ PromoteSecond(s, t) \/ PromoteFails(s, t) \/ HandFirstRefused(s, t)
               \/ \E w \in Writers, m \in Msgs: Post(s, t, w, m) \/ Deliver(s, t, w, m)
 
 Typed(s) == /\ \A k \in {s.posted, s.board, s.refused, s.claims}: k \subseteq Msgs

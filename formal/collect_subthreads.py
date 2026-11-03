@@ -42,8 +42,8 @@ MUTANTS = {
     'reply closure skipped': ('boardctl', [
         ('                if target is not None and target.get("SUBTHREAD") != sub:', '                if False:')]),
     'last arrival wins': ('boardctl', [
-        ('        members.sort(key=lambda item: item[0])',
-         '        members.sort(key=lambda item: Path(item[1]["path"]).stat().st_mtime_ns if Path(item[1]["path"]).exists() else 0)')]),
+        ('            members.append((message_order(headers, path, config), {"path": str(path.relative_to(root)),',
+         '            members.append(((path.stat().st_mtime_ns,), {"path": str(path.relative_to(root)),')]),
     'PROMOTED-FROM accepted on a non-first message': ('boardctl', [
         ('                if thread_id(other) == own_thread:\n                    raise ValueError(f"PROMOTED-FROM: only the first',
          '                if False:\n                    raise ValueError(f"PROMOTED-FROM: only the first')]),
