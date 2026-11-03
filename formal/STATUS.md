@@ -64,6 +64,7 @@ states the maintained abstraction and the remaining correspondence boundary.
 | Canonical / PrivateRecovery | Normal/no-op/stale/error saves, orphan/crash refusal and inspected retry | Seven actual runtime/filesystem traces, two implementation mutants, four TLC configs |
 | UI and Canonical / AnswerAcceptance (independently verified in each repository) | First accepted answer, concurrent roots, explicit conflict resolution and signing eligibility | Nine positive implementation traces, four implementation mutants, six TLC configs per repository |
 | Canonical / RoomHistory | Trusted inventories, deletion/edit detection, shared removal and replay, revocation and pins, acknowledgement lapse, forget, automatic recording on signed posts | Eleven production CLI traces, six implementation mutants, nine TLC configs |
+| Canonical / Subthreads | Explicit membership, one-level nesting, reply closure, state by canonical order under any arrival order, monotonic validity with two offline writers, append-only two-write promote, answers following their question, acceptance contract with AnswerAcceptance. One room, two writers, fourteen fixed candidate messages | Three production CLI traces over two board copies, eight implementation mutants, ten TLC configs; signing, quarantine and wording are unit-tested and in the shared fixture, not modelled |
 
 The UI and canonical repositories each verify their own AnswerAcceptance model
 and implementation bridge independently. Exact current case and trace inventories

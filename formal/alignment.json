@@ -49,14 +49,14 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "91d44376ecc59002790fd357f271c6ceb09345af2310ea28fa2d743e67a91780"
+      "sha256": "2f8734c02a0724889f3ac3541488177705af239a1d64a356c7300152bffd7cda"
     },
     "formal/README.md": {
       "path": "formal/README.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "703d6ce6f65cda913f26acb00c86546184bf582b539c57f84bb646648598f1f9"
+      "sha256": "2ab59440b67ace20f9e640e2eb2d6be2f351ae093206ea289b1d8212fd855542"
     },
     "formal/ALIGNMENT.md": {
       "path": "formal/ALIGNMENT.md",
@@ -229,7 +229,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "bda78a105c0c9ac1eb8e5cc1b0826d4f3380f33abe7317c1a49504de94ecb64c"
+      "sha256": "bd858614a99f76bc4eeab4361752f73c97844dcdc82993015c2a3e90610b9eed"
     },
     "formal/PrivateRecovery.tla": {
       "path": "formal/PrivateRecovery.tla",
@@ -285,21 +285,21 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "e0ca6a11f8f43fa340eed99dc586882666f7fbd3343ee091937add98ba0d72e7"
+      "sha256": "d0fac6563739b57d5cd9a013d87bff1e9a4e63880aeb372e429de4e1da808862"
     },
     "formal/STATUS.md": {
       "path": "formal/STATUS.md",
       "selector": {
         "kind": "file"
       },
-      "sha256": "bed54a67f0cd9aa1eaa2e3ed1b6e93506d198fc1751fec3dd553d9c5403d01da"
+      "sha256": "33236b4d5eecb984054815b610b011ac600fd73dc2f74ca1fc9f67f02e2f0dd3"
     },
     "formal/trace_contracts.json": {
       "path": "formal/trace_contracts.json",
       "selector": {
         "kind": "file"
       },
-      "sha256": "65b32af0b3148cebb9983845d254dbe0d94685f4663945d13635e0261dc777ec"
+      "sha256": "4639ef11fd8d52e9b7ccb6e997dfb956058cc2b6abeddff239d35592f55c2a7e"
     },
     "formal/collect_private_state.py": {
       "path": "formal/collect_private_state.py",
@@ -453,7 +453,7 @@
       "selector": {
         "kind": "file"
       },
-      "sha256": "cb5dcdb58bc6123848f24d65344443d5442f9ced880573c79be6a44aad7a2fb7"
+      "sha256": "97c4eb2e0b4b3c4b2233990c9f19fd17b85b766a9d383a9b0dfd58cd6b559810"
     },
     "tests/test_answer_state.py": {
       "path": "tests/test_answer_state.py",
@@ -594,12 +594,212 @@
         "kind": "file"
       },
       "sha256": "ecbfa707d5b6a51b9e50d6bb1c007926411f1287ebbbfbd5497d4a4d1df80a00"
+    },
+    "formal/Subthreads.tla": {
+      "path": "formal/Subthreads.tla",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "f17c735a7cffcdb4b5369c4f8bc9fb1de9f6af312021b5397d7ed9e43000a5fb"
+    },
+    "formal/Subthreads.cfg": {
+      "path": "formal/Subthreads.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "128338c605fd6a263823434f6e28f16de3e1061e626a15729238e8011dbca61c"
+    },
+    "formal/SubthreadsReachable.cfg": {
+      "path": "formal/SubthreadsReachable.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "8d2632c3c57202f6bd0ce65b36e3b436010a188c3af9e2d2917b2f928e544613"
+    },
+    "formal/SubthreadsBadMembership.cfg": {
+      "path": "formal/SubthreadsBadMembership.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "02ba4a3735859103d581071b039e32f6a03e5cc0248a1d4c2c622f7828802fb2"
+    },
+    "formal/SubthreadsBadNesting.cfg": {
+      "path": "formal/SubthreadsBadNesting.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "834eb809b9b21f940e5a8661369a5484e56ae119924c8168bb2b834177e58560"
+    },
+    "formal/SubthreadsBadReplyTo.cfg": {
+      "path": "formal/SubthreadsBadReplyTo.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "71fc063cc99390e59f8c13f5e261af9d532ee276ef28afa631a615c8e00630e5"
+    },
+    "formal/SubthreadsBadState.cfg": {
+      "path": "formal/SubthreadsBadState.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "718eab61df1f737d48f021d1f08a006b949f0ed1816cc716bc4a8b5383a5f8f4"
+    },
+    "formal/SubthreadsBadFirst.cfg": {
+      "path": "formal/SubthreadsBadFirst.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "ab53a92e7b26550403f877b188ac1e48fc04eb8c5c5188e76fe223d1ebc9c7bf"
+    },
+    "formal/SubthreadsBadPromote.cfg": {
+      "path": "formal/SubthreadsBadPromote.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "92a8c9ab7bba0673ac210423680260f13c5fe617b92bc16a24f4985b020c4fe1"
+    },
+    "formal/SubthreadsBadAnswer.cfg": {
+      "path": "formal/SubthreadsBadAnswer.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "5c3d74600a754a04b0397d97dfca949217d32c12e7fa59e02611736592e0f138"
+    },
+    "formal/SubthreadsBadAcceptance.cfg": {
+      "path": "formal/SubthreadsBadAcceptance.cfg",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "42f79fb309ff85fc2993182598d5e57921e45c1876a67b4e75ba24fd32dd6888"
+    },
+    "formal/collect_subthreads.py": {
+      "path": "formal/collect_subthreads.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "1e143e59e88b3e65492a2db050cab28808e5db5990b8590863e265d983062d0d"
+    },
+    "tests/test_subthreads.py": {
+      "path": "tests/test_subthreads.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c890aab752290413a8e20e30dbce4479d2a05e44cda4727fe450bbfe5259e490"
+    },
+    "tests/fixtures/subthreads/cases.json": {
+      "path": "tests/fixtures/subthreads/cases.json",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "4d1e78f35479d45d6696e5608b6ec1b8c0d12851dc8c6ec8314abaed69d98e6c"
+    },
+    "scripts/build_subthread_cases.py": {
+      "path": "scripts/build_subthread_cases.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "c75b39b335c28a216fdeb5cff7ed187f6a81650aaa777a6d0acae4fc6e74537b"
+    },
+    "message_repairs.py": {
+      "path": "message_repairs.py",
+      "selector": {
+        "kind": "file"
+      },
+      "sha256": "407f2d7f89b9d99595802eadce6870164727263fcac4161f17e6acfdd9f73729"
+    },
+    "subthread-check": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "subthread_check"
+      },
+      "sha256": "ab8883a1cf492089c02a3ee113bb987d27234684676a8d9eb60828ae1594e1de"
+    },
+    "subthread-check-message": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "check_message"
+      },
+      "sha256": "0c8583438382814d47993d315e0b7b5490ccf0048fa8bf643524dbb0f091b4f8"
+    },
+    "subthread-post": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "command_post"
+      },
+      "sha256": "7079f6bc3dc04bbf7522c3f9208bcbd4e67fc65670d3eb96613ad40a388f1404"
+    },
+    "subthread-promote": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "command_promote"
+      },
+      "sha256": "625f3d72984e9380371c3258f565d2eaa21dc52f30fa2a9cd39a68525432f385"
+    },
+    "subthread-next-thread": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "next_thread"
+      },
+      "sha256": "a60e41b1455b21aabafd265c2ab9753c73c3f4811c841463b4a40d994b008f66"
+    },
+    "subthread-message-order": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "message_order"
+      },
+      "sha256": "2adfe7be1c5104e168c0af6d3a86a02f76c9615e9978ea3f0f48b55028c664f9"
+    },
+    "subthread-warnings": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "subthread_warnings"
+      },
+      "sha256": "d451fce0218cd82a4e0220471f5f7e71d375619206eecc55f94302b24734722a"
+    },
+    "subthread-validate": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "validate_report"
+      },
+      "sha256": "a36911ba1e740b3a77087fea73e0dd9b2f13e45e46640b2f52601222f0fbd339"
+    },
+    "subthread-summaries": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "subthread_summaries"
+      },
+      "sha256": "20107730a26e6ab55e097b23a7547c374bfbf64cc305008230d70297cd0cd07a"
+    },
+    "subthread-recent": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "command_recent"
+      },
+      "sha256": "d0af3d9a1084e30dd7abb60028d95b9d8b228e4982d06b665b025899aa818305"
+    },
+    "subthread-parse": {
+      "path": "boardctl.py",
+      "selector": {
+        "kind": "python",
+        "name": "parse_message"
+      },
+      "sha256": "3ca1f1c38ad5612a420e43a7f552ed05ade71585c9bb6f1052c424441bdc7563"
     }
   },
   "models": [
     {
       "module": "PrivateState.tla",
-      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified.",
+      "review": "Reviewed Session.save serialization and expected-byte replacement against deterministic concurrent-writer and cleanup controls; retain original safety/liveness checks. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Sub-thread proof review 2026-11-03 (SPEC-002-079): suite.json, trace_contracts.json, collect_traces.py and verification.json only gained the Subthreads cases, contract, collector call, traced-model entry and the test_subthreads.py regression command; formal README and STATUS gained the Subthreads section and row. This model's cases, scenarios, mutants, invariants, bounds and documented semantics are unchanged.",
       "states": {
         "disk": {
           "anchors": [
@@ -901,7 +1101,7 @@
     },
     {
       "module": "Publication.tla",
-      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Review 2026-10-23 (SPEC-002-062 follow-up): signing publish prints an advisory room-history notice on stderr after publish() returns; publish, guards, sidecar/message order and output JSON are unchanged. Key location review 2026-10-23 (SPEC-002-066): signing_commands.py only makes keygen --output optional (signing_usability.py supplies the conventional default path) and passes the project root to the revoked-key refusal text; publish, publish_atomic, guards, verification, trust, eligibility and publication order are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified.",
+      "review": "Reviewed publish/publish_atomic and sequential authorization observations against exact-byte, stale-context and failure regressions. Preserve observation/commit and sidecar/message separation. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. Runtime trace review 2026-10-22: bounded production action observations now instantiate the unchanged original Init/Next and all faithful safety invariants; required positive witnesses and implementation-only mutants are independently checked by TLC. Temporal fairness and universal refinement are not inferred from finite traces. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Review 2026-10-23 (SPEC-002-062 follow-up): signing publish prints an advisory room-history notice on stderr after publish() returns; publish, guards, sidecar/message order and output JSON are unchanged. Key location review 2026-10-23 (SPEC-002-066): signing_commands.py only makes keygen --output optional (signing_usability.py supplies the conventional default path) and passes the project root to the revoked-key refusal text; publish, publish_atomic, guards, verification, trust, eligibility and publication order are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Sub-thread proof review 2026-11-03 (SPEC-002-079): suite.json, trace_contracts.json, collect_traces.py and verification.json only gained the Subthreads cases, contract, collector call, traced-model entry and the test_subthreads.py regression command; formal README and STATUS gained the Subthreads section and row. This model's cases, scenarios, mutants, invariants, bounds and documented semantics are unchanged.",
       "states": {
         "policy": {
           "anchors": [
@@ -1314,7 +1514,7 @@
     },
     {
       "module": "PrivateRecovery.tla",
-      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified.",
+      "review": "Reviewed saved/no-op/stale/error/orphan/owned-child-crash traces and inspected recovery. Expected-byte bypass and lock theft runtime mutants must fail even after hash refresh. Reporting review 2026-10-22: the status orchestrator preserves every existing behavior/trace/TLC command and strict counterexample gate; weekly CI and timestamp/input-bound reports add no model or runtime semantic changes. Freshness and phase-failure controls remain separate from behavioral refinement. TLC harness review: Java standard-module extraction is scoped to each owned invocation directory; invariant/counterexample acceptance and all model semantics are unchanged. Monitoring/exploration review 2026-10-22: read-only daily freshness monitor and deterministic bounded schedules add evidence without changing model semantics, source-baseline policy or existing positive/mutation obligations. Coverage documents real versus simulated boundaries. CI setup review 2026-10-22: only network preparation gains two bounded attempts and owned process-group cleanup within the existing phase cap. Model actions/invariants, regression commands, trace inventories and counterexample acceptance are unchanged; normal test checks remain mandatory. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Sub-thread proof review 2026-11-03 (SPEC-002-079): suite.json, trace_contracts.json, collect_traces.py and verification.json only gained the Subthreads cases, contract, collector call, traced-model entry and the test_subthreads.py regression command; formal README and STATUS gained the Subthreads section and row. This model's cases, scenarios, mutants, invariants, bounds and documented semantics are unchanged.",
       "states": {
         "state": {
           "anchors": [
@@ -1622,7 +1822,7 @@
     },
     {
       "module": "AnswerAcceptance.tla",
-      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit, preserving current signing authorization guards. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions. SPEC-002-042: acceptance dependency is imported eagerly with the canonical metadata module for isolated extracted readers. Data-only resolver/model/trace semantics are unchanged; a real isolated-interpreter consumer regression runs in the formal dependency phase. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: boardctl.py only registers the separate history subcommand (room_history.py); answer parsing, acceptance resolution, eligibility and posting paths are unchanged. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Gallery hint review 2026-10-23: boardctl post prints an advisory stderr hint after publication when a UI report has several separate image components; message bytes, validation, acceptance and posting paths are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. boardctl.py post gained --new-room/--new-thread creation assertions, creation-time policy writes (existing signing require path, new room_history setting) before signing, and advisory history notices after publication; answer parsing, acceptance resolution, eligibility, signing guards and publication order are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Review 2026-10-23 (SPEC-002-062 follow-up): signing publish prints an advisory room-history notice on stderr after publish() returns; publish, guards, sidecar/message order and output JSON are unchanged. boardctl.py only passes the record flag to the creation preflight. Key location review 2026-10-23 (SPEC-002-066): signing_commands.py only makes keygen --output optional (signing_usability.py supplies the conventional default path) and passes the project root to the revoked-key refusal text; publish, publish_atomic, guards, verification, trust, eligibility and publication order are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Sub-thread review 2026-11-03 (SPEC-002-076): boardctl.py gains optional SUBTHREAD, SUBTHREAD-ALSO, SUBTHREAD-STATE and PROMOTED-FROM headers: one validation helper (subthread_check) called from check_message and command_post, a promote command that runs two ordinary command_post calls, extra recent fields and filters, and validate warnings for orphaned members. Reviewed against the abstraction: acceptance resolution (answer_state, answer_workflow.scan), the reducer's inputs, eligibility, signing guards, ANSWER-STATE placement and publication order are unchanged, and answer_workflow.py is untouched; `answers accept` still routes through command_post, which now adds the sub-thread marker to an answer whose question is a sub-thread member. check_message gains new rejections that apply only to messages carrying the new headers (an ANSWER or ANSWER-STATE to a member question without that marker is now invalid, so scan() skips it as it skips any invalid answer); messages without the headers validate exactly as before. Acceptance counts answers independently of the marker. recent gained optional sub-thread fields/filters and a repair replacement must keep the original's sub-thread headers; neither touches answer resolution. Verification order: the alignment checker gates formal/check.py, so the pin was moved to the reviewed bytes first and the gates were then run on those exact bytes locally (JDK 27; CI uses JDK 25): formal/check.py (TLC cases and counterexample controls) exit 0, formal/check_traces.py (trace conformance and mutants) exit 0, formal unit tests 51 OK, and tests/test_answer_state.py, tests/test_message_extensions.py and tests/test_subthreads.py pass. CI re-runs them on the merge.",
+      "review": "2026-10-22: Reviewed source-bound immutable acceptance DAG, inherited winners, legacy explicit anchoring, eligibility blocking and author-only resolution against real reducer traces and unit/browser/CLI tests. Existing signing guard placement and exact-byte packet binding remain intact; first claim is inserted before signing. Reviewed explicit legacy anchoring, a third late offline claim and unauthorized-resolution mutation. Signed portable publication rechecks the exact question digest before each commit, preserving current signing authorization guards. Graph depth is measured using cached ancestor heights as well as traversal depth, so the 128-level refusal is independent of enumeration and memoization; both orders have boundary unit regressions. SPEC-002-042: acceptance dependency is imported eagerly with the canonical metadata module for isolated extracted readers. Data-only resolver/model/trace semantics are unchanged; a real isolated-interpreter consumer regression runs in the formal dependency phase. Adoption documentation review 2026-10-22: coverage inventory now includes independently checked AnswerAcceptance in both projects and points to maintained configuration/trace inventories instead of stale aggregate counts. No model, trace, mutation or verification behavior changes. Room history review 2026-10-23: boardctl.py only registers the separate history subcommand (room_history.py); answer parsing, acceptance resolution, eligibility and posting paths are unchanged. Room history review 2026-10-23: suite.json, trace_contracts.json and collect_traces.py only gained the separate RoomHistory cases, contract and collector; this model's cases, scenarios, mutants and invariants are unchanged. verification.json additionally lists RoomHistory as a traced model and runs test_room_history.py in the regressions phase; existing phases and commands are unchanged. Documentation review 2026-10-23: formal README and STATUS gained the RoomHistory section and coverage row only; this model's documented bounds and semantics are unchanged. Gallery hint review 2026-10-23: boardctl post prints an advisory stderr hint after publication when a UI report has several separate image components; message bytes, validation, acceptance and posting paths are unchanged. Signing usability review 2026-10-23 (SPEC-002-049): new keygen/require/check commands in signing_usability.py; refusal texts on signing paths keep their original prefixes and append the next command; a missing profile is refused earlier with a clearer message; verification, trust, eligibility, guards and publication order unchanged. Automatic room history review 2026-10-23 (SPEC-002-062): trace_contracts.json gained three RoomHistory positive scenarios and two RoomHistory mutants and verification.json runs tests/test_history_recording.py in the regressions phase; this model's cases, scenarios, mutants and invariants are unchanged. boardctl.py post gained --new-room/--new-thread creation assertions, creation-time policy writes (existing signing require path, new room_history setting) before signing, and advisory history notices after publication; answer parsing, acceptance resolution, eligibility, signing guards and publication order are unchanged. Documentation review 2026-10-23 (SPEC-002-062): formal README and STATUS changed only in the RoomHistory section and row; this model's documented bounds and semantics are unchanged. Review 2026-10-23 (SPEC-002-062 follow-up): signing publish prints an advisory room-history notice on stderr after publish() returns; publish, guards, sidecar/message order and output JSON are unchanged. boardctl.py only passes the record flag to the creation preflight. Key location review 2026-10-23 (SPEC-002-066): signing_commands.py only makes keygen --output optional (signing_usability.py supplies the conventional default path) and passes the project root to the revoked-key refusal text; publish, publish_atomic, guards, verification, trust, eligibility and publication order are unchanged. Dependency review 2026-10-26 (Renovate #6): cryptography 50.0.1 to 50.0.2 changes only wheel builds (OpenSSL 4.0.3, PyO3 0.29.2, free-threaded 3.15 wheels); no API or signing semantics change, so no model change. Behavior tests, traces and TLC re-run in CI before merge. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #7): formal and watchdog lanes move from Python 3.12 to 3.15. Interpreter-only change; no model, collector or checker semantics change. The CI run on this exact merge must pass every alignment, behavior, trace and TLC gate under 3.15 before merge. The normal unit matrix stays 3.10 to 3.13. Dependency review 2026-10-26 (Renovate #8): the formal lane JDK moves from Temurin 17 to 25 for the unchanged pinned TLC jar. Runtime-only change; no model, config, collector or checker semantics change. The CI run on this exact merge must pass every TLC configuration, trace and counterexample control under JDK 25 before merge, with the per-invocation java.io.tmpdir isolation preserved. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Dependency review 2026-10-26 (Renovate #9): actions/upload-artifact v4 to v7 for the formal status reports. v7 adds an opt-in unzipped direct-upload mode and moves to ESM; the workflow keeps archive mode, the two explicit files and include-hidden-files true. Upload transport only; no model or checker semantics change. Before merge, the artifact from this exact merge must download with both .formal-status files and inspect as current and verified. Sub-thread review 2026-11-03 (SPEC-002-076): boardctl.py gains optional SUBTHREAD, SUBTHREAD-ALSO, SUBTHREAD-STATE and PROMOTED-FROM headers: one validation helper (subthread_check) called from check_message and command_post, a promote command that runs two ordinary command_post calls, extra recent fields and filters, and validate warnings for orphaned members. Reviewed against the abstraction: acceptance resolution (answer_state, answer_workflow.scan), the reducer's inputs, eligibility, signing guards, ANSWER-STATE placement and publication order are unchanged, and answer_workflow.py is untouched; `answers accept` still routes through command_post, which now adds the sub-thread marker to an answer whose question is a sub-thread member. check_message gains new rejections that apply only to messages carrying the new headers (an ANSWER or ANSWER-STATE to a member question without that marker is now invalid, so scan() skips it as it skips any invalid answer); messages without the headers validate exactly as before. Acceptance counts answers independently of the marker. recent gained optional sub-thread fields/filters and a repair replacement must keep the original's sub-thread headers; neither touches answer resolution. Verification order: the alignment checker gates formal/check.py, so the pin was moved to the reviewed bytes first and the gates were then run on those exact bytes locally (JDK 27; CI uses JDK 25): formal/check.py (TLC cases and counterexample controls) exit 0, formal/check_traces.py (trace conformance and mutants) exit 0, formal unit tests 51 OK, and tests/test_answer_state.py, tests/test_message_extensions.py and tests/test_subthreads.py pass. CI re-runs them on the merge. Sub-thread proof review 2026-11-03 (SPEC-002-079): boardctl.py changed only in sub-thread rules (subthread_check: member after root and PROMOTED-FROM first-message at post time, EXTENSION-ANSWER follows its question; validate warnings; recent --subthreads summaries over all eligible members), a post-time root eligibility check before signing, file paths in DATE and UTF-8 errors, and repair delegating the header comparison to message_repairs. Acceptance resolution (answer_state, answer_workflow.scan), ANSWER-STATE placement, signing guards and publication order are unchanged; answer_workflow.py is untouched. Sub-thread proof review 2026-11-03 (SPEC-002-079): suite.json, trace_contracts.json, collect_traces.py and verification.json only gained the Subthreads cases, contract, collector call, traced-model entry and the test_subthreads.py regression command; formal README and STATUS gained the Subthreads section and row. This model's cases, scenarios, mutants, invariants, bounds and documented semantics are unchanged.",
       "states": {
         "state": {
           "anchors": [
@@ -1887,7 +2087,7 @@
     },
     {
       "module": "RoomHistory.tla",
-      "review": "2026-10-23: Reviewed against room_history.Checkpoint (status, verify, key_status, entry, acknowledgement overlay), observe/acknowledge/forget commands and private save discipline. Bounded production traces drive the real CLI on signed boards; four implementation mutants are rejected by TLC. Private save locking reuses signing_runtime._state_write_lock and the expected-byte replacement already modelled by PrivateState and PrivateRecovery. Documentation review 2026-10-23: README and STATUS describe this model's bounds, invariants, fault variants and traces as implemented. Review 2026-10-23: candidate ordering moved into room_history.candidate_order (same key) with direct and scan-level tests; modelled expectations, status, trust and acknowledgement behavior unchanged. Review 2026-10-23 (3.1): export/import learn only through the same pinned-current verification (import is an Observe by a trusted key; unfamiliar imports are staged until the existing accept rule); rebind copies a checkpoint for the same board UUID to a new path key without merging; neutral now means all sources unpinned (not modelled). Modelled expectations, trust, revocation and acknowledgement behavior unchanged; traces and mutants rerun. Review 2026-10-23 (SPEC-002-062): new composite action PostRecorded = Post then the existing Observe (same guards: trusted key, no anomaly), else Post alone; matches history_recording.after_post, which runs room_history.observe unchanged after publication and skips recording when the poster's own key is not pinned. room_history.py only gained the history policy subcommand and status annotation (recordedBy, recording, trustHint); Checkpoint, observe, trust, revocation and acknowledgement behavior unchanged. Three production traces drive the real boardctl post path (recorded, refused by anomaly, unpinned). Existing mutation anchors unchanged; two new implementation mutants in history_recording.py (recording that blesses an anomaly, recording with an unapproved own key) are rejected by TraceConforms. Follow-up 2026-10-23: the creation preflight also parses room_history; signing publish reports not recorded; PostRecorded unchanged, traces and mutants rerun.",
+      "review": "2026-10-23: Reviewed against room_history.Checkpoint (status, verify, key_status, entry, acknowledgement overlay), observe/acknowledge/forget commands and private save discipline. Bounded production traces drive the real CLI on signed boards; four implementation mutants are rejected by TLC. Private save locking reuses signing_runtime._state_write_lock and the expected-byte replacement already modelled by PrivateState and PrivateRecovery. Documentation review 2026-10-23: README and STATUS describe this model's bounds, invariants, fault variants and traces as implemented. Review 2026-10-23: candidate ordering moved into room_history.candidate_order (same key) with direct and scan-level tests; modelled expectations, status, trust and acknowledgement behavior unchanged. Review 2026-10-23 (3.1): export/import learn only through the same pinned-current verification (import is an Observe by a trusted key; unfamiliar imports are staged until the existing accept rule); rebind copies a checkpoint for the same board UUID to a new path key without merging; neutral now means all sources unpinned (not modelled). Modelled expectations, trust, revocation and acknowledgement behavior unchanged; traces and mutants rerun. Review 2026-10-23 (SPEC-002-062): new composite action PostRecorded = Post then the existing Observe (same guards: trusted key, no anomaly), else Post alone; matches history_recording.after_post, which runs room_history.observe unchanged after publication and skips recording when the poster's own key is not pinned. room_history.py only gained the history policy subcommand and status annotation (recordedBy, recording, trustHint); Checkpoint, observe, trust, revocation and acknowledgement behavior unchanged. Three production traces drive the real boardctl post path (recorded, refused by anomaly, unpinned). Existing mutation anchors unchanged; two new implementation mutants in history_recording.py (recording that blesses an anomaly, recording with an unapproved own key) are rejected by TraceConforms. Follow-up 2026-10-23: the creation preflight also parses room_history; signing publish reports not recorded; PostRecorded unchanged, traces and mutants rerun. Sub-thread proof review 2026-11-03 (SPEC-002-079): suite.json, trace_contracts.json, collect_traces.py and verification.json only gained the Subthreads cases, contract, collector call, traced-model entry and the test_subthreads.py regression command; formal README and STATUS gained the Subthreads section and row. This model's cases, scenarios, mutants, invariants, bounds and documented semantics are unchanged.",
       "states": {
         "state": {
           "anchors": [
@@ -2415,6 +2615,891 @@
         "formal/collect_traces.py"
       ],
       "limits": "Two messages and one signer key. Sidecar loss, conflicting commitments, multiple sources, flooding budgets, capacity and format validation are covered by unit tests, not this model. Bounded sampled traces, not a refinement proof; cryptography and filesystem atomicity are outside the model."
+    },
+    {
+      "module": "Subthreads.tla",
+      "review": "2026-11-03 (SPEC-002-079): New hand-written bounded model of sub-threads (convention 3.4.1). Reviewed against boardctl subthread_check, check_message, command_post, command_promote, next_thread, message_order, subthread_warnings, validate_report, subthread_summaries, command_recent and answer_workflow.scan. The collector runs the real commands on two board copies and a shared folder; three positive traces conform and eight implementation mutants are rejected by TraceConforms. Acceptance reuses AnswerAcceptance!Projection as a contract (S8), not composed behaviours; AnswerAcceptance.tla is unchanged. The fixed refusal order is a symmetry reduction: a refusal writes nothing. Faithful TLC: 63,417 distinct states.",
+      "states": {
+        "state": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "One record per observed step: two board copies, a shared folder and the production reads of the changed copy."
+        },
+        "state.accept": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "answers inspect status and winner for each question present and valid in the copy."
+        },
+        "state.board": {
+          "anchors": [
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Files in the shared folder, mirrored from each writer's own copy (deletions included)."
+        },
+        "state.claims": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Posted answers whose file carries the first ANSWER-STATE claim, as post decided from the writer's own copy."
+        },
+        "state.intact": {
+          "anchors": [
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Every file in every copy and the shared folder has the bytes it was written with."
+        },
+        "state.main": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "recent --main-flow rows: non-members plus SUBTHREAD-ALSO members."
+        },
+        "state.members": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "recent rows whose subthread field is the root: explicit SUBTHREAD only."
+        },
+        "state.phase": {
+          "anchors": [
+            "subthread-promote",
+            "subthread-next-thread",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Progress of promote: idle, after the first write (observed between its two command_post calls), failed or done."
+        },
+        "state.posted": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py",
+            "subthread-promote"
+          ],
+          "reason": "Files a real post or promote reported as written (ghost: kept even if a defective promote deletes one)."
+        },
+        "state.refused": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Attempts post refused with exit 2 before writing; the unmarked answer is refused by subthread_check(new_post=True)."
+        },
+        "state.state": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "recent --subthreads state of the root, or none when it has no valid eligible member."
+        },
+        "state.valid": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Files of the copy without a validate_report error."
+        },
+        "state.view": {
+          "anchors": [
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Message files present in each participant's copy; arrival is a copy from the shared folder."
+        },
+        "state.warned": {
+          "anchors": [
+            "subthread-warnings",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Files named by a validate warning: orphaned members and displaced PROMOTED-FROM first messages."
+        }
+      },
+      "operators": {
+        "AA": {
+          "anchors": [
+            "formal/AnswerAcceptance.tla",
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Operator reuse of AnswerAcceptance!Projection for the S8 contract; no composed behaviours."
+        },
+        "Accept": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Acceptance of a question in a copy, used by post to decide the first claim."
+        },
+        "AcceptBlind": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Marker-blind reference: every valid answer to the question."
+        },
+        "AcceptIn": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Valid answers to a question; AcceptIgnoresMembers drops members."
+        },
+        "AcceptOf": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Acceptance over a computed valid set; none when the question is absent or invalid."
+        },
+        "Acceptance": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Maps answers to AnswerAcceptance nodes (claim a/b, history h) and back."
+        },
+        "AcceptanceIgnoresMarker": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S8 invariant (bad variant AcceptIgnoresMembers)."
+        },
+        "Also": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "The candidate carrying SUBTHREAD-ALSO: main."
+        },
+        "Answers": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Answer candidates: main by default, joined, member and unmarked."
+        },
+        "AnswersFollowQuestion": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S7 invariant (bad variant AnswerUnmarked)."
+        },
+        "AttemptOrder": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Fixed order of the four refusals; a refusal writes nothing (symmetry reduction)."
+        },
+        "Author": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Writer of each candidate: alpha-agent is w1, bravo-agent is w2."
+        },
+        "Bad": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Candidates post must refuse: early, nested, outside and unmarked."
+        },
+        "Consistent": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py",
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Observed per-copy projections equal the faithful ones."
+        },
+        "Deliver": {
+          "anchors": [
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "One accepted file reaches the other copy, in any order."
+        },
+        "DepsIn": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "REPLY-TO target and PROMOTED-FROM origin present: the generic rules a file needs to be valid."
+        },
+        "DeterministicState": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S4 invariant (bad variant LastArrival)."
+        },
+        "EarlierSibling": {
+          "anchors": [
+            "subthread-warnings",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Another message of the same topic earlier in canonical order."
+        },
+        "ExplicitMembership": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S1 invariant (bad variant InheritMembership)."
+        },
+        "Good": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Candidates post accepts."
+        },
+        "Init": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Faithful initial state."
+        },
+        "Initial": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Empty copies, shared folder and observations; promote idle."
+        },
+        "MainIn": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Main flow of a copy: non-members and also-in-main members."
+        },
+        "MarkerOk": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "An answer to a member question carries that sub-thread's marker."
+        },
+        "Members": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Members of the root in a copy."
+        },
+        "MembersIn": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Explicit membership; InheritMembership adds plain replies to members."
+        },
+        "MonotonicValidity": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py",
+            "subthread-warnings",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S5 invariant (bad variant FirstIsError)."
+        },
+        "Msgs": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "All fourteen candidates."
+        },
+        "Need": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Files a writer has before it posts: reply target, root, origin (environment assumption)."
+        },
+        "NestOk": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "The root is not a member (one level)."
+        },
+        "NeverAllWitnessed": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Reachability witness: one state shows every property positively."
+        },
+        "NewState": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Reader state: recomputed from the visible set; LastArrival keeps the last arrival."
+        },
+        "Next": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "The same transition relation TLC explores and the trace bridge checks."
+        },
+        "NoAcceptance": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Constant state for the AnswerAcceptance instance; only its Projection is used."
+        },
+        "NoAccepts": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Initial acceptance observation."
+        },
+        "NoSets": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Initial empty per-copy sets."
+        },
+        "NoStates": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Initial per-copy state: no sub-thread."
+        },
+        "Node": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "First claim (a, or b for the joined answer) or history (h)."
+        },
+        "None": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "No acceptance: status none, winner none."
+        },
+        "ObservationsConsistent": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py",
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named consistency invariant of the faithful configuration."
+        },
+        "OneLevel": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S2 invariant (bad variant SkipNesting)."
+        },
+        "Phases": {
+          "anchors": [
+            "subthread-promote",
+            "subthread-next-thread",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Promote progress values."
+        },
+        "Post": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "An ordinary post from the writer's copy: accepted with the claim decision, or refused."
+        },
+        "PostOk": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "The rule set plus post-time rules: member after root, PROMOTED-FROM only into an empty topic."
+        },
+        "PromoteAppendOnly": {
+          "anchors": [
+            "subthread-promote",
+            "subthread-next-thread",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S6 invariant (bad variant PromoteDeletes)."
+        },
+        "PromoteFails": {
+          "anchors": [
+            "subthread-promote",
+            "subthread-next-thread",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "The second write fails; nothing is deleted (PromoteDeletes removes the first)."
+        },
+        "PromoteFirst": {
+          "anchors": [
+            "subthread-promote",
+            "subthread-next-thread",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "First write: allocates a free thread number in its copy, then PROMOTED-FROM."
+        },
+        "PromoteSecond": {
+          "anchors": [
+            "subthread-promote",
+            "subthread-next-thread",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Second write: the resolving member."
+        },
+        "Promoted": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "PROMOTED-FROM of the promote candidate."
+        },
+        "Question": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "The question each answer replies to."
+        },
+        "Questions": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "The root question and the member question."
+        },
+        "Rank": {
+          "anchors": [
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Canonical posting order (DATE instant, POSTED-AT, filename) the collector fixes with --at; z and s2 tie on DATE/POSTED-AT."
+        },
+        "Refresh": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py",
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Recomputes the observations of the one copy a step changed."
+        },
+        "Reply": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "REPLY-TO of each candidate."
+        },
+        "ReplyClosure": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Named S3 invariant (bad variant ReplyOutside)."
+        },
+        "ReplyOk": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "A member replies to the root or a member of the same sub-thread."
+        },
+        "S1": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Only SUBTHREAD makes a member."
+        },
+        "S2": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "No board has a member whose root is a member."
+        },
+        "S3": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Every member on the board replies inside its sub-thread."
+        },
+        "S4": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "State is a function of the visible set; equal sets agree."
+        },
+        "S5": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py",
+            "subthread-warnings",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "An accepted message stays valid wherever what it references is present."
+        },
+        "S6": {
+          "anchors": [
+            "subthread-promote",
+            "subthread-next-thread",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Nothing deleted or modified; the new topic is valid and in the main flow."
+        },
+        "S7": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py",
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Answers join their question's sub-thread; a root question's answer joins only explicitly."
+        },
+        "S8": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Acceptance equals the marker-blind projection."
+        },
+        "SState": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "SUBTHREAD-STATE of each candidate."
+        },
+        "Safe": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Typing, consistency and S1-S8; checked on every trace state."
+        },
+        "Spec": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Bounded safety specification."
+        },
+        "StateIn": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Latest SUBTHREAD-STATE by canonical order over valid members; default open."
+        },
+        "StateOf": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "State of a copy."
+        },
+        "States": {
+          "anchors": [
+            "subthread-recent",
+            "subthread-summaries",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "State values: none, open, resolved."
+        },
+        "StaticOk": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "The one rule helper used by post and validate; each mutation disables one rule."
+        },
+        "Statuses": {
+          "anchors": [
+            "answer_workflow.py",
+            "answer_state.py",
+            "subthread-post",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Acceptance status values from AnswerAcceptance."
+        },
+        "Step": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Post, deliver or one of promote's steps; trace steps must be one of these or stutter."
+        },
+        "Sub": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "SUBTHREAD of each candidate."
+        },
+        "Topic": {
+          "anchors": [
+            "subthread-check",
+            "subthread-check-message",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Thread ID of each candidate."
+        },
+        "TriedBefore": {
+          "anchors": [
+            "subthread-post",
+            "subthread-check",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Refusals earlier in AttemptOrder."
+        },
+        "TypeOK": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Typing of the record."
+        },
+        "Typed": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "Typing predicate."
+        },
+        "Valid": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Validity of an existing file; FirstIsError makes a displaced first message an error."
+        },
+        "ValidSet": {
+          "anchors": [
+            "subthread-validate",
+            "subthread-check-message",
+            "subthread-check",
+            "subthread-parse",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Valid files of a copy."
+        },
+        "WarnedIn": {
+          "anchors": [
+            "subthread-warnings",
+            "subthread-message-order",
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Orphaned members and valid displaced PROMOTED-FROM messages."
+        },
+        "Witness": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "The positive witness state."
+        },
+        "Writers": {
+          "anchors": [
+            "formal/collect_subthreads.py"
+          ],
+          "reason": "Two participants that both write and read their own copy."
+        },
+        "vars": {
+          "anchors": [
+            "formal/Subthreads.tla",
+            "tests/test_subthreads.py"
+          ],
+          "reason": "The single record variable."
+        }
+      },
+      "artifacts": [
+        "formal/Subthreads.tla",
+        "formal/Subthreads.cfg",
+        "formal/SubthreadsReachable.cfg",
+        "formal/SubthreadsBadMembership.cfg",
+        "formal/SubthreadsBadNesting.cfg",
+        "formal/SubthreadsBadReplyTo.cfg",
+        "formal/SubthreadsBadState.cfg",
+        "formal/SubthreadsBadFirst.cfg",
+        "formal/SubthreadsBadPromote.cfg",
+        "formal/SubthreadsBadAnswer.cfg",
+        "formal/SubthreadsBadAcceptance.cfg",
+        "formal/AnswerAcceptance.tla",
+        "formal/suite.json",
+        "formal/check.py",
+        "formal/check_alignment.py",
+        "formal/check_traces.py",
+        "formal/trace_contracts.json",
+        "formal/collect_subthreads.py",
+        "formal/status.py",
+        "formal/verification.json",
+        "formal/test_status.py",
+        "formal/README.md",
+        "formal/STATUS.md",
+        "tests/fixtures/subthreads/cases.json",
+        "scripts/build_subthread_cases.py",
+        "message_repairs.py"
+      ],
+      "conformance": [
+        "tests/test_subthreads.py",
+        "formal/collect_traces.py"
+      ],
+      "limits": "One room with two topics, one root with a sub-thread, two writers and fourteen fixed candidates (ten accepted, four refused). Signing eligibility, repair quarantine, direct pairs, header value syntax and exact wording are covered by tests/test_subthreads.py and tests/fixtures/subthreads/cases.json, not modelled. Bounded sampled traces, not a refinement proof."
     }
   ]
 }

@@ -99,7 +99,6 @@ StateIn(ms) ==
      ELSE IF stated = {} THEN "open"
      ELSE SState(CHOOSE m \in stated: \A o \in stated: Rank(o) <= Rank(m))
 Members(v, mut) == MembersIn(ValidSet(v, mut), v, mut)
-Main(v, mut) == LET vs == ValidSet(v, mut) IN MainIn(vs, MembersIn(vs, v, mut))
 StateOf(v, mut) == StateIn(Members(v, mut))
 \* Validate warnings: an orphaned member (any), and a valid PROMOTED-FROM message displaced as
 \* its topic's first message. (A member sorting before its root is refused at post here.)
