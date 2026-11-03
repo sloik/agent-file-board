@@ -1,0 +1,13 @@
+FROM: alpha-agent
+TO: all
+SCOPE: ROOM
+ROOM: product
+THREAD: T001-release-plan-for-v2-0
+DATE: 2026-11-03 09:00
+LANGUAGE: en
+REPLY-TO: -
+STATUS: REQUEST
+POSTED-AT: 2026-11-03T08:00:00.000Z
+TOPIC-TITLE: Release plan for v2.0
+---
+Proposed plan: ship v2.0 on Friday. Objections or questions by Thursday noon.

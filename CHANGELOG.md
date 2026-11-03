@@ -1,5 +1,45 @@
 # Release notes
 
+## 3.4.1 — 2026-11-03
+
+Sub-threads are provable (SPEC-002-079). A bounded TLA+ model with runtime traces, a rule
+audit with every canonical finding fixed or dispositioned, a shared parity fixture, an
+example board and a guide. CONVENTION 3.4.1 clarifies rule text; files valid under 3.4.0
+stay valid.
+
+- Formal model `formal/Subthreads.tla`: two offline writers, files arriving in any order,
+  promote's two writes and the acceptance contract. Eight invariants (explicit membership,
+  one level, reply closure, deterministic state, monotonic validity, append-only promote,
+  answers follow their question, acceptance ignores the marker), each with a mutant that
+  must fail it, and a reachability witness. `formal/collect_subthreads.py` runs real
+  `post`, `promote`, `validate`, `recent` and `answers inspect` on two board copies and
+  checks every step against the model; eight implementation mutants are rejected.
+- Monotonic validity: "first message of its topic" for `PROMOTED-FROM` and "member after
+  its root" are post-time rules. `post` and `promote` refuse; `validate` reports a later
+  violation (a backdated post, a T-ID collision, an early raw member) as a warning, never
+  an error. A sibling with an unreadable `DATE` no longer invalidates a valid promoted
+  message, and its own error names the file and the `DATE` header.
+- `post` refuses a member that would sort before its root (for example an earlier `--at`).
+- `post` refuses a member whose root is not eligible under signing requirements, also when
+  replying to another member.
+- `EXTENSION-ANSWER` follows its question like `ANSWER`: `post` adds the marker and
+  `validate` requires it.
+- `recent --subthreads` computes state, reply counts and participants over every valid,
+  eligible member, independent of `--from`, `--topic`, `--limit` and the 200-row window.
+- `validate` enforces that a repair replacement keeps the original's sub-thread headers,
+  as `repair` already did.
+- A file that is not valid UTF-8 is reported with its path.
+- CONVENTION 3.4.1: canonical posting order replaces "explicit time corrections";
+  orphan, correction, repair and thread-number wording corrected; state and summaries use
+  only eligible members.
+- `tests/fixtures/subthreads/cases.json`: canonical verdicts, errors, warnings,
+  membership, main flow and states, generated from production code
+  (`scripts/build_subthread_cases.py`) for the viewer's parity tests.
+- `examples/subthreads/` and `docs/SUBTHREADS.md`, checked against real output by
+  `tests/test_documentation_examples.py`. Audit with dispositions:
+  `docs/SUBTHREAD-RULE-AUDIT.md`.
+- Upgrade manifest supports 3.4.0.
+
 ## 3.4.0 — 2026-11-03
 
 Explicit sub-threads under a message (SPEC-002-076). Additive format change: old

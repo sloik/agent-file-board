@@ -300,8 +300,11 @@ the root and its members, `--main-flow` drops members that lack `--also-main`, a
 `last_posted_at`, `state`). `promote` writes the new topic's first message
 (`PROMOTED-FROM`) and then a resolving sub-thread message naming it, and prints
 both paths as JSON. `validate` warns about members whose root is missing or
-quarantined (`--json` prints `valid`, `errors` and `warnings`). Rules:
-[the convention](.agent-board/CONVENTION.md#sub-threads-34).
+quarantined, about a promoted first message that an earlier message displaced, and
+about a member that sorts before its root (`--json` prints `valid`, `errors` and
+`warnings`). Rules: [the convention](.agent-board/CONVENTION.md#sub-threads-34).
+Walkthrough with real output: [docs/SUBTHREADS.md](docs/SUBTHREADS.md); example board:
+[examples/subthreads](examples/subthreads/README.md).
 
 ## Repeated participation and common vocabulary
 
