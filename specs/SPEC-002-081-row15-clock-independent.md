@@ -1,7 +1,7 @@
 ---
 id: SPEC-002-081
 title: Sub-thread audit row 15 test no longer depends on the date it runs
-status: in_progress
+status: done
 parent: SPEC-002
 type: bugfix
 created: 2026-11-12
@@ -53,8 +53,8 @@ right; the fixture was pinned to the day it was written.
 
 ## Out of scope
 
-The scheduled "Formal verification watchdog" failures on `main` since 2026-11-09 are a
-separate investigation.
+Nothing else. The scheduled "Formal verification watchdog" failures on `main` turned out to
+share this cause, see Effect below.
 
 ## Evidence (2026-11-12)
 
@@ -69,3 +69,13 @@ separate investigation.
   behaviour that `Subthreads.tla` models. Local `formal/check_traces.py` cannot run (no Java
   runtime here; same on `main`), so AC3 relies on CI.
 - AC3: PR #32 CI: Python 3.10, 3.11, 3.12, 3.13 pass; `bounded-models` pass (3m49s), including the TLC trace phase.
+
+## Effect on main (2026-11-12)
+
+- PR #32 merged. The `Formal models` run on `main` after the merge passed: the first green
+  formal run on `main` since 2026-11-03T22:58Z.
+- The watchdog had failed daily since 2026-11-09 with "last successful main verification is
+  … older than eight days". This was the same cause: the row-15 failure made every formal
+  run on `main` fail at its `regressions` phase. A dispatched watchdog run (43281878162)
+  now passes.
+- PR #31 (README cross-links), blocked by the same failure, passed CI and merged.
