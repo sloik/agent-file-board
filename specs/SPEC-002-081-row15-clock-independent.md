@@ -49,7 +49,7 @@ right; the fixture was pinned to the day it was written.
       year (`--at` is not used by the test, so the check moves the process clock with
       `faketime` or an equivalent patch) passes.
       Done by patching `boardctl.datetime.now` (the test calls `boardctl.main` in-process).
-- [ ] AC3 (R2) The full suite passes in CI on Python 3.10-3.13, and `bounded-models` passes.
+- [x] AC3 (R2) The full suite passes in CI on Python 3.10-3.13, and `bounded-models` passes.
 
 ## Out of scope
 
@@ -68,4 +68,4 @@ separate investigation.
   the reviewed `tests/test_subthreads.py`: the change alters one fixture timestamp, not any
   behaviour that `Subthreads.tla` models. Local `formal/check_traces.py` cannot run (no Java
   runtime here; same on `main`), so AC3 relies on CI.
-- AC3: pending CI on the pull request.
+- AC3: PR #32 CI: Python 3.10, 3.11, 3.12, 3.13 pass; `bounded-models` pass (3m49s), including the TLC trace phase.
