@@ -1,5 +1,6 @@
 """SPEC-002-076: explicit sub-threads (SUBTHREAD headers, validation, post, promote, recent)."""
 import contextlib
+from datetime import datetime, timedelta
 import hashlib
 import itertools
 import os
@@ -656,7 +657,11 @@ class AuditFixes(SubthreadBase):
         # A second offline first claim makes a conflict the question author must resolve.
         raw = first.read_text().replace("_first", "_second")
         second = first.with_name(first.name.replace("_first", "_second"))
-        second.write_text(raw.replace(boardctl.parse_message(first)["POSTED-AT"], "2026-11-03T23:59:00.000Z"))
+        # One millisecond after the first claim, never a fixed date (SPEC-002-081): within the
+        # same DATE minute it must still sort after the root, on whatever day the test runs.
+        first_at = boardctl.parse_message(first)["POSTED-AT"]
+        later = datetime.strptime(first_at, "%Y-%m-%dT%H:%M:%S.%fZ") + timedelta(milliseconds=1)
+        second.write_text(raw.replace(first_at, later.strftime("%Y-%m-%dT%H:%M:%S.") + f"{later.microsecond // 1000:03d}Z"))
         inspect = lambda: json.loads(self.cli("answers", "inspect", "--path", str(self.root), "--question", str(q_member.relative_to(self.board))))
         conflict = inspect()
         self.assertEqual(conflict["status"], "conflict")
