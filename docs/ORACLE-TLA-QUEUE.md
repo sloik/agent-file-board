@@ -42,6 +42,35 @@ refresh, followed by the normal strict CLI proof. No automatic repin is provided
 
 ## Rollout status
 
+Hosted `Formal models` preserves its original dependency preparation, harness,
+mapped regressions, Git history and runtime collectors, including fork PRs. It
+freezes both complete campaigns into the exact run/attempt request artifact.
+Its preparation report says `native_pending`; it cannot establish a model pass.
+
+The maintained-main `formal-queue.yml` runs only after that source workflow
+completes. Its fixed run name binds upstream ID, attempt and the `completed`
+action. The dispatcher authenticates repository/workflow/run/head/artifact
+association through GitHub, checks the bounded regular ZIP and immutable Git
+blobs, and refuses unsupported producer/schema/workflow changes until a reviewed
+maintained baseline is installed. Submitted code never executes on this listener.
+
+Oracle imports only isolated maintained producer modules through Python `-I`.
+Candidate implementation files remain alignment data there; original runtime
+collectors ran on the ephemeral hosted runner. Both original complete native
+campaigns retain their Java argv, bounds and classifications, using Temurin 25
+for core and Temurin 17 for UI. Real Java binary/version and jar identities,
+exact streams, native exits and job/source bindings are checked before the final
+status can pass. The combined check is published only after native evidence
+upload succeeds. The original freshness monitor additionally joins that check
+to the actual trusted completed dispatcher and exact upstream attempt, rather
+than treating preparation success or a matching check name as native evidence.
+
+The two workflows must first be enrolled with the reviewed maintained baseline,
+dedicated runner principal and side-by-side Oracle JDK. An unmerged producer or
+workflow change is an explicit baseline-review refusal, never an implicit
+permission to execute submitted code on the listener. Bootstrap and final live
+CI qualification are parent-owned rollout steps.
+
 This is an isolated candidate under SPEC-ARGO-190-001. Core/UI integration, the
 UI's exact pinned core update and trusted exact-head CI ingress are separate
 required qualification steps. Hosted push/PR (including forks), schedule and

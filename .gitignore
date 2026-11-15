@@ -7,3 +7,4 @@ __pycache__/
 
 # Oracle native captures are fetched evidence, not maintained source.
 /formal-queue-results/
+/.formal-request/

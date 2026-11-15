@@ -206,8 +206,15 @@ def inspect(report, current, at=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, default=ROOT / '.formal-status')
-    parser.add_argument('--inspect', type=Path, help='inspect existing JSON instead of running checks')
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument('--inspect', type=Path, help='inspect existing JSON instead of running checks')
+    mode.add_argument('--prepare-request', type=Path, metavar='DIR',
+                      help='hosted CI preparation and frozen campaigns; native verification remains pending')
     args = parser.parse_args()
+    if args.prepare_request:
+        from ci_request import prepare
+        prepare(root=ROOT, output=args.prepare_request)
+        return 0
     if args.inspect:
         try:
             assessment = inspect(load(args.inspect), identity(ROOT))

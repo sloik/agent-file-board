@@ -9,13 +9,14 @@ on:
 permissions:
   contents: read
 jobs:
-  bounded-models:
+  prepare-formal-request:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
           submodules: recursive
           # Full history and tags: the regressions phase runs test_subthreads' compatibility
           # check against `git archive v3.3.1`, as the unit job (test.yml) already does.
@@ -27,25 +28,35 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: '3.15'
-      - name: Verify alignment, behavior, runtime traces and bounded models
-        run: python3 formal/status.py
-      - name: Publish verification summary
+      - name: Preserve hosted phases and freeze complete Oracle campaigns
+        env:
+          AFB_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python3 formal/status.py --prepare-request .formal-request
+      - name: Retain immutable request for trusted dispatcher
+        uses: actions/upload-artifact@v7
+        with:
+          name: formal-request-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .formal-request/request.json
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: error
+      - name: Publish preparation summary (native verification pending)
         if: always()
         shell: bash
         run: |
-          if [[ -f .formal-status/status.md ]]; then
-            cat .formal-status/status.md >> "$GITHUB_STEP_SUMMARY"
+          if [[ -f .formal-request/preparation-status/status.md ]]; then
+            cat .formal-request/preparation-status/status.md >> "$GITHUB_STEP_SUMMARY"
           else
             echo "Formal verification did not produce a report. Setup failed or the run was interrupted; no pass is established." >> "$GITHUB_STEP_SUMMARY"
           fi
-      - name: Retain verification status
+      - name: Retain preparation status
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: formal-status-${{ github.run_id }}-${{ github.run_attempt }}
+          name: formal-preparation-status-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            .formal-status/status.json
-            .formal-status/status.md
+            .formal-request/preparation-status/status.json
+            .formal-request/preparation-status/status.md
           retention-days: 30
           include-hidden-files: true
           if-no-files-found: warn

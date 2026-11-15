@@ -82,6 +82,53 @@ class WatchdogTests(unittest.TestCase):
             return responses.get(endpoint, {'workflow_runs': [self.run]})
         self.assertEqual(watchdog.monitor('owner/repo', reader=reader, now=self.now)['result'], 'alert')
 
+    def native_fixture(self):
+        run = {**self.run, 'run_attempt': 2, 'repository': {'id': 41, 'full_name': 'owner/repo'}}
+        check = {'name': 'bounded-models', 'head_sha': self.sha, 'external_id': 'afb-oracle-source-1-2',
+                 'app': {'slug': 'github-actions'}, 'details_url': 'https://github.com/owner/repo/actions/runs/77',
+                 'status': 'completed', 'conclusion': 'success', 'completed_at': self.now.isoformat()}
+        final = {'repository': {'id': 41, 'full_name': 'owner/repo'}, 'workflow_id': 9,
+                 'head_branch': 'main', 'head_sha': 'b'*40, 'head_commit': {'id': 'b'*40},
+                 'event': 'workflow_run', 'display_title': 'Oracle formal 1 attempt 2 completed',
+                 'status': 'completed', 'conclusion': 'success'}
+        rows = {'commits/'+self.sha+'/check-runs?check_name=bounded-models&per_page=100': {'total_count': 1, 'check_runs': [check]},
+                'actions/runs/77': final,
+                'compare/'+'b'*40+'...'+self.sha+'?per_page=1': {'merge_base_commit': {'sha': 'b'*40}}}
+        return run, check, final, rows
+
+    def test_native_join_requires_exact_trusted_completed_action_and_source_attempt(self):
+        run, check, final, rows = self.native_fixture()
+        reader = lambda repository, endpoint, token: rows[endpoint]
+        joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+        self.assertEqual(self.result([joined], [joined])['result'], 'healthy')
+        for key, value in [('event', 'push'), ('head_branch', 'feature'), ('workflow_id', 88),
+                           ('display_title', 'Oracle formal 99 attempt 2 completed'),
+                           ('display_title', 'Oracle formal 1 attempt 1 completed'),
+                           ('display_title', 'Oracle formal 1 attempt 2 requested'),
+                           ('head_sha', 'c'*40)]:
+            old = final[key];final[key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+            final[key] = old
+        final['conclusion'] = 'failure'
+        joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+        self.assertEqual(self.result([joined], [joined])['result'], 'alert')
+
+    def test_upstream_success_wrong_attempt_or_forged_unrelated_check_never_becomes_native_success(self):
+        run, check, final, rows = self.native_fixture()
+        reader = lambda repository, endpoint, token: rows[endpoint]
+        for key, value in [('external_id', 'afb-oracle-source-1-1'), ('head_sha', 'd'*40)]:
+            old = check[key];check[key] = value
+            joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+            self.assertNotEqual(self.result([joined], [joined])['result'], 'healthy')
+            check[key] = old
+        for key, value in [('app', {'slug': 'other'}), ('details_url', 'https://evil.test/runs/77')]:
+            old = check[key];check[key] = value
+            with self.assertRaises(ValueError):watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+            check[key] = old
+        rows['compare/'+'b'*40+'...'+self.sha+'?per_page=1'] = {'merge_base_commit': {'sha': 'c'*40}}
+        with self.assertRaises(ValueError):watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+
 
 if __name__ == '__main__':
     unittest.main()

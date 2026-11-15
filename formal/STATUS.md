@@ -1,11 +1,13 @@
 # Formal verification status and coverage
 
-[![Formal models](https://github.com/sloik/agent-file-board/actions/workflows/formal.yml/badge.svg?branch=main)](https://github.com/sloik/agent-file-board/actions/workflows/formal.yml)
+[![Oracle formal queue](https://github.com/sloik/agent-file-board/actions/workflows/formal-queue.yml/badge.svg?branch=main)](https://github.com/sloik/agent-file-board/actions/workflows/formal-queue.yml)
 
-Open the **Formal models** Actions run for the commit you are evaluating. Its
+Open the final **bounded-models** check for the commit you are evaluating. Its
 summary gives the UTC verification time, checked commit, tracked working-tree
 state, reviewed-input SHA-256, model bounds and each verification phase. Download
-the `formal-status-RUN-ATTEMPT` artifact for `status.json` and `status.md`.
+the `formal-status-SOURCE-RUN-ATTEMPT-DISPATCH-RUN` artifact for `status.json` and `status.md`.
+Hosted **Formal models** preparation reports remain `native_pending`; only the
+trusted Oracle workflow publishes the combined result after native evidence upload.
 The badge is a navigation aid, not proof that your current checkout was verified.
 Reports are generated artifacts retained for 30 days; no session receipts, raw
 traces or machine-specific temporary paths are committed to documentation.

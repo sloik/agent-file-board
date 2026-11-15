@@ -21,6 +21,12 @@ class AlignmentTests(unittest.TestCase):
             'formal/check_alignment.py': 'checker\n',
             'formal/oracle_queue.py': 'queue transport\n',
             'formal/test_oracle_queue.py': 'queue controls\n',
+            'formal/ci_request.py': 'hosted freezer\n',
+            'formal/ci_dispatch.py': 'trusted dispatcher\n',
+            'formal/test_ci_queue.py': 'ingress controls\n',
+            'formal/watchdog.py': 'native freshness\n',
+            'formal/test_watchdog.py': 'freshness controls\n',
+            '.github/workflows/formal-queue.yml': 'trusted workflow\n',
             'runtime.py': 'def save():\n    return True\n',
             'tests/behavior.py': 'def test_save():\n    pass\n',
             'formal/suite.json': json.dumps({'cases': [{'module': 'Sample.tla', 'config': 'Good.cfg'}, {'module': 'Sample.tla', 'config': 'Bad.cfg', 'counterexample': 'Safety'}]}),
@@ -37,7 +43,7 @@ class AlignmentTests(unittest.TestCase):
         self.registry = {'schemaVersion': 1, 'maintenance': 'Maintainer must review semantics before editing pins.', 'anchors': anchors, 'models': [{
             'module': 'Sample.tla', 'review': 'Reviewed the finite save projection and its independent controls.',
             'states': {'state': row}, 'operators': {k: copy.deepcopy(row) for k in ['vars', 'Init', 'Next']},
-            'artifacts': [k for k, a in anchors.items() if a['path'].startswith('formal/')],
+            'artifacts': [k for k, a in anchors.items() if a['path'].startswith(('formal/', '.github/'))],
             'conformance': [behavior], 'limits': 'Only a finite save projection, not cryptographic verification.'}]}
         self.write()
 
@@ -79,6 +85,18 @@ class AlignmentTests(unittest.TestCase):
                 self.assertTrue(any('unpinned model/config/tool artifacts' in error and name in error for error in result['errors']))
                 self.registry['models'][0]['artifacts'].append(ref)
                 self.write()
+
+    def test_ci_freezer_dispatcher_native_monitor_and_workflow_cannot_be_omitted(self):
+        for name in ('formal/ci_request.py', 'formal/ci_dispatch.py', 'formal/test_ci_queue.py',
+                     'formal/watchdog.py', 'formal/test_watchdog.py', '.github/workflows/formal-queue.yml'):
+            ref = next(key for key, anchor in self.registry['anchors'].items() if anchor['path'] == name)
+            self.registry['models'][0]['artifacts'].remove(ref)
+            self.write()
+            result = self.result()
+            self.assertFalse(result['ok'])
+            self.assertTrue(any('unpinned model/config/tool artifacts' in error and name in error for error in result['errors']))
+            self.registry['models'][0]['artifacts'].append(ref)
+            self.write()
 
     def test_new_model_and_config_cannot_be_silently_ignored(self):
         for suffix in ['tla', 'cfg']:
