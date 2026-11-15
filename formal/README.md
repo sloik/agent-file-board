@@ -293,3 +293,10 @@ Signing eligibility, quarantine by repair records, direct pairs, `SUBTHREAD-ALSO
 one member, bad header values and wording are unit-tested in `tests/test_subthreads.py`
 and pinned in `tests/fixtures/subthreads/cases.json`, not modelled. Bounded sampled
 traces, not a refinement proof.
+
+## Shared Oracle execution
+
+All actual model and trace TLC work uses the shared Oracle queue; see
+[Oracle queue usage](../docs/ORACLE-TLA-QUEUE.md). Runtime trace collection and
+status orchestration retain their existing local behavior. Missing remote
+execution is a failed/incomplete check, never a local fallback.

@@ -19,6 +19,8 @@ class AlignmentTests(unittest.TestCase):
             'formal/Bad.cfg': 'INVARIANT Safety\n',
             'formal/check.py': 'runner\n',
             'formal/check_alignment.py': 'checker\n',
+            'formal/oracle_queue.py': 'queue transport\n',
+            'formal/test_oracle_queue.py': 'queue controls\n',
             'runtime.py': 'def save():\n    return True\n',
             'tests/behavior.py': 'def test_save():\n    pass\n',
             'formal/suite.json': json.dumps({'cases': [{'module': 'Sample.tla', 'config': 'Good.cfg'}, {'module': 'Sample.tla', 'config': 'Bad.cfg', 'counterexample': 'Safety'}]}),
@@ -65,6 +67,18 @@ class AlignmentTests(unittest.TestCase):
                 self.assertFalse(result['ok'], result)
                 self.assertTrue(any('STALE' in e and anchor['path'] in e for e in result['errors']), result)
                 path.write_bytes(original)
+
+    def test_queue_transport_and_its_controls_are_mandatory_whole_file_artifacts(self):
+        for name in ('formal/oracle_queue.py', 'formal/test_oracle_queue.py'):
+            with self.subTest(name=name):
+                ref = next(key for key, anchor in self.registry['anchors'].items() if anchor['path'] == name)
+                self.registry['models'][0]['artifacts'].remove(ref)
+                self.write()
+                result = self.result()
+                self.assertFalse(result['ok'])
+                self.assertTrue(any('unpinned model/config/tool artifacts' in error and name in error for error in result['errors']))
+                self.registry['models'][0]['artifacts'].append(ref)
+                self.write()
 
     def test_new_model_and_config_cannot_be_silently_ignored(self):
         for suffix in ['tla', 'cfg']:
