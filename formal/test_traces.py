@@ -5,6 +5,7 @@ import io
 import json
 from pathlib import Path
 import subprocess
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -12,6 +13,15 @@ import check_traces as traces
 
 
 class TraceHarnessTests(unittest.TestCase):
+    def setUp(self):
+        # Existing native-classifier controls model the actual worker and mock its
+        # subprocess, while transport/guard controls live in test_oracle_queue.
+        worker = patch.object(traces.oracle_queue, 'in_worker', return_value=True)
+        worker.start(); self.addCleanup(worker.stop)
+        directory = tempfile.TemporaryDirectory(); self.addCleanup(directory.cleanup)
+        output = patch.object(traces.oracle_queue, 'RESULTS', Path(directory.name))
+        output.start(); self.addCleanup(output.stop)
+
     def fixture(self):
         model = 'ViewerUpdate' if (traces.ROOT / 'ViewerUpdate.tla').exists() else 'PrivateRecovery'
         return {'model': model, 'scenario': 'control', 'states': [{'observed': 0}, {'observed': 1}]}

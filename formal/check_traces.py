@@ -15,6 +15,7 @@ import sys
 import tempfile
 
 import check
+import oracle_queue
 
 ROOT = Path(__file__).resolve().parent
 
@@ -96,6 +97,9 @@ TraceConforms == /\\ M!Initial(Trace[1])
 
 
 def run_trace(java, jar, trace, expect_rejection=False):
+    if not oracle_queue.in_worker():
+        return oracle_queue.submit('helper-traces', {'positive': [] if expect_rejection else [trace],
+                                  'mutants': [trace] if expect_rejection else []}, java=java, jar=jar, root=ROOT.parent)
     wrapper = render(trace)
     with tempfile.TemporaryDirectory(prefix='afb-conformance-') as temporary:
         directory = Path(temporary)
@@ -103,9 +107,9 @@ def run_trace(java, jar, trace, expect_rejection=False):
             shutil.copyfile(model, directory / model.name)
         (directory / 'RuntimeTrace.tla').write_text(wrapper)
         (directory / 'RuntimeTrace.cfg').write_text('INIT TraceInit\nNEXT TraceNext\nINVARIANT TraceConforms\nCHECK_DEADLOCK FALSE\n')
-        result = subprocess.run([java, '-XX:+UseParallelGC', '-Xmx512m', '-Djava.io.tmpdir=' + temporary, '-cp', str(jar), 'tlc2.TLC',
+        result = oracle_queue.capture_native([java, '-XX:+UseParallelGC', '-Xmx512m', '-Djava.io.tmpdir=' + temporary, '-cp', str(jar), 'tlc2.TLC',
                                  '-workers', '1', '-config', 'RuntimeTrace.cfg', 'RuntimeTrace.tla'],
-                                cwd=directory, capture_output=True, text=True, timeout=30)
+                                cwd=directory, timeout=30, label='trace:' + trace['model'] + ':' + trace['scenario'] + ':' + str(expect_rejection))
     output = result.stdout + result.stderr
     accepted = result.returncode == 0 and 'Model checking completed. No error has been found.' in output
     rejected = result.returncode != 0 and 'Error: Invariant TraceConforms is violated.' in output and 'The behavior up to this point is:' in output
@@ -191,6 +195,9 @@ def main():
     if not alignment['ok']:
         raise ValueError('Formal alignment review required:\n' + '\n'.join(alignment['errors']))
     suite = json.loads((ROOT / 'suite.json').read_text())
+    if not oracle_queue.in_worker():
+        return oracle_queue.submit('traces', {'positive': collect(), 'mutants': collect(mutant=True)},
+                                  jar=args.jar, java=os.environ.get('JAVA'), root=ROOT.parent)
     jar = check.verified_jar(suite['tool'], args.jar)
     java = os.environ.get('JAVA') or shutil.which('java')
     if not java:
