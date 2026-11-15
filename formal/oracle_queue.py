@@ -140,8 +140,14 @@ def capture_native(command, *, cwd, timeout, label):
     stdout, stderr = raw_bytes(native.stdout), raw_bytes(native.stderr)
     (RESULTS / (name + '.stdout')).write_bytes(stdout)
     (RESULTS / (name + '.stderr')).write_bytes(stderr)
+    state_files = []
+    for path in Path(cwd).rglob('*'):
+        if path.is_file() and not path.is_symlink():
+            state_files.append({'path': path.relative_to(cwd).as_posix(), 'bytes': path.stat().st_size})
     (RESULTS / (name + '.json')).write_bytes(json_bytes({'label': label, 'argv': list(command),
                                                        'native_exit': native.returncode,
+                                                       'workspace_bytes': sum(row['bytes'] for row in state_files),
+                                                       'largest_workspace_files': sorted(state_files, key=lambda row: row['bytes'], reverse=True)[:10],
                                                        'stdout_sha256': digest(stdout), 'stderr_sha256': digest(stderr)}))
     if native.returncode < 0 or native.returncode >= 128 or native.returncode == 124:
         raise QueueUnavailable('native TLC interrupted or timed out; retained capture is incomplete')
@@ -180,6 +186,12 @@ def run_campaign(path):
                'input_sha256': digest(json_bytes(data)), 'sources': data['sources'],
                'kind': data['kind'], 'outcome': 'incomplete'}
     result_path = RESULTS / 'campaign.json'; result_path.write_bytes(json_bytes(receipt))
+    # The shared sandbox deliberately bounds /tmp to64MiB. TLC's state storage
+    # instead uses this payload-owned directory under the bounded /work mount;
+    # existing per-case TemporaryDirectory contexts still remove each case.
+    native_temp = ROOT / '.oracle-native-temp'
+    native_temp.mkdir(exist_ok=False)
+    tempfile.tempdir = str(native_temp)
     import check
     suite = json.loads((ROOT / 'formal/suite.json').read_text())
     jar = check.verified_jar(suite['tool'], data['jar'])

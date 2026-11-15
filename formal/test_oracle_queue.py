@@ -41,7 +41,7 @@ class OracleQueueTests(unittest.TestCase):
         raw = subprocess.CompletedProcess([], 12, b'Native\r\nline\r\n\r\n', b'Error\n\n')
         with tempfile.TemporaryDirectory() as temporary, patch.object(queue, 'RESULTS', Path(temporary)), \
                 patch.object(queue, 'in_worker', return_value=True), patch.object(queue.subprocess, 'run', return_value=raw) as run:
-            result = queue.capture_native(['java', 'argv with spaces'], cwd='.', timeout=30, label='control')
+            result = queue.capture_native(['java', 'argv with spaces'], cwd=temporary, timeout=30, label='control')
             self.assertEqual(result.stdout, 'Native\nline\n\n')
             self.assertEqual(result.stderr, 'Error\n\n')
             self.assertEqual(next(Path(temporary).glob('*.stdout')).read_bytes(), raw.stdout)
@@ -57,10 +57,10 @@ class OracleQueueTests(unittest.TestCase):
             for code in (-9, 137, 153, 124):
                 with patch.object(queue.subprocess, 'run', return_value=subprocess.CompletedProcess([], code, b'Invariant Named is violated', b'')):
                     with self.assertRaises(queue.QueueUnavailable):
-                        queue.capture_native(['java'], cwd='.', timeout=30, label='exit' + str(code))
+                        queue.capture_native(['java'], cwd=temporary, timeout=30, label='exit' + str(code))
             with patch.object(queue.subprocess, 'run', side_effect=subprocess.TimeoutExpired(['java'], 1, output=b'partial', stderr=b'diagnostic')):
                 with self.assertRaises(subprocess.TimeoutExpired):
-                    queue.capture_native(['java'], cwd='.', timeout=1, label='timeout')
+                    queue.capture_native(['java'], cwd=temporary, timeout=1, label='timeout')
             self.assertIn(b'partial', [p.read_bytes() for p in Path(temporary).glob('*.stdout')])
 
     def test_write_failure_prevents_return_to_classifier(self):
@@ -69,7 +69,7 @@ class OracleQueueTests(unittest.TestCase):
                 patch.object(queue.subprocess, 'run', return_value=subprocess.CompletedProcess([], 0, b'completed', b'')), \
                 patch.object(Path, 'write_bytes', side_effect=OSError('disk full')):
             with self.assertRaises(OSError):
-                queue.capture_native(['java'], cwd='.', timeout=30, label='full')
+                queue.capture_native(['java'], cwd=temporary, timeout=30, label='full')
 
     def test_sources_bind_complete_reviewed_closure_and_refuse_changes(self):
         raw = queue.sources(queue.ROOT)
