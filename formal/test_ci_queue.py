@@ -419,7 +419,19 @@ class CIQueueTests(unittest.TestCase):
     def test_revocation_before_second_admission_keeps_first_capture_without_queuing_models(self):
         self.composition(True, revoked=True)
 
-    def composition(self, bootstrap, revoked=False):
+    def test_late_api_revocation_prevents_any_native_submission(self):
+        self.composition(True, late='api_revoked')
+
+    def test_late_api_expiry_prevents_any_native_submission(self):
+        self.composition(True, late='api_expired')
+
+    def test_late_verification_revocation_prevents_success_publication(self):
+        self.composition(True, late='finish_revoked')
+
+    def test_late_verification_expiry_prevents_success_publication(self):
+        self.composition(True, late='finish_expired')
+
+    def composition(self, bootstrap, revoked=False, late=None):
         request = self.request();raw = oracle_queue.sources(ingress.ROOT)
         request['sources'] = {name: ingress.digest(data) for name, data in raw.items()}
         request['preparation']['startedAt'] = ci_request.status.now()
@@ -448,14 +460,36 @@ class CIQueueTests(unittest.TestCase):
         authorization, env, event = self.bootstrap_fixture() if bootstrap else (None, self.env, self.event)
         prs = [{'id': 700, 'number': 7}] if bootstrap else []
         transitions = [(self.run, authorization), (self.run, authorization), ci_bootstrap.Refused('revoked')]
+        state = {'invalid': False, 'bootstrap_calls': 0, 'rechecks': 0}
+        def bootstrap_api(*args):
+            state['bootstrap_calls'] += 1
+            if late and late.startswith('api_') and state['bootstrap_calls'] == 2:
+                state['invalid'] = True  # change occurred while the API refresh used its cached receipt
+            return self.run, authorization
+        def fast_receipt(*args):
+            if state['invalid']:
+                if late.endswith('expired'):
+                    return ci_bootstrap.validate_receipt(authorization, self.repository,
+                                                        datetime.fromisoformat(authorization['expires_at']))
+                raise ci_bootstrap.Refused('revoked')
+            return authorization
+        def final_api(*args):
+            state['rechecks'] += 1
+            if late and late.startswith('finish_') and state['rechecks'] == 2:
+                state['invalid'] = True  # final PR/job verification changed authorization after entry
         with patch.object(ingress, 'source_run', return_value=self.run) as normal, \
-             patch.object(ingress, 'bootstrap_run', return_value=(self.run, authorization), side_effect=transitions if revoked else None) as enrolled, \
+             patch.object(ingress, 'bootstrap_run', return_value=(self.run, authorization), side_effect=bootstrap_api if late else transitions if revoked else None) as enrolled, \
+             patch.object(ci_bootstrap, 'authorize_bootstrap', side_effect=fast_receipt) as fast, \
              patch.object(ingress, 'target', return_value=prs), \
-             patch.object(ingress, 'recheck') as recheck, patch.object(ingress, 'publish', return_value={'id': 55}) as publish, \
+             patch.object(ingress, 'recheck', side_effect=final_api) as recheck, patch.object(ingress, 'publish', return_value={'id': 55}) as publish, \
              patch.object(ingress, 'request_artifact', return_value=(request, {'id': 33, 'digest': 'sha256:'+'f'*64})), \
              patch.object(ingress, 'snapshot', side_effect=snapshot), patch.object(ingress.shutil, 'which', return_value='queue-fixture'), \
              patch.object(ingress, 'queue_job', side_effect=queue), patch.object(ingress, 'verify_capture', side_effect=verify):
             actual = ingress.dispatch(api, event, env, output, java, bootstrap)
+            if late and late.startswith('api_'):
+                self.assertEqual(actual, 1);self.assertFalse(rows);self.assertFalse(counts)
+                self.assertEqual(publish.call_args.args[5], 'failure')
+                return
             if revoked:
                 self.assertEqual(actual, 1);self.assertEqual([kind for kind, count in counts], ['traces'])
                 self.assertEqual(len(rows), 1);self.assertEqual(publish.call_args.args[5], 'failure')
@@ -471,14 +505,22 @@ class CIQueueTests(unittest.TestCase):
                 self.assertEqual(argv[:2], ['queue-fixture', 'status'])
                 return subprocess.CompletedProcess(argv, 0, json.dumps(rows[argv[2]]), '')
             with patch.object(ingress.subprocess, 'run', side_effect=execute):
-                self.assertEqual(ingress.finish(api, event, env, output, 'success', 'success', bootstrap), 0)
+                completed = ingress.finish(api, event, env, output, 'success', 'success', bootstrap)
+            if late and late.startswith('finish_'):
+                self.assertEqual(completed, 1);self.assertEqual(publish.call_args.args[5], 'failure')
+                self.assertFalse(any(len(call.args)>5 and call.args[5]=='success' for call in publish.call_args_list))
+                self.assertEqual(counts, expected_counts*2)
+                return
+            self.assertEqual(completed, 0)
             self.assertEqual(publish.call_args.args[5], 'success')
             self.assertEqual(counts, expected_counts*2)
             self.assertEqual(recheck.call_count, 2)
             if bootstrap:
                 normal.assert_not_called();self.assertEqual(enrolled.call_count, 4)
+                self.assertEqual(fast.call_count, 3)
             else:
                 enrolled.assert_not_called();self.assertEqual(normal.call_count, 2)
+                fast.assert_not_called()
 
     def test_native_verifier_retains_original_flags_raw_bytes_and_classifier(self):
         java = self.root / 'java'; java.write_bytes(b'fixture-java-not-executable')

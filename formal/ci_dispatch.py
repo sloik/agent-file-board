@@ -634,6 +634,7 @@ def publish(api, repository, run, env, status, conclusion=None, check_id=None, s
 
 def dispatch(api, event, env, output, java, bootstrap=False):
     request_module, adapter, status_module = trusted_modules()
+    import ci_bootstrap
     repository = adapter.PROJECT
     repository_id, java_major = request_module.REPOSITORIES[repository]
     if bootstrap:
@@ -680,6 +681,8 @@ def dispatch(api, event, env, output, java, bootstrap=False):
                 require(enrolled == authorization and current['id'] == run['id']
                         and current['run_attempt'] == run['run_attempt'] and current['head_sha'] == run['head_sha'],
                         'bootstrap enrollment revoked/changed before native admission')
+                require(ci_bootstrap.authorize_bootstrap(env, event) == authorization,
+                        'bootstrap enrollment revoked/expired immediately before native admission')
             row = queue_job(client, repository, stage, key, output / kind, settings['timeout'])
             count = verify_capture(output / kind / 'formal-queue-results', manifest, row, java_major)
             phase.update(status='passed', exitCode=0, finishedAt=status_module.now())
@@ -748,6 +751,9 @@ def finish(api, event, env, output, dispatch_outcome, upload_outcome, bootstrap=
         if authorization:
             prs = enrolled_prs(prs, authorization)
         recheck(api, repository, run, prs)
+        if authorization:
+            require(ci_bootstrap.authorize_bootstrap(env, event) == authorization,
+                    'bootstrap enrollment revoked/expired immediately before success publication')
         publish(api, repository, run, env, 'completed', 'success', receipt['check_id'],
                 'Original hosted preparation/regressions and complete trusted Oracle model/trace campaigns passed for exact head '
                 + run['head_sha'] + '. Native evidence uploaded; jobs: ' + ', '.join(row['job'] for row in jobs))
