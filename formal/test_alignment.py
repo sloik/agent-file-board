@@ -24,6 +24,8 @@ class AlignmentTests(unittest.TestCase):
             'formal/ci_request.py': 'hosted freezer\n',
             'formal/ci_dispatch.py': 'trusted dispatcher\n',
             'formal/test_ci_queue.py': 'ingress controls\n',
+            'formal/ci_bootstrap.py': 'root enrollment\n',
+            'formal/test_ci_bootstrap.py': 'root controls\n',
             'formal/watchdog.py': 'native freshness\n',
             'formal/test_watchdog.py': 'freshness controls\n',
             '.github/workflows/formal-queue.yml': 'trusted workflow\n',
@@ -88,6 +90,7 @@ class AlignmentTests(unittest.TestCase):
 
     def test_ci_freezer_dispatcher_native_monitor_and_workflow_cannot_be_omitted(self):
         for name in ('formal/ci_request.py', 'formal/ci_dispatch.py', 'formal/test_ci_queue.py',
+                     'formal/ci_bootstrap.py', 'formal/test_ci_bootstrap.py',
                      'formal/watchdog.py', 'formal/test_watchdog.py', '.github/workflows/formal-queue.yml'):
             ref = next(key for key, anchor in self.registry['anchors'].items() if anchor['path'] == name)
             self.registry['models'][0]['artifacts'].remove(ref)

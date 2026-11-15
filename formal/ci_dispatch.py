@@ -36,7 +36,7 @@ DISPATCH_WORKFLOW = '.github/workflows/formal-queue.yml'
 CHECK_NAME = 'bounded-models'
 PRODUCERS = ('check.py', 'check_traces.py', 'oracle_queue.py', 'check_alignment.py', 'status.py')
 CRITICAL = tuple('formal/' + name for name in PRODUCERS) + (
-    'formal/ci_request.py', 'formal/ci_dispatch.py', 'formal/verification.json',
+    'formal/ci_request.py', 'formal/ci_dispatch.py', 'formal/ci_bootstrap.py', 'formal/verification.json',
     'formal/suite.json', 'formal/trace_contracts.json', SOURCE_WORKFLOW, DISPATCH_WORKFLOW)
 BOOTSTRAP = '''import json,pathlib,sys
 root=pathlib.Path.cwd()
@@ -81,20 +81,27 @@ def attempt_path(repository, run_id, attempt):
     return '/repos/' + repository + '/actions/runs/' + str(run_id) + '/attempts/' + str(attempt)
 
 
-def execution_context(env, run, repository, java_major, java):
+def execution_context(env, run, repository, java_major, java, authorization=None):
     require(positive(run.get('id')) and positive(run.get('run_attempt'))
             and matches(SHA, run.get('head_sha'))
             and run.get('event') in ('push', 'pull_request', 'workflow_dispatch', 'schedule'), 'invalid source execution')
+    expected_ref = (authorization['workflow_ref'] if authorization else
+                    repository + '/' + DISPATCH_WORKFLOW + '@refs/heads/main')
     require(matches(SHA, env.get('GITHUB_WORKFLOW_SHA')) and env['GITHUB_WORKFLOW_SHA'] != '0'*40
-            and env.get('GITHUB_WORKFLOW_REF') == repository + '/' + DISPATCH_WORKFLOW + '@refs/heads/main',
+            and env.get('GITHUB_WORKFLOW_REF') == expected_ref,
             'invalid trusted dispatcher execution')
-    return {'schema_version': 1, 'repository': repository, 'source_head': run['head_sha'],
-            'source_run_id': run['id'], 'source_run_attempt': run['run_attempt'], 'source_kind': run['event'],
+    result = {'schema_version': 1, 'repository': repository, 'source_head': run['head_sha'],
+            'source_run_id': run['id'], 'source_run_attempt': run['run_attempt'],
+            'source_kind': 'bootstrap:pull_request' if authorization else run['event'],
             'dispatcher_run_id': environment_integer(env, 'GITHUB_RUN_ID'),
             'dispatcher_run_attempt': environment_integer(env, 'GITHUB_RUN_ATTEMPT'),
             'dispatcher_workflow_ref': env['GITHUB_WORKFLOW_REF'], 'dispatcher_workflow_sha': env['GITHUB_WORKFLOW_SHA'],
             'java_major': java_major, 'java': str(java), 'java_sha256': digest(java.resolve().read_bytes()),
             'jar_sha256': decode_json((ROOT / 'formal/suite.json').read_bytes())['tool']['sha256']}
+    if authorization:
+        result['bootstrap_receipt_id'] = authorization['receipt_id']
+        result['bootstrap_receipt_sha256'] = digest(json.dumps(authorization, sort_keys=True, separators=(',', ':')).encode())
+    return result
 
 
 def execution_key(binding, kind):
@@ -134,7 +141,8 @@ def trusted_modules():
     import ci_request
     import oracle_queue
     import status
-    for module in (ci_request, oracle_queue, status):
+    import ci_bootstrap
+    for module in (ci_request, oracle_queue, status, ci_bootstrap):
         require(Path(module.__file__).resolve().parent == directory.resolve(), 'untrusted verifier import')
     return ci_request, oracle_queue, status
 
@@ -204,6 +212,24 @@ def decode_artifact(raw):
     return decode_json(request)
 
 
+def preparation_run(api, repository, repository_id, run_id, attempt):
+    require(positive(run_id) and positive(attempt), 'invalid preparation run/attempt')
+    latest = api.call('/repos/' + repository + '/actions/runs/' + str(run_id))
+    require(latest.get('run_attempt') == attempt, 'source attempt superseded')
+    run = api.call(attempt_path(repository, run_id, attempt))
+    require(run.get('id') == run_id and run.get('run_attempt') == attempt
+            and run.get('repository', {}).get('id') == repository_id
+            and run.get('repository', {}).get('full_name') == repository
+            and run.get('name') == SOURCE_NAME and run.get('status') == 'completed'
+            and run.get('event') in ('push', 'pull_request', 'workflow_dispatch', 'schedule')
+            and matches(SHA, run.get('head_sha')) and run['head_sha'] == latest.get('head_sha')
+            and run.get('display_title') == 'Formal preparation ' + run['head_sha']
+            and positive(run.get('workflow_id')), 'not an authenticated completed preparation attempt')
+    workflow = api.call('/repos/' + repository + '/actions/workflows/' + str(run['workflow_id']))
+    require(workflow.get('path') == SOURCE_WORKFLOW, 'wrong source workflow path')
+    return run
+
+
 def source_run(api, event, env, repository, repository_id):
     require(env.get('GITHUB_SERVER_URL') == 'https://github.com'
             and env.get('GITHUB_REPOSITORY') == repository
@@ -219,10 +245,9 @@ def source_run(api, event, env, repository, repository_id):
     declared = event.get('workflow_run', {})
     require(positive(declared.get('id')), 'invalid source run ID')
     require(positive(declared.get('run_attempt')), 'invalid source run attempt')
-    latest = api.call('/repos/' + repository + '/actions/runs/' + str(declared['id']))
-    require(latest.get('run_attempt') == declared['run_attempt'] and latest.get('head_sha') == declared.get('head_sha'),
-            'source attempt superseded')
-    run = api.call(attempt_path(repository, declared['id'], declared['run_attempt']))
+    # This authoritative preparation-kind check happens before check publication,
+    # so a completed bootstrap can never overwrite its own genuine native check.
+    run = preparation_run(api, repository, repository_id, declared['id'], declared['run_attempt'])
     for key in ('id', 'head_sha', 'head_branch', 'event', 'workflow_id', 'run_attempt', 'status', 'conclusion'):
         require(run.get(key) == declared.get(key), 'source run/API mismatch: ' + key)
     require(run.get('repository', {}).get('id') == repository_id
@@ -231,8 +256,6 @@ def source_run(api, event, env, repository, repository_id):
             and run.get('event') in ('push', 'pull_request', 'workflow_dispatch', 'schedule')
             and matches(SHA, run.get('head_sha')) and positive(run.get('run_attempt'))
             and positive(run.get('workflow_id')), 'invalid source workflow identity')
-    workflow = api.call('/repos/' + repository + '/actions/workflows/' + str(run['workflow_id']))
-    require(workflow.get('path') == SOURCE_WORKFLOW, 'wrong source workflow path')
     own_id, own_attempt = environment_integer(env, 'GITHUB_RUN_ID'), environment_integer(env, 'GITHUB_RUN_ATTEMPT')
     require(matches(SHA, env.get('GITHUB_WORKFLOW_SHA')),
             'invalid trusted dispatcher run identity')
@@ -249,6 +272,46 @@ def source_run(api, event, env, repository, repository_id):
         require(run.get('status') == 'completed' and run.get('conclusion') == declared.get('conclusion'),
                 'source workflow not authoritatively completed')
     return run
+
+
+def bootstrap_run(api, event, env, repository, repository_id):
+    trusted_modules()
+    import ci_bootstrap
+    authorization = ci_bootstrap.authorize_bootstrap(env, event)
+    require(authorization['repository'] == repository and authorization['repository_id'] == repository_id,
+            'bootstrap account/adapter mismatch')
+    own_id, own_attempt = environment_integer(env, 'GITHUB_RUN_ID'), environment_integer(env, 'GITHUB_RUN_ATTEMPT')
+    own = api.call(attempt_path(repository, own_id, own_attempt))
+    branch = authorization['workflow_ref'].split('@refs/heads/', 1)[1]
+    require(own.get('id') == own_id and own.get('run_attempt') == own_attempt
+            and own.get('repository', {}).get('id') == repository_id
+            and own.get('repository', {}).get('full_name') == repository
+            and own.get('event') == 'workflow_dispatch' and own.get('head_branch') == branch
+            and own.get('head_sha') == authorization['workflow_sha']
+            and own.get('display_title') == 'Oracle bootstrap ' + str(authorization['source_run_id']) + ' attempt ' + str(authorization['source_attempt'])
+            and positive(own.get('workflow_id')), 'real bootstrap API run/ref/SHA mismatch')
+    for prefix in ('actor', 'triggering_actor'):
+        actor = own.get(prefix, {})
+        require(type(actor.get('id')) is int and actor['id'] == authorization[prefix + '_id']
+                and actor.get('login') == authorization[prefix + '_login'], 'bootstrap API actor identity mismatch')
+    workflow = api.call('/repos/' + repository + '/actions/workflows/' + str(own['workflow_id']))
+    require(workflow.get('path') == SOURCE_WORKFLOW, 'bootstrap must use existing reviewed formal.yml')
+    run = preparation_run(api, repository, repository_id, authorization['source_run_id'], authorization['source_attempt'])
+    require(run.get('event') == 'pull_request' and run.get('conclusion') == 'success'
+            and run['head_sha'] == authorization['source_head'] and own_id != run['id'],
+            'bootstrap requires separate completed-success PR preparation')
+    repo_id, name, owner, ref = source_pr_identity(run)
+    require(authorization['head_repository'] == {'id': repo_id, 'full_name': name, 'owner': {'login': owner}}
+            and authorization['head_ref'] == ref
+            and authorization['base_repository'] == {'id': repository_id, 'full_name': repository}, 'bootstrap fork/base binding mismatch')
+    return run, authorization
+
+
+def enrolled_prs(prs, authorization):
+    selected = [pr for pr in prs if type(pr.get('id')) is int and pr['id'] == authorization['source_pr_id']
+                and pr.get('number') == authorization['source_pr_number']]
+    require(len(selected) == 1, 'enrolled PR identity is not current')
+    return selected
 
 
 def source_pr_identity(run):
@@ -307,8 +370,10 @@ def target(api, repository, repository_id, run):
 
 def recheck(api, repository, run, prs):
     current = api.call(attempt_path(repository, run['id'], run['run_attempt']))
-    for key in ('head_sha', 'head_branch', 'head_repository', 'run_attempt', 'conclusion', 'event'):
+    for key in ('head_sha', 'head_branch', 'run_attempt', 'conclusion', 'event'):
         require(current.get(key) == run.get(key), 'source run changed during native checks')
+    if run['event'] == 'pull_request':
+        require(source_pr_identity(current) == source_pr_identity(run), 'source fork identity changed')
     latest = api.call('/repos/' + repository + '/actions/runs/' + str(run['id']))
     require(latest.get('run_attempt') == run['run_attempt'] and latest.get('head_sha') == run['head_sha'], 'source attempt superseded')
     for pr in prs:
@@ -416,7 +481,7 @@ def snapshot(api, repository, head, destination):
 
 def validate_request(request, run, repository, repository_id, java_major, sources):
     require(set(request) == {'schema_version', 'hosted', 'source', 'sources', 'preparation', 'tool', 'campaigns'}
-            and request['schema_version'] == 1, 'unsupported request schema')
+            and type(request['schema_version']) is int and request['schema_version'] == 1, 'unsupported request schema')
     require(request['hosted'] == {'repository': repository, 'repository_id': repository_id,
             'run_id': run['id'], 'attempt': run['run_attempt'], 'event': run['event'], 'java_major': java_major},
             'request/upstream identity mismatch')
@@ -425,7 +490,7 @@ def validate_request(request, run, repository, repository_id, java_major, source
             and source['dirty'] is False and SHA256.fullmatch(source['inputsSha256']), 'invalid exact source identity')
     require(request['sources'] == sources, 'artifact source closure differs from immutable Git blobs')
     preparation = request['preparation']
-    require(preparation.get('schemaVersion') == 1 and preparation.get('source') == source
+    require(type(preparation.get('schemaVersion')) is int and preparation['schemaVersion'] == 1 and preparation.get('source') == source
             and preparation.get('result') == 'native_pending'
             and preparation.get('alignment', {}).get('status') == 'current', 'preparation cannot claim native success')
     phases = preparation.get('phases', [])
@@ -448,6 +513,7 @@ def validate_request(request, run, repository, repository_id, java_major, source
 
 
 def queue_job(client, repository, source, key, fetch, timeout):
+    import ci_bootstrap
     command = [client, 'submit', '--project', repository, '--source', str(source), '--request-key', key,
                '--timeout', str(timeout), '--output', 'formal-queue-results', '--',
                '/usr/bin/python3', '-I', '-B', '-c', BOOTSTRAP]
@@ -462,6 +528,8 @@ def queue_job(client, repository, source, key, fetch, timeout):
     require(result.returncode == 0, 'Oracle status unavailable')
     row = decode_json(result.stdout)
     require(row.get('id') == job and row.get('project') == repository and row.get('request_key') == key
+            and row.get('lane') == 'ci' and row.get('principal') == ci_bootstrap.REPOSITORIES[repository][1]
+            and row.get('uid') == os.geteuid()
             and completed.returncode == 0 and row.get('status') == 'completed'
             and type(row.get('native_exit')) is int and row['native_exit'] == 0, 'Oracle job incomplete or failed')
     require(type(row.get('finished')) in (int, float)
@@ -564,16 +632,21 @@ def publish(api, repository, run, env, status, conclusion=None, check_id=None, s
     return api.call('/repos/' + repository + '/check-runs/' + str(check_id), 'PATCH', body)
 
 
-def dispatch(api, event, env, output, java):
+def dispatch(api, event, env, output, java, bootstrap=False):
     request_module, adapter, status_module = trusted_modules()
     repository = adapter.PROJECT
     repository_id, java_major = request_module.REPOSITORIES[repository]
-    run = source_run(api, event, env, repository, repository_id)
+    if bootstrap:
+        run, authorization = bootstrap_run(api, event, env, repository, repository_id)
+    else:
+        run, authorization = source_run(api, event, env, repository, repository_id), None
     check_run = publish(api, repository, run, env, 'in_progress', summary='No native pass is assumed from hosted preparation.')
     require(positive(check_run.get('id')), 'missing check-run ID')
     try:
         require(run.get('conclusion') == 'success', 'hosted preparation failed/cancelled; no native job submitted')
         prs = target(api, repository, repository_id, run)
+        if authorization:
+            prs = enrolled_prs(prs, authorization)
         require(not output.exists() and not output.is_symlink(), 'result destination must be fresh')
         output.mkdir(mode=0o700, parents=True)
         request, artifact = request_artifact(api, repository, run)
@@ -583,9 +656,11 @@ def dispatch(api, event, env, output, java):
         require(java.is_absolute() and java.is_file(), 'pinned Oracle Java unavailable')
         client = shutil.which('tla-queue')
         require(client is not None, 'Oracle client unavailable; no local fallback')
-        execution = execution_context(env, run, repository, java_major, java)
+        execution = execution_context(env, run, repository, java_major, java, authorization)
         binding = {'source': request['source'], 'upstream_run': run['id'], 'attempt': run['run_attempt'],
                    'artifact': artifact, 'execution': execution}
+        if authorization:
+            binding['bootstrap'] = authorization
         (output / 'request.json').write_bytes(adapter.json_bytes(request))
         report = request_module.report_for(source, request['source'])
         report['startedAt'] = request['preparation']['startedAt']
@@ -600,10 +675,16 @@ def dispatch(api, event, env, output, java):
             stage = output / (kind + '-input')
             manifest = prepare_campaign(source, stage, request, kind, binding, str(java))
             key = execution_key(binding, kind)
+            if authorization:
+                current, enrolled = bootstrap_run(api, event, env, repository, repository_id)
+                require(enrolled == authorization and current['id'] == run['id']
+                        and current['run_attempt'] == run['run_attempt'] and current['head_sha'] == run['head_sha'],
+                        'bootstrap enrollment revoked/changed before native admission')
             row = queue_job(client, repository, stage, key, output / kind, settings['timeout'])
             count = verify_capture(output / kind / 'formal-queue-results', manifest, row, java_major)
             phase.update(status='passed', exitCode=0, finishedAt=status_module.now())
-            jobs.append({'kind': kind, 'job': row['id'], 'cases': count, 'finished': row['finished']})
+            jobs.append({'kind': kind, 'job': row['id'], 'cases': count, 'finished': row['finished'],
+                         'principal': row['principal'], 'lane': row['lane'], 'uid': row['uid']})
         recheck(api, repository, run, prs)
         report.update(result='passed', finishedAt=status_module.now())
         for model in report['models']:
@@ -623,18 +704,23 @@ def dispatch(api, event, env, output, java):
         return 1
 
 
-def finish(api, event, env, output, dispatch_outcome, upload_outcome):
+def finish(api, event, env, output, dispatch_outcome, upload_outcome, bootstrap=False):
     request_module, adapter, status_module = trusted_modules()
+    import ci_bootstrap
     repository = adapter.PROJECT
     repository_id, java_major = request_module.REPOSITORIES[repository]
-    run = source_run(api, event, env, repository, repository_id)
+    if bootstrap:
+        run, authorization = bootstrap_run(api, event, env, repository, repository_id)
+    else:
+        run, authorization = source_run(api, event, env, repository, repository_id), None
     try:
         require(dispatch_outcome == upload_outcome == 'success', 'dispatch or native artifact upload did not succeed')
         receipt = decode_json((output / 'dispatch.json').read_bytes())
         require(receipt.get('upstream_run') == run['id'] and receipt.get('attempt') == run['run_attempt']
                 and receipt.get('source_head') == run['head_sha'] and positive(receipt.get('check_id')),
                 'combined receipt/source association mismatch')
-        expected_execution = execution_context(env, run, repository, java_major, Path(receipt['execution']['java']))
+        require(receipt.get('bootstrap') == authorization, 'bootstrap enrollment revoked/changed')
+        expected_execution = execution_context(env, run, repository, java_major, Path(receipt['execution']['java']), authorization)
         require(receipt.get('execution') == expected_execution, 'dispatcher execution identity changed')
         request = decode_json((output / 'request.json').read_bytes())
         report = decode_json((output / 'status.json').read_bytes())
@@ -652,11 +738,15 @@ def finish(api, event, env, output, dispatch_outcome, upload_outcome):
             require(actual.get('id') == row['job'] and actual.get('project') == repository
                     and actual.get('request_key') == key and actual.get('status') == 'completed'
                     and type(actual.get('native_exit')) is int and actual['native_exit'] == 0
-                    and actual.get('finished') == row['finished'], 'native job identity changed')
+                    and actual.get('finished') == row['finished'] and actual.get('lane') == row['lane'] == 'ci'
+                    and actual.get('principal') == row['principal'] == ci_bootstrap.REPOSITORIES[repository][1]
+                    and actual.get('uid') == row['uid'] == os.geteuid(), 'native job identity changed')
             manifest = decode_json((output / (row['kind'] + '-input/source/formal/.oracle-campaign.json')).read_bytes())
             require(verify_capture(output / row['kind'] / 'formal-queue-results', manifest, actual, java_major) == row['cases'],
                     'native artifact changed before publication')
         prs = target(api, repository, repository_id, run)
+        if authorization:
+            prs = enrolled_prs(prs, authorization)
         recheck(api, repository, run, prs)
         publish(api, repository, run, env, 'completed', 'success', receipt['check_id'],
                 'Original hosted preparation/regressions and complete trusted Oracle model/trace campaigns passed for exact head '
@@ -676,6 +766,7 @@ def main():
     parser.add_argument('--finalize', action='store_true')
     parser.add_argument('--dispatch-outcome')
     parser.add_argument('--upload-outcome')
+    parser.add_argument('--bootstrap', action='store_true', help='exact root-enrolled reviewed feature workflow only')
     args = parser.parse_args()
     require(args.event is not None, 'workflow event required')
     _, adapter, _ = trusted_modules()
@@ -684,9 +775,9 @@ def main():
     api = API(adapter.PROJECT, os.environ.get('GITHUB_TOKEN'))
     event = decode_json(args.event.read_bytes())
     if args.finalize:
-        return finish(api, event, os.environ, args.output, args.dispatch_outcome, args.upload_outcome)
+        return finish(api, event, os.environ, args.output, args.dispatch_outcome, args.upload_outcome, args.bootstrap)
     require(args.java is not None, 'pinned Oracle Java path required')
-    return dispatch(api, event, os.environ, args.output, args.java)
+    return dispatch(api, event, os.environ, args.output, args.java, args.bootstrap)
 
 
 if __name__ == '__main__':

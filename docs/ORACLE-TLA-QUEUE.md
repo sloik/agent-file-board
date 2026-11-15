@@ -71,6 +71,24 @@ workflow change is an explicit baseline-review refusal, never an implicit
 permission to execute submitted code on the listener. Bootstrap and final live
 CI qualification are parent-owned rollout steps.
 
+For the first required-check cutover, an explicit manual bootstrap job in the
+existing `formal.yml` can consume a separate already-completed-success PR
+preparation run. It is refused unless a root-owned, unexpired receipt enrolls
+the exact reviewed feature workflow SHA/ref, owner and triggering actor, source
+run/attempt/head and full fork/base/PR identity. No caller selects the receipt
+path. The administrative hook checks the actual dedicated UID and protected
+record before checkout; the controller verifies its real manual API attempt and
+both numeric actor IDs before native work. It never impersonates `workflow_run`.
+Enrollment is rechecked before each native admission and final publication.
+
+Bootstrap uses the same full native campaigns, artifact/source/tool checks and
+upload-before-success composition as ordinary CI. Its fixed title is distinct
+from normal preparation and the default dispatcher refuses a bootstrap
+completion before publishing any check. Daily maintained-main freshness never
+credits a feature bootstrap. Parent revokes the exact temporary enrollment after
+merge and separately qualifies the normal maintained-main path; existing
+required checks, Python/browser matrices and tag/version gates are retained.
+
 This is an isolated candidate under SPEC-ARGO-190-001. Core/UI integration, the
 UI's exact pinned core update and trusted exact-head CI ingress are separate
 required qualification steps. Hosted push/PR (including forks), schedule and

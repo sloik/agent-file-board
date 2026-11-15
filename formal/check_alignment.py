@@ -165,6 +165,7 @@ def check(root):
                 required = {'formal/' + module, 'formal/suite.json', 'formal/check.py', 'formal/check_alignment.py',
                             'formal/oracle_queue.py', 'formal/test_oracle_queue.py', 'formal/ci_request.py',
                             'formal/ci_dispatch.py', 'formal/test_ci_queue.py', 'formal/watchdog.py',
+                            'formal/ci_bootstrap.py', 'formal/test_ci_bootstrap.py',
                             'formal/test_watchdog.py', '.github/workflows/formal-queue.yml'} | {'formal/' + c['config'] for c in own}
                 for key in ('artifacts', 'conformance'):
                     refs = model[key]

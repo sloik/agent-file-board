@@ -1,15 +1,28 @@
 name: Formal models
+run-name: ${{ github.event_name == 'workflow_dispatch' && inputs.bootstrap_source_run != '' && format('Oracle bootstrap {0} attempt {1}', inputs.bootstrap_source_run, inputs.bootstrap_source_attempt) || format('Formal preparation {0}', github.event.pull_request.head.sha || github.sha) }}
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      bootstrap_source_run:
+        description: Owner-enrolled completed PR preparation run (empty means normal preparation)
+        type: string
+        required: false
+        default: ''
+      bootstrap_source_attempt:
+        description: Exact enrolled preparation attempt
+        type: string
+        required: false
+        default: '1'
   schedule:
     - cron: "17 6 * * 1" # Monday 06:17 UTC
 permissions:
   contents: read
 jobs:
   prepare-formal-request:
+    if: github.event_name != 'workflow_dispatch' || inputs.bootstrap_source_run == ''
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -60,3 +73,49 @@ jobs:
           retention-days: 30
           include-hidden-files: true
           if-no-files-found: warn
+  bootstrap-oracle:
+    if: github.event_name == 'workflow_dispatch' && inputs.bootstrap_source_run != ''
+    runs-on: [self-hosted, Linux, ARM64, oracle-tla, agent-file-board-tla]
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - name: Use separate completed PR preparation under exact root enrollment
+        id: dispatch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I formal/ci_dispatch.py --bootstrap
+          --output "$RUNNER_TEMP/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}"
+          --java /opt/tla/jdks/temurin-25/bin/java
+      - name: Retain enrolled bootstrap native evidence
+        id: native-artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: formal-bootstrap-${{ inputs.bootstrap_source_run }}-${{ inputs.bootstrap_source_attempt }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}/status.json
+            ${{ runner.temp }}/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}/status.md
+            ${{ runner.temp }}/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}/dispatch.json
+            ${{ runner.temp }}/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}/request.json
+            ${{ runner.temp }}/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}/traces/formal-queue-results/
+            ${{ runner.temp }}/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}/models/formal-queue-results/
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: warn
+      - name: Complete real bounded-models check after native evidence upload
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I formal/ci_dispatch.py --bootstrap --finalize
+          --output "$RUNNER_TEMP/afb-bootstrap-${{ github.run_id }}-${{ github.run_attempt }}"
+          --dispatch-outcome "${{ steps.dispatch.outcome }}"
+          --upload-outcome "${{ steps.native-artifacts.outcome }}"

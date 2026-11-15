@@ -17,6 +17,7 @@ import zipfile
 
 import ci_dispatch as ingress
 import ci_request
+import ci_bootstrap
 import oracle_queue
 
 
@@ -31,6 +32,7 @@ class CIQueueTests(unittest.TestCase):
         self.source = {'commit': self.sha, 'dirty': False, 'inputsSha256': 'b' * 64}
         self.run = {'id': 11, 'run_attempt': 2, 'head_sha': self.sha, 'head_branch': 'feature',
                     'event': 'pull_request', 'workflow_id': 5, 'name': 'Formal models',
+                    'display_title': 'Formal preparation '+self.sha,
                     'status': 'completed', 'conclusion': 'success',
                     'repository': {'id': self.repo_id, 'full_name': self.repository},
                     'head_repository': {'id': 77, 'full_name': 'contributor/fork', 'owner': {'login': 'contributor'}}}
@@ -156,7 +158,8 @@ class CIQueueTests(unittest.TestCase):
     def test_complete_request_validates_and_preparation_is_never_native_pass(self):
         request = self.request()
         ingress.validate_request(request, self.run, self.repository, self.repo_id, self.java_major, request['sources'])
-        for mutate in [lambda x: x['hosted'].update(attempt=1), lambda x: x['source'].update(dirty=True),
+        for mutate in [lambda x: x.update(schema_version=True), lambda x: x['preparation'].update(schemaVersion=True),
+                       lambda x: x['hosted'].update(attempt=1), lambda x: x['source'].update(dirty=True),
                        lambda x: x['preparation'].update(result='passed'),
                        lambda x: x['preparation']['phases'][3].update(status='passed', exitCode=0),
                        lambda x: x['preparation']['phases'][0].update(exitCode=1),
@@ -258,7 +261,8 @@ class CIQueueTests(unittest.TestCase):
         job = '1' * 32
         ack = {'job': job, 'job_id': job, 'request_key': 'key'}
         row = {'id': job, 'project': self.repository, 'request_key': 'key', 'status': 'completed',
-               'native_exit': 0, 'finished': datetime.now(timezone.utc).timestamp()}
+               'native_exit': 0, 'finished': datetime.now(timezone.utc).timestamp(),
+               'lane': 'ci', 'principal': ci_bootstrap.REPOSITORIES[self.repository][1], 'uid': os.geteuid()}
         calls = []
         def execute(argv, **kwargs):
             calls.append(argv)
@@ -267,7 +271,8 @@ class CIQueueTests(unittest.TestCase):
             return subprocess.CompletedProcess(argv, 0)
         with patch.object(ingress.subprocess, 'run', side_effect=execute):
             self.assertEqual(ingress.queue_job('queue-fixture', self.repository, self.root, 'key', self.root/'fetch', 180)['id'], job)
-            for key, value in [('project', 'evil/repo'), ('native_exit', 1), ('native_exit', False), ('status', 'running')]:
+            for key, value in [('project', 'evil/repo'), ('native_exit', 1), ('native_exit', False), ('status', 'running'),
+                               ('lane', 'development'), ('principal', 'ubuntu'), ('uid', 0)]:
                 old = row[key];row[key] = value
                 with self.subTest(key=key), self.assertRaises(ingress.Refused):
                     ingress.queue_job('queue-fixture', self.repository, self.root, 'key', self.root/'fetch', 180)
@@ -350,7 +355,71 @@ class CIQueueTests(unittest.TestCase):
             self.assertEqual(report['phases'][index]['status'], 'failed')
             self.assertTrue(all(m['verification'] == 'not_established' for m in report['models']))
 
+    def bootstrap_fixture(self):
+        authorization = {'schema_version': 1, 'receipt_id': 'b'*32, 'repository': self.repository,
+            'repository_id': self.repo_id, 'workflow_ref': self.repository+'/.github/workflows/formal.yml@refs/heads/feature',
+            'workflow_sha': self.sha, 'actor_id': 101, 'actor_login': 'owner',
+            'triggering_actor_id': 101, 'triggering_actor_login': 'owner',
+            'source_run_id': 11, 'source_attempt': 2, 'source_head': self.sha,
+            'source_pr_number': 7, 'source_pr_id': 700,
+            'head_repository': copy.deepcopy(self.run['head_repository']), 'head_ref': self.run['head_branch'],
+            'base_repository': {'id': self.repo_id, 'full_name': self.repository},
+            'expires_at': '2099-01-01T00:00:00+00:00'}
+        env = {**self.env, 'GITHUB_EVENT_NAME': 'workflow_dispatch', 'GITHUB_REF': 'refs/heads/feature',
+            'GITHUB_WORKFLOW_REF': authorization['workflow_ref'], 'GITHUB_WORKFLOW_SHA': self.sha, 'GITHUB_SHA': self.sha,
+            'GITHUB_ACTOR_ID': '101', 'GITHUB_ACTOR': 'owner', 'GITHUB_TRIGGERING_ACTOR': 'owner'}
+        event = {'repository': {'id': self.repo_id, 'full_name': self.repository, 'fork': False},
+            'sender': {'id': 101}, 'ref': 'feature',
+            'inputs': {'bootstrap_source_run': '11', 'bootstrap_source_attempt': '2'}}
+        return authorization, env, event
+
+    def test_real_bootstrap_api_actors_attempt_and_separate_pr_preparation_are_required(self):
+        authorization, env, event = self.bootstrap_fixture()
+        api, rows = self.api()
+        own = rows['/repos/'+self.repository+'/actions/runs/22/attempts/3']
+        own.update(repository={'id': self.repo_id, 'full_name': self.repository}, event='workflow_dispatch',
+                   head_branch='feature', head_sha=self.sha, workflow_id=5,
+                   display_title='Oracle bootstrap 11 attempt 2',
+                   actor={'id': 101, 'login': 'owner'}, triggering_actor={'id': 101, 'login': 'owner'})
+        before_env, before_event = copy.deepcopy(env), copy.deepcopy(event)
+        with patch.object(ci_bootstrap, 'authorize_bootstrap', return_value=authorization):
+            actual, enrolled = ingress.bootstrap_run(api, event, env, self.repository, self.repo_id)
+            self.assertEqual(actual, self.run);self.assertEqual(enrolled, authorization)
+            self.assertEqual(env, before_env);self.assertEqual(event, before_event)
+            for key, value in [('actor', {'id': 102, 'login': 'owner'}), ('triggering_actor', {'id': 102, 'login': 'owner'}),
+                               ('event', 'workflow_run'), ('head_branch', 'main'), ('head_sha', 'c'*40),
+                               ('run_attempt', 2), ('workflow_id', 6), ('display_title', 'Formal preparation '+self.sha)]:
+                old = own[key];own[key] = value
+                with self.subTest(key=key), self.assertRaises(ingress.Refused):
+                    ingress.bootstrap_run(api, event, env, self.repository, self.repo_id)
+                own[key] = old
+            for key, value in [('conclusion', 'failure'), ('event', 'workflow_dispatch'), ('status', 'in_progress'),
+                               ('head_repository', {'id': 78, 'full_name': 'contributor/fork', 'owner': {'login': 'contributor'}})]:
+                old = self.run[key];self.run[key] = value
+                with self.subTest(source=key), self.assertRaises(ingress.Refused):
+                    ingress.bootstrap_run(api, event, env, self.repository, self.repo_id)
+                self.run[key] = old
+        self.assertEqual(ingress.enrolled_prs([{'id': 700, 'number': 7}], authorization), [{'id': 700, 'number': 7}])
+        with self.assertRaises(ingress.Refused):ingress.enrolled_prs([{'id': 701, 'number': 7}], authorization)
+
+    def test_bootstrap_completion_is_rejected_by_normal_dispatch_before_any_check_publication(self):
+        api, rows = self.api()
+        self.run.update(event='workflow_dispatch', display_title='Oracle bootstrap 11 attempt 2')
+        event = {**self.event, 'workflow_run': copy.deepcopy(self.run)}
+        with patch.object(ingress, 'publish') as publish, patch.object(ingress, 'queue_job') as native, self.assertRaises(ingress.Refused):
+            ingress.dispatch(api, event, self.env, self.root/'never-created', self.root/'java')
+        publish.assert_not_called();native.assert_not_called()
+
     def test_complete_composition_waits_for_upload_and_counts_both_full_campaigns(self):
+        self.composition(False)
+
+    def test_enrolled_bootstrap_uses_same_complete_native_and_upload_composition(self):
+        self.composition(True)
+
+    def test_revocation_before_second_admission_keeps_first_capture_without_queuing_models(self):
+        self.composition(True, revoked=True)
+
+    def composition(self, bootstrap, revoked=False):
         request = self.request();raw = oracle_queue.sources(ingress.ROOT)
         request['sources'] = {name: ingress.digest(data) for name, data in raw.items()}
         request['preparation']['startedAt'] = ci_request.status.now()
@@ -367,7 +436,8 @@ class CIQueueTests(unittest.TestCase):
             self.assertEqual((stage/'producer/check.py').read_bytes(), (ingress.ROOT/'formal/check.py').read_bytes())
             self.assertEqual(manifest['payload'], request['campaigns'][kind])
             row = {'id': number*32, 'project': repository, 'request_key': key, 'status': 'completed', 'native_exit': 0,
-                   'finished': datetime.now(timezone.utc).timestamp()}
+                   'finished': datetime.now(timezone.utc).timestamp(), 'lane': 'ci',
+                   'principal': ci_bootstrap.REPOSITORIES[repository][1], 'uid': os.geteuid()}
             rows[row['id']] = row;return row
         def verify(directory, manifest, job, major):
             self.assertEqual(major, self.java_major)
@@ -375,12 +445,23 @@ class CIQueueTests(unittest.TestCase):
                      sum(len(traces) for traces in manifest['payload'].values()))
             counts.append((manifest['kind'], count));return count
         api, _ = self.api()
-        with patch.object(ingress, 'source_run', return_value=self.run), patch.object(ingress, 'target', return_value=[]), \
+        authorization, env, event = self.bootstrap_fixture() if bootstrap else (None, self.env, self.event)
+        prs = [{'id': 700, 'number': 7}] if bootstrap else []
+        transitions = [(self.run, authorization), (self.run, authorization), ci_bootstrap.Refused('revoked')]
+        with patch.object(ingress, 'source_run', return_value=self.run) as normal, \
+             patch.object(ingress, 'bootstrap_run', return_value=(self.run, authorization), side_effect=transitions if revoked else None) as enrolled, \
+             patch.object(ingress, 'target', return_value=prs), \
              patch.object(ingress, 'recheck') as recheck, patch.object(ingress, 'publish', return_value={'id': 55}) as publish, \
              patch.object(ingress, 'request_artifact', return_value=(request, {'id': 33, 'digest': 'sha256:'+'f'*64})), \
              patch.object(ingress, 'snapshot', side_effect=snapshot), patch.object(ingress.shutil, 'which', return_value='queue-fixture'), \
              patch.object(ingress, 'queue_job', side_effect=queue), patch.object(ingress, 'verify_capture', side_effect=verify):
-            self.assertEqual(ingress.dispatch(api, self.event, self.env, output, java), 0)
+            actual = ingress.dispatch(api, event, env, output, java, bootstrap)
+            if revoked:
+                self.assertEqual(actual, 1);self.assertEqual([kind for kind, count in counts], ['traces'])
+                self.assertEqual(len(rows), 1);self.assertEqual(publish.call_args.args[5], 'failure')
+                self.assertFalse(ci_request.status.inspect(json.loads((output/'status.json').read_text()), self.source)['verified'])
+                return
+            self.assertEqual(actual, 0)
             self.assertFalse(any(len(call.args)>5 and call.args[5]=='success' for call in publish.call_args_list))
             self.assertEqual([kind for kind, count in counts], ['traces', 'models'])
             expected_counts = [('traces', sum(len(x) for x in request['campaigns']['traces'].values())),
@@ -390,10 +471,14 @@ class CIQueueTests(unittest.TestCase):
                 self.assertEqual(argv[:2], ['queue-fixture', 'status'])
                 return subprocess.CompletedProcess(argv, 0, json.dumps(rows[argv[2]]), '')
             with patch.object(ingress.subprocess, 'run', side_effect=execute):
-                self.assertEqual(ingress.finish(api, self.event, self.env, output, 'success', 'success'), 0)
+                self.assertEqual(ingress.finish(api, event, env, output, 'success', 'success', bootstrap), 0)
             self.assertEqual(publish.call_args.args[5], 'success')
             self.assertEqual(counts, expected_counts*2)
             self.assertEqual(recheck.call_count, 2)
+            if bootstrap:
+                normal.assert_not_called();self.assertEqual(enrolled.call_count, 4)
+            else:
+                enrolled.assert_not_called();self.assertEqual(normal.call_count, 2)
 
     def test_native_verifier_retains_original_flags_raw_bytes_and_classifier(self):
         java = self.root / 'java'; java.write_bytes(b'fixture-java-not-executable')
@@ -482,10 +567,17 @@ class CIQueueTests(unittest.TestCase):
         hosted = (ingress.ROOT / '.github/workflows/formal.yml').read_text()
         self.assertIn('pull_request:', hosted);self.assertIn('workflow_dispatch:', hosted);self.assertIn('schedule:', hosted)
         self.assertIn('github.event.pull_request.head.sha || github.sha', hosted)
-        self.assertNotIn('runs-on: [self-hosted', hosted)
+        # The original hosted preparation stays unprivileged. The separately
+        # enrolled reviewed-code bootstrap is a distinct, explicit manual mode.
+        preparation = hosted.split('  prepare-formal-request:', 1)[1].split('  bootstrap-oracle:', 1)[0]
+        self.assertNotIn('runs-on: [self-hosted', preparation)
+        self.assertIn("github.event_name == 'workflow_dispatch' && inputs.bootstrap_source_run != ''", hosted)
+        self.assertIn('--bootstrap --finalize', hosted)
         trusted = (ingress.ROOT / '.github/workflows/formal-queue.yml').read_text()
         self.assertIn('types: [completed]', trusted);self.assertIn('github.workflow_sha', trusted)
         self.assertIn('--upload-outcome', trusted);self.assertIn('github.event.action', trusted)
+        self.assertIn("!startsWith(github.event.workflow_run.display_title, 'Oracle bootstrap ')", trusted)
+        self.assertIn('name: formal-status-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}-${{ github.run_id }}-${{ github.run_attempt }}', trusted)
 
     def test_original_status_entrypoint_has_explicit_pending_only_hosted_mode(self):
         output = self.root/'request'

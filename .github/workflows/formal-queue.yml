@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   dispatch-oracle:
-    if: github.ref == 'refs/heads/main' && github.event.repository.id == 1389483631
+    if: github.ref == 'refs/heads/main' && github.event.repository.id == 1389483631 && !startsWith(github.event.workflow_run.display_title, 'Oracle bootstrap ')
     runs-on: [self-hosted, Linux, ARM64, oracle-tla, agent-file-board-tla]
     timeout-minutes: 30
     permissions:
@@ -46,7 +46,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: formal-status-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}-${{ github.run_id }}
+          name: formal-status-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/status.json
             ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/status.md

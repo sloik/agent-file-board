@@ -5,7 +5,7 @@
 Open the final **bounded-models** check for the commit you are evaluating. Its
 summary gives the UTC verification time, checked commit, tracked working-tree
 state, reviewed-input SHA-256, model bounds and each verification phase. Download
-the `formal-status-SOURCE-RUN-ATTEMPT-DISPATCH-RUN` artifact for `status.json` and `status.md`.
+the `formal-status-SOURCE-RUN-ATTEMPT-DISPATCH-RUN-DISPATCH-ATTEMPT` artifact for `status.json` and `status.md`.
 Hosted **Formal models** preparation reports remain `native_pending`; only the
 trusted Oracle workflow publishes the combined result after native evidence upload.
 The badge is a navigation aid, not proof that your current checkout was verified.

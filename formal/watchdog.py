@@ -89,6 +89,8 @@ def native_run(repository, run, dispatcher, main, reader, token=None):
     maintained workflow's fixed run-name binds upstream ID, attempt AND action;
     requested/in_progress dispatches cannot stand in for completed native work.
     """
+    if run.get('display_title', '').startswith('Oracle bootstrap '):
+        return {**run, 'status': 'completed', 'conclusion': 'failure'}
     if run.get('status') != 'completed' or run.get('conclusion') != 'success':
         return run
     attempt = run.get('run_attempt')

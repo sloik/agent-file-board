@@ -129,6 +129,13 @@ class WatchdogTests(unittest.TestCase):
         rows['compare/'+'b'*40+'...'+self.sha+'?per_page=1'] = {'merge_base_commit': {'sha': 'c'*40}}
         with self.assertRaises(ValueError):watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
 
+    def test_legitimate_manual_bootstrap_is_never_maintained_main_freshness(self):
+        run, check, final, rows = self.native_fixture()
+        run.update(event='workflow_dispatch', display_title='Oracle bootstrap 1 attempt 2')
+        def forbidden(*args):self.fail('bootstrap must not query/credit a normal native check')
+        joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, forbidden)
+        self.assertEqual(self.result([joined], [joined])['result'], 'alert')
+
 
 if __name__ == '__main__':
     unittest.main()
