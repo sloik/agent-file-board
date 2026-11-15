@@ -32,11 +32,13 @@ class CIQueueTests(unittest.TestCase):
         self.run = {'id': 11, 'run_attempt': 2, 'head_sha': self.sha, 'head_branch': 'feature',
                     'event': 'pull_request', 'workflow_id': 5, 'name': 'Formal models',
                     'status': 'completed', 'conclusion': 'success',
-                    'repository': {'id': self.repo_id, 'full_name': self.repository}}
+                    'repository': {'id': self.repo_id, 'full_name': self.repository},
+                    'head_repository': {'id': 77, 'full_name': 'contributor/fork', 'owner': {'login': 'contributor'}}}
         self.env = {'GITHUB_SERVER_URL': 'https://github.com', 'GITHUB_REPOSITORY': self.repository,
+                    'AFB_TLA_REPO': self.repository,
                     'GITHUB_EVENT_NAME': 'workflow_run', 'GITHUB_REF': 'refs/heads/main',
                     'GITHUB_WORKFLOW_REF': self.repository + '/.github/workflows/formal-queue.yml@refs/heads/main',
-                    'GITHUB_RUN_ID': '22', 'GITHUB_WORKFLOW_SHA': 'c' * 40}
+                    'GITHUB_RUN_ID': '22', 'GITHUB_RUN_ATTEMPT': '3', 'GITHUB_WORKFLOW_SHA': 'c' * 40}
         self.event = {'action': 'completed', 'repository': {'id': self.repo_id, 'full_name': self.repository, 'fork': False},
                       'workflow_run': copy.deepcopy(self.run)}
 
@@ -58,11 +60,13 @@ class CIQueueTests(unittest.TestCase):
                 'tool': suite['tool'], 'campaigns': {'models': suite['cases'], 'traces': traces}}
 
     def api(self):
-        own = {'repository': {'id': self.repo_id}, 'event': 'workflow_run', 'head_branch': 'main',
+        own = {'id': 22, 'run_attempt': 3, 'repository': {'id': self.repo_id}, 'event': 'workflow_run', 'head_branch': 'main',
                'head_sha': 'c' * 40, 'display_title': 'Oracle formal 11 attempt 2 completed', 'workflow_id': 6}
         rows = {f'/repos/{self.repository}/actions/runs/11': self.run,
+                f'/repos/{self.repository}/actions/runs/11/attempts/2': self.run,
                 f'/repos/{self.repository}/actions/workflows/5': {'path': '.github/workflows/formal.yml'},
                 f'/repos/{self.repository}/actions/runs/22': own,
+                f'/repos/{self.repository}/actions/runs/22/attempts/3': own,
                 f'/repos/{self.repository}/actions/workflows/6': {'path': '.github/workflows/formal-queue.yml'}}
         class Fake:
             def call(inner, path, *args):
@@ -77,6 +81,7 @@ class CIQueueTests(unittest.TestCase):
 
     def test_foreign_event_attempt_workflow_default_sha_or_unrelated_run_refused(self):
         controls = [('env', 'GITHUB_REF', 'refs/heads/feature'), ('env', 'GITHUB_REPOSITORY', 'evil/repo'),
+                    ('env', 'AFB_TLA_REPO', 'evil/repo'),
                     ('env', 'GITHUB_EVENT_NAME', 'pull_request'), ('event', 'action', 'in_progress')]
         for kind, key, value in controls:
             event, env = copy.deepcopy(self.event), dict(self.env)
@@ -96,6 +101,57 @@ class CIQueueTests(unittest.TestCase):
             api, rows = self.api(); rows[f'/repos/{self.repository}/actions/runs/22'][key] = value
             with self.subTest(key=key, value=value), self.assertRaises(ingress.Refused):
                 ingress.source_run(api, self.event, self.env, self.repository, self.repo_id)
+
+    def test_dispatcher_attempt_and_workflow_tool_phase_make_fresh_bounded_execution_keys(self):
+        java = self.root/'java';java.write_bytes(b'fixture-not-executed')
+        execution = ingress.execution_context(self.env, self.run, self.repository, self.java_major, java)
+        binding = {'source': self.source, 'upstream_run': 11, 'attempt': 2,
+                   'artifact': {'id': 33, 'digest': 'sha256:'+'f'*64}, 'execution': execution}
+        key = ingress.execution_key(binding, 'models')
+        self.assertEqual(key, ingress.execution_key(copy.deepcopy(binding), 'models'))
+        self.assertLessEqual(len(key), 96)
+        keys = {key, ingress.execution_key(binding, 'traces')}
+        for name, value in [('GITHUB_RUN_ID', '23'), ('GITHUB_RUN_ATTEMPT', '4'), ('GITHUB_WORKFLOW_SHA', 'd'*40)]:
+            changed = copy.deepcopy(binding)
+            changed['execution'] = ingress.execution_context({**self.env, name: value}, self.run, self.repository, self.java_major, java)
+            keys.add(ingress.execution_key(changed, 'models'))
+        changed = copy.deepcopy(binding);changed['execution']['source_run_attempt'] = 3
+        keys.add(ingress.execution_key(changed, 'models'))
+        changed = copy.deepcopy(binding);changed['execution']['source_head'] = 'e'*40
+        keys.add(ingress.execution_key(changed, 'models'))
+        changed = copy.deepcopy(binding);changed['execution']['java_sha256'] = 'e'*64
+        keys.add(ingress.execution_key(changed, 'models'))
+        self.assertEqual(len(keys), 8)
+        for name, value in [('GITHUB_RUN_ID', '0'), ('GITHUB_RUN_ATTEMPT', '-1'), ('GITHUB_WORKFLOW_SHA', '0'*40)]:
+            with self.assertRaises(ingress.Refused):
+                ingress.execution_context({**self.env, name: value}, self.run, self.repository, self.java_major, java)
+
+    def test_authoritative_encoded_fork_fallback_and_full_identity_are_rechecked(self):
+        run = copy.deepcopy(self.run);run['head_branch'] = 'topic/with+chars'
+        pr = {'number': 7, 'state': 'open',
+              'head': {'sha': self.sha, 'ref': run['head_branch'], 'repo': copy.deepcopy(run['head_repository'])},
+              'base': {'repo': {'id': self.repo_id, 'full_name': self.repository}}}
+        calls = []
+        class API:
+            def call(inner, path):
+                calls.append(path)
+                if '/commits/' in path:return []
+                if '/pulls?' in path:return [copy.deepcopy(pr)]
+                if '/pulls/7' in path:return copy.deepcopy(pr)
+                return copy.deepcopy(run)
+        selected = ingress.target(API(), self.repository, self.repo_id, run)
+        self.assertEqual(selected, [pr])
+        self.assertTrue(any('head=contributor%3Atopic%2Fwith%2Bchars' in path for path in calls))
+        self.assertEqual(calls[-1], '/repos/'+self.repository+'/pulls/7')
+        ingress.recheck(API(), self.repository, run, selected)
+        for mutate in [lambda p: p['head']['repo'].update(id=78), lambda p: p['head']['repo'].update(full_name='other/fork'),
+                       lambda p: p['head']['repo']['owner'].update(login='other'),
+                       lambda p: p['head'].update(ref='other'), lambda p: p['head'].update(sha='d'*40),
+                       lambda p: p['base']['repo'].update(id=99), lambda p: p.update(state='closed')]:
+            original = copy.deepcopy(pr);mutate(pr)
+            with self.assertRaises(ingress.Refused):ingress.target(API(), self.repository, self.repo_id, run)
+            with self.assertRaises(ingress.Refused):ingress.recheck(API(), self.repository, run, selected)
+            pr.clear();pr.update(original)
 
     def test_complete_request_validates_and_preparation_is_never_native_pass(self):
         request = self.request()

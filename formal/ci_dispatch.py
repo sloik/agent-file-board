@@ -70,6 +70,40 @@ def matches(pattern, value):
     return isinstance(value, str) and pattern.fullmatch(value)
 
 
+def environment_integer(env, name):
+    value = env.get(name)
+    require(isinstance(value, str) and re.fullmatch('[1-9][0-9]{0,19}', value), 'invalid ' + name)
+    return int(value)
+
+
+def attempt_path(repository, run_id, attempt):
+    require(positive(run_id) and positive(attempt), 'invalid workflow attempt identity')
+    return '/repos/' + repository + '/actions/runs/' + str(run_id) + '/attempts/' + str(attempt)
+
+
+def execution_context(env, run, repository, java_major, java):
+    require(positive(run.get('id')) and positive(run.get('run_attempt'))
+            and matches(SHA, run.get('head_sha'))
+            and run.get('event') in ('push', 'pull_request', 'workflow_dispatch', 'schedule'), 'invalid source execution')
+    require(matches(SHA, env.get('GITHUB_WORKFLOW_SHA')) and env['GITHUB_WORKFLOW_SHA'] != '0'*40
+            and env.get('GITHUB_WORKFLOW_REF') == repository + '/' + DISPATCH_WORKFLOW + '@refs/heads/main',
+            'invalid trusted dispatcher execution')
+    return {'schema_version': 1, 'repository': repository, 'source_head': run['head_sha'],
+            'source_run_id': run['id'], 'source_run_attempt': run['run_attempt'], 'source_kind': run['event'],
+            'dispatcher_run_id': environment_integer(env, 'GITHUB_RUN_ID'),
+            'dispatcher_run_attempt': environment_integer(env, 'GITHUB_RUN_ATTEMPT'),
+            'dispatcher_workflow_ref': env['GITHUB_WORKFLOW_REF'], 'dispatcher_workflow_sha': env['GITHUB_WORKFLOW_SHA'],
+            'java_major': java_major, 'java': str(java), 'java_sha256': digest(java.resolve().read_bytes()),
+            'jar_sha256': decode_json((ROOT / 'formal/suite.json').read_bytes())['tool']['sha256']}
+
+
+def execution_key(binding, kind):
+    require(kind in ('traces', 'models'), 'unsupported native phase')
+    selected = {name: binding[name] for name in ('source', 'upstream_run', 'attempt', 'artifact', 'execution')}
+    encoded = json.dumps(selected, sort_keys=True, separators=(',', ':')).encode()
+    return 'afb-' + kind + '-' + hashlib.sha256(encoded).hexdigest()
+
+
 def digest(raw):
     return hashlib.sha256(raw).hexdigest()
 
@@ -173,6 +207,7 @@ def decode_artifact(raw):
 def source_run(api, event, env, repository, repository_id):
     require(env.get('GITHUB_SERVER_URL') == 'https://github.com'
             and env.get('GITHUB_REPOSITORY') == repository
+            and env.get('AFB_TLA_REPO') == repository
             and env.get('GITHUB_EVENT_NAME') == 'workflow_run'
             and env.get('GITHUB_REF') == 'refs/heads/main'
             and env.get('GITHUB_WORKFLOW_REF') == repository + '/' + DISPATCH_WORKFLOW + '@refs/heads/main',
@@ -183,8 +218,12 @@ def source_run(api, event, env, repository, repository_id):
     require(event.get('action') == 'completed', 'completed source workflow required')
     declared = event.get('workflow_run', {})
     require(positive(declared.get('id')), 'invalid source run ID')
-    run = api.call('/repos/' + repository + '/actions/runs/' + str(declared['id']))
-    for key in ('id', 'head_sha', 'head_branch', 'event', 'workflow_id', 'run_attempt'):
+    require(positive(declared.get('run_attempt')), 'invalid source run attempt')
+    latest = api.call('/repos/' + repository + '/actions/runs/' + str(declared['id']))
+    require(latest.get('run_attempt') == declared['run_attempt'] and latest.get('head_sha') == declared.get('head_sha'),
+            'source attempt superseded')
+    run = api.call(attempt_path(repository, declared['id'], declared['run_attempt']))
+    for key in ('id', 'head_sha', 'head_branch', 'event', 'workflow_id', 'run_attempt', 'status', 'conclusion'):
         require(run.get(key) == declared.get(key), 'source run/API mismatch: ' + key)
     require(run.get('repository', {}).get('id') == repository_id
             and run.get('repository', {}).get('full_name') == repository
@@ -194,11 +233,12 @@ def source_run(api, event, env, repository, repository_id):
             and positive(run.get('workflow_id')), 'invalid source workflow identity')
     workflow = api.call('/repos/' + repository + '/actions/workflows/' + str(run['workflow_id']))
     require(workflow.get('path') == SOURCE_WORKFLOW, 'wrong source workflow path')
-    own_id = env.get('GITHUB_RUN_ID', '')
-    require(re.fullmatch('[1-9][0-9]{0,19}', own_id) and matches(SHA, env.get('GITHUB_WORKFLOW_SHA')),
+    own_id, own_attempt = environment_integer(env, 'GITHUB_RUN_ID'), environment_integer(env, 'GITHUB_RUN_ATTEMPT')
+    require(matches(SHA, env.get('GITHUB_WORKFLOW_SHA')),
             'invalid trusted dispatcher run identity')
-    own = api.call('/repos/' + repository + '/actions/runs/' + own_id)
-    require(own.get('repository', {}).get('id') == repository_id
+    own = api.call(attempt_path(repository, own_id, own_attempt))
+    require(own.get('id') == own_id and own.get('run_attempt') == own_attempt
+            and own.get('repository', {}).get('id') == repository_id
             and own.get('event') == 'workflow_run' and own.get('head_branch') == 'main'
             and own.get('head_sha') == env['GITHUB_WORKFLOW_SHA']
             and own.get('display_title') == 'Oracle formal ' + str(run['id']) + ' attempt ' + str(run['run_attempt']) + ' ' + event['action']
@@ -211,28 +251,71 @@ def source_run(api, event, env, repository, repository_id):
     return run
 
 
+def source_pr_identity(run):
+    repository, ref = run.get('head_repository'), run.get('head_branch')
+    require(isinstance(repository, dict) and positive(repository.get('id')), 'source head repository missing')
+    name = repository.get('full_name')
+    require(isinstance(name, str) and re.fullmatch('[A-Za-z0-9-]{1,39}/[A-Za-z0-9_.-]{1,100}', name),
+            'invalid source head repository')
+    owner = repository.get('owner', {}).get('login')
+    require(owner == name.split('/')[0] and isinstance(ref, str) and 0 < len(ref) <= 1024
+            and not any(ord(c) < 32 for c in ref) and matches(SHA, run.get('head_sha')), 'invalid authoritative PR identity')
+    return repository['id'], name, owner, ref
+
+
+def matches_source_pr(pr, run, repository, repository_id):
+    repo_id, name, owner, ref = source_pr_identity(run)
+    if not isinstance(pr, dict):
+        return False
+    head, base = pr.get('head', {}), pr.get('base', {})
+    if not isinstance(head, dict) or not isinstance(base, dict):
+        return False
+    head_repo, base_repo = head.get('repo', {}), base.get('repo', {})
+    if not isinstance(head_repo, dict) or not isinstance(base_repo, dict):
+        return False
+    return (pr.get('state') == 'open' and head.get('sha') == run['head_sha'] and head.get('ref') == ref
+            and type(head_repo.get('id')) is int and head_repo['id'] == repo_id and head_repo.get('full_name') == name
+            and head_repo.get('owner', {}).get('login') == owner
+            and type(base_repo.get('id')) is int and base_repo['id'] == repository_id and base_repo.get('full_name') == repository)
+
+
 def target(api, repository, repository_id, run):
     if run['event'] != 'pull_request':
         if run['event'] == 'schedule':
             require(run.get('head_branch') == 'main', 'scheduled source must be main')
         return []
+    _, name, owner, ref = source_pr_identity(run)
     prs = api.call('/repos/' + repository + '/commits/' + run['head_sha'] + '/pulls?per_page=100')
     require(isinstance(prs, list) and len(prs) < 100, 'PR association unavailable/truncated')
-    found = [pr for pr in prs if pr.get('state') == 'open' and pr.get('head', {}).get('sha') == run['head_sha']
-             and pr.get('base', {}).get('repo', {}).get('id') == repository_id
-             and pr.get('base', {}).get('repo', {}).get('full_name') == repository]
+    found = [pr for pr in prs if matches_source_pr(pr, run, repository, repository_id)]
+    if not found:
+        query = urllib.parse.urlencode({'state': 'open', 'head': owner + ':' + ref, 'per_page': 100})
+        prs = api.call('/repos/' + repository + '/pulls?' + query)
+        require(isinstance(prs, list) and len(prs) < 100, 'open PR association unavailable/truncated')
+        found = [pr for pr in prs if matches_source_pr(pr, run, repository, repository_id)]
     require(found and all(positive(pr.get('number')) for pr in found), 'no current exact-head PR')
-    return found
+    require(len({pr['number'] for pr in found}) == len(found), 'duplicate associated PR number')
+    current = []
+    for pr in found:
+        actual = api.call('/repos/' + repository + '/pulls/' + str(pr['number']))
+        require(isinstance(actual, dict) and positive(actual.get('number')) and actual['number'] == pr['number']
+                and matches_source_pr(actual, run, repository, repository_id),
+                'PR full identity changed during association')
+        current.append(actual)
+    return current
 
 
 def recheck(api, repository, run, prs):
-    current = api.call('/repos/' + repository + '/actions/runs/' + str(run['id']))
-    for key in ('head_sha', 'run_attempt', 'conclusion', 'event'):
+    current = api.call(attempt_path(repository, run['id'], run['run_attempt']))
+    for key in ('head_sha', 'head_branch', 'head_repository', 'run_attempt', 'conclusion', 'event'):
         require(current.get(key) == run.get(key), 'source run changed during native checks')
+    latest = api.call('/repos/' + repository + '/actions/runs/' + str(run['id']))
+    require(latest.get('run_attempt') == run['run_attempt'] and latest.get('head_sha') == run['head_sha'], 'source attempt superseded')
     for pr in prs:
         current = api.call('/repos/' + repository + '/pulls/' + str(pr['number']))
-        require(current.get('state') == 'open' and current.get('head', {}).get('sha') == run['head_sha'],
-                'PR head changed/closed during native checks')
+        repository_id = run['repository']['id']
+        require(current.get('number') == pr['number'] and matches_source_pr(current, run, repository, repository_id),
+                'PR full identity changed/closed during native checks')
 
 
 def request_artifact(api, repository, run):
@@ -500,7 +583,9 @@ def dispatch(api, event, env, output, java):
         require(java.is_absolute() and java.is_file(), 'pinned Oracle Java unavailable')
         client = shutil.which('tla-queue')
         require(client is not None, 'Oracle client unavailable; no local fallback')
-        binding = {'source': request['source'], 'upstream_run': run['id'], 'attempt': run['run_attempt'], 'artifact': artifact}
+        execution = execution_context(env, run, repository, java_major, java)
+        binding = {'source': request['source'], 'upstream_run': run['id'], 'attempt': run['run_attempt'],
+                   'artifact': artifact, 'execution': execution}
         (output / 'request.json').write_bytes(adapter.json_bytes(request))
         report = request_module.report_for(source, request['source'])
         report['startedAt'] = request['preparation']['startedAt']
@@ -514,7 +599,7 @@ def dispatch(api, event, env, output, java):
             status_module.write(report, output)
             stage = output / (kind + '-input')
             manifest = prepare_campaign(source, stage, request, kind, binding, str(java))
-            key = 'afb-' + str(run['id']) + '-' + str(run['run_attempt']) + '-' + kind
+            key = execution_key(binding, kind)
             row = queue_job(client, repository, stage, key, output / kind, settings['timeout'])
             count = verify_capture(output / kind / 'formal-queue-results', manifest, row, java_major)
             phase.update(status='passed', exitCode=0, finishedAt=status_module.now())
@@ -549,6 +634,8 @@ def finish(api, event, env, output, dispatch_outcome, upload_outcome):
         require(receipt.get('upstream_run') == run['id'] and receipt.get('attempt') == run['run_attempt']
                 and receipt.get('source_head') == run['head_sha'] and positive(receipt.get('check_id')),
                 'combined receipt/source association mismatch')
+        expected_execution = execution_context(env, run, repository, java_major, Path(receipt['execution']['java']))
+        require(receipt.get('execution') == expected_execution, 'dispatcher execution identity changed')
         request = decode_json((output / 'request.json').read_bytes())
         report = decode_json((output / 'status.json').read_bytes())
         require(status_module.inspect(report, request['source'])['verified'], 'combined report incomplete or stale')
@@ -561,7 +648,7 @@ def finish(api, event, env, output, dispatch_outcome, upload_outcome):
             response = subprocess.run([client, 'status', row['job']], text=True, capture_output=True)
             require(response.returncode == 0, 'native status unavailable after artifact upload')
             actual = decode_json(response.stdout)
-            key = 'afb-' + str(run['id']) + '-' + str(run['run_attempt']) + '-' + row['kind']
+            key = execution_key(receipt, row['kind'])
             require(actual.get('id') == row['job'] and actual.get('project') == repository
                     and actual.get('request_key') == key and actual.get('status') == 'completed'
                     and type(actual.get('native_exit')) is int and actual['native_exit'] == 0
