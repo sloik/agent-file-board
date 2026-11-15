@@ -1,5 +1,14 @@
 # Release notes
 
+## 3.4.2 — 2026-11-15
+
+Formal model and frozen runtime-trace checking uses the shared Oracle queue
+(SPEC-ARGO-190-001). Native output, tool identity and case exit statuses are
+retained; unavailable queue access fails without local TLC execution. The
+existing model bounds, runtime collectors and mutant classifications stay
+unchanged. This patch provides the immutable canonical tag required by the UI
+submodule; board formats, posting, signing and sub-thread rules are unchanged.
+
 ## 3.4.1 — 2026-11-03
 
 Sub-threads are provable (SPEC-002-079). A bounded TLA+ model with runtime traces, a rule
