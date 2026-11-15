@@ -24,6 +24,24 @@ class OracleQueueTests(unittest.TestCase):
                     invoke()
             native.assert_not_called()
 
+    def test_worker_guard_requires_exact_marker_uid_platform_and_cgroup(self):
+        job = 'a' * 32
+        user = type('User', (), {'pw_name': 'tla-job'})()
+        with patch.dict(os.environ, {'TLA_QUEUE_JOB': job}), patch.object(queue.sys, 'platform', 'linux'), \
+                patch.object(queue.pwd, 'getpwuid', return_value=user), \
+                patch.object(Path, 'read_text', return_value='0::/system.slice/tla-q-' + job + '.service/child'):
+            self.assertTrue(queue.in_worker())
+            for marker in ('bad', 'A' * 32, 'b' * 31):
+                with patch.dict(os.environ, {'TLA_QUEUE_JOB': marker}):
+                    self.assertFalse(queue.in_worker())
+            for path in ('0::/system.slice/other.service', '0::/system.slice/tla-q-' + job + '.service-suffix'):
+                with patch.object(Path, 'read_text', return_value=path):
+                    self.assertFalse(queue.in_worker())
+            with patch.object(queue.pwd, 'getpwuid', return_value=type('User', (), {'pw_name': 'developer'})()):
+                self.assertFalse(queue.in_worker())
+            with patch.object(queue.sys, 'platform', 'darwin'):
+                self.assertFalse(queue.in_worker())
+
     def test_native_capture_requires_actual_worker(self):
         with patch.object(queue, 'in_worker', return_value=False), patch.object(queue.subprocess, 'run') as run:
             with self.assertRaises(queue.QueueUnavailable):
