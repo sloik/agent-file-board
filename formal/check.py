@@ -10,6 +10,8 @@ import subprocess
 import tempfile
 import urllib.request
 
+import oracle_queue
+
 ROOT = Path(__file__).resolve().parent
 
 
@@ -37,12 +39,14 @@ def verified_jar(pin, explicit=None):
 
 
 def run_case(java, jar, case):
+    if not oracle_queue.in_worker():
+        return oracle_queue.submit('helper-models', [case], java=java, jar=jar, root=ROOT.parent)
     with tempfile.TemporaryDirectory(prefix="afb-tlc-") as temporary:
-        result = subprocess.run(
+        result = oracle_queue.capture_native(
             [java, "-XX:+UseParallelGC", "-Xmx1g", "-Djava.io.tmpdir=" + temporary, "-cp", str(jar), "tlc2.TLC",
              "-workers", "1", "-metadir", temporary, "-config", str(ROOT / case["config"]),
              str(ROOT / case["module"])],
-            cwd=temporary, capture_output=True, text=True, timeout=case.get("timeout", 90))
+            cwd=temporary, timeout=case.get("timeout", 90), label="model:" + case["config"])
     output = result.stdout + result.stderr
     invariant = case.get("counterexample")
     if invariant:
@@ -68,6 +72,8 @@ def main():
     if not alignment['ok']:
         raise ValueError('Formal alignment review required:\n' + '\n'.join(alignment['errors']))
     suite = json.loads((ROOT / "suite.json").read_text())
+    if not oracle_queue.in_worker():
+        return oracle_queue.submit('models', suite['cases'], jar=args.jar, java=os.environ.get('JAVA'), root=ROOT.parent)
     java = os.environ.get("JAVA") or shutil.which("java")
     if not java:
         raise ValueError("Java11+ is required; set JAVA to its executable")

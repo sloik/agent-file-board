@@ -82,6 +82,91 @@ class WatchdogTests(unittest.TestCase):
             return responses.get(endpoint, {'workflow_runs': [self.run]})
         self.assertEqual(watchdog.monitor('owner/repo', reader=reader, now=self.now)['result'], 'alert')
 
+    def native_fixture(self):
+        run = {**self.run, 'run_attempt': 2, 'workflow_id': 8, 'name': 'Formal preparation '+self.sha,
+               'display_title': 'Formal preparation '+self.sha, 'repository': {'id': 41, 'full_name': 'owner/repo'}}
+        check = {'name': 'bounded-models', 'head_sha': self.sha, 'external_id': 'afb-oracle-source-1-2',
+                 'app': {'slug': 'github-actions'}, 'details_url': 'https://github.com/owner/repo/actions/runs/77',
+                 'status': 'completed', 'conclusion': 'success', 'completed_at': self.now.isoformat()}
+        final = {'repository': {'id': 41, 'full_name': 'owner/repo'}, 'workflow_id': 9,
+                 'head_branch': 'main', 'head_sha': 'b'*40, 'head_commit': {'id': 'b'*40},
+                 'event': 'workflow_run', 'name': 'Oracle formal 1 attempt 2 completed',
+                 'display_title': 'Oracle formal 1 attempt 2 completed',
+                 'status': 'completed', 'conclusion': 'success'}
+        rows = {'commits/'+self.sha+'/check-runs?check_name=bounded-models&per_page=100': {'total_count': 1, 'check_runs': [check]},
+                'actions/runs/77': final,
+                'compare/'+'b'*40+'...'+self.sha+'?per_page=1': {'merge_base_commit': {'sha': 'b'*40}}}
+        return run, check, final, rows
+
+    def test_native_join_requires_exact_trusted_completed_action_and_source_attempt(self):
+        run, check, final, rows = self.native_fixture()
+        reader = lambda repository, endpoint, token: rows[endpoint]
+        joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+        self.assertEqual(self.result([joined], [joined])['result'], 'healthy')
+        for key, value in [('event', 'push'), ('head_branch', 'feature'), ('workflow_id', 88),
+                           ('display_title', 'Oracle formal 99 attempt 2 completed'),
+                           ('display_title', 'Oracle formal 1 attempt 1 completed'),
+                           ('display_title', 'Oracle formal 1 attempt 2 requested'),
+                           ('head_sha', 'c'*40)]:
+            old = final[key];final[key] = value
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+            final[key] = old
+        final['conclusion'] = 'failure'
+        joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+        self.assertEqual(self.result([joined], [joined])['result'], 'alert')
+
+    def test_source_titles_and_final_run_names_cannot_impersonate_workflow_metadata(self):
+        run, check, final, rows = self.native_fixture()
+        reader = lambda repository, endpoint, token: rows[endpoint]
+        for row in (run, final):
+            for field in ('name', 'display_title'):
+                for title in ('Formal models', 'Oracle formal queue', 'Formal preparation '+'f'*40, 'arbitrary'):
+                    old = row[field];row[field] = title
+                    with self.subTest(field=field, title=title), self.assertRaises(ValueError):
+                        watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+                    row[field] = old
+
+    def test_monitor_joins_exact_static_workflow_metadata_with_real_run_titles(self):
+        run, check, final, rows = self.native_fixture()
+        workflow = {'id': 8, 'name': 'Formal models', 'path': '.github/workflows/formal.yml', 'state': 'active'}
+        dispatcher = {'id': 9, 'name': 'Oracle formal queue', 'path': '.github/workflows/formal-queue.yml', 'state': 'active'}
+        rows.update({'actions/workflows/formal.yml': workflow, 'actions/workflows/formal-queue.yml': dispatcher,
+                     'git/ref/heads/main': {'object': {'sha': self.sha}}})
+        def reader(repository, endpoint, token):
+            if endpoint.startswith('actions/workflows/formal.yml/runs?'):
+                return {'workflow_runs': [run] if ('event=schedule' in endpoint or 'head_sha=' in endpoint) else []}
+            return rows[endpoint]
+        self.assertEqual(watchdog.monitor('owner/repo', reader=reader, now=self.now)['result'], 'healthy')
+        for row in (workflow, dispatcher):
+            for field, value in [('id', 99), ('name', 'Unrelated workflow'), ('path', '.github/workflows/other.yml')]:
+                old = row[field];row[field] = value
+                with self.subTest(field=field, value=value):
+                    self.assertEqual(watchdog.monitor('owner/repo', reader=reader, now=self.now)['result'], 'alert')
+                row[field] = old
+
+    def test_upstream_success_wrong_attempt_or_forged_unrelated_check_never_becomes_native_success(self):
+        run, check, final, rows = self.native_fixture()
+        reader = lambda repository, endpoint, token: rows[endpoint]
+        for key, value in [('external_id', 'afb-oracle-source-1-1'), ('head_sha', 'd'*40)]:
+            old = check[key];check[key] = value
+            joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+            self.assertNotEqual(self.result([joined], [joined])['result'], 'healthy')
+            check[key] = old
+        for key, value in [('app', {'slug': 'other'}), ('details_url', 'https://evil.test/runs/77')]:
+            old = check[key];check[key] = value
+            with self.assertRaises(ValueError):watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+            check[key] = old
+        rows['compare/'+'b'*40+'...'+self.sha+'?per_page=1'] = {'merge_base_commit': {'sha': 'c'*40}}
+        with self.assertRaises(ValueError):watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, reader)
+
+    def test_legitimate_manual_bootstrap_is_never_maintained_main_freshness(self):
+        run, check, final, rows = self.native_fixture()
+        run.update(event='workflow_dispatch', name='Oracle bootstrap 1 attempt 2', display_title='Oracle bootstrap 1 attempt 2')
+        def forbidden(*args):self.fail('bootstrap must not query/credit a normal native check')
+        joined = watchdog.native_run('owner/repo', run, {'id': 9}, self.sha, forbidden)
+        self.assertEqual(self.result([joined], [joined])['result'], 'alert')
+
 
 if __name__ == '__main__':
     unittest.main()

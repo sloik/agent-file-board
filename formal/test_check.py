@@ -13,6 +13,15 @@ import check
 
 
 class FormalRunnerTests(unittest.TestCase):
+    def setUp(self):
+        # Existing native-classifier controls model the actual worker and mock its
+        # subprocess, while transport/guard controls live in test_oracle_queue.
+        worker = patch.object(check.oracle_queue, 'in_worker', return_value=True)
+        worker.start(); self.addCleanup(worker.stop)
+        directory = tempfile.TemporaryDirectory(); self.addCleanup(directory.cleanup)
+        output = patch.object(check.oracle_queue, 'RESULTS', Path(directory.name))
+        output.start(); self.addCleanup(output.stop)
+
     def test_explicit_jar_is_always_verified(self):
         with tempfile.TemporaryDirectory() as temporary:
             jar = Path(temporary) / "tools.jar"

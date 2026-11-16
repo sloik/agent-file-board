@@ -4,3 +4,7 @@ __pycache__/
 
 # Generated formal status is a CI artifact, never source documentation.
 /.formal-status/
+
+# Oracle native captures are fetched evidence, not maintained source.
+/formal-queue-results/
+/.formal-request/

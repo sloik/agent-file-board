@@ -1,0 +1,68 @@
+name: Oracle formal queue
+run-name: Oracle formal ${{ github.event.workflow_run.id }} attempt ${{ github.event.workflow_run.run_attempt }} ${{ github.event.action }}
+on:
+  workflow_run:
+    workflows: [Formal models]
+    types: [completed]
+permissions:
+  contents: read
+concurrency:
+  group: afb-oracle-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}
+  cancel-in-progress: false
+jobs:
+  dispatch-oracle:
+    if: github.ref == 'refs/heads/main' && github.event.repository.id == 1389483631 && !startsWith(github.event.workflow_run.display_title, 'Oracle bootstrap ')
+    runs-on: [self-hosted, Linux, ARM64, oracle-tla, agent-file-board-tla]
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+      checks: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - name: Dispatch authenticated frozen requests (no candidate host execution)
+        id: dispatch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I formal/ci_dispatch.py
+          --output "$RUNNER_TEMP/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}"
+          --java /opt/tla/jdks/temurin-25/bin/java
+      - name: Publish combined verification summary
+        if: always()
+        shell: bash
+        run: |
+          report="$RUNNER_TEMP/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/status.md"
+          if [[ -f "$report" ]]; then
+            cat "$report" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No complete Oracle verification report was established." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Retain source-bound native verification
+        id: native-artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: formal-status-${{ github.event.workflow_run.id }}-${{ github.event.workflow_run.run_attempt }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/status.json
+            ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/status.md
+            ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/dispatch.json
+            ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/request.json
+            ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/traces/formal-queue-results/
+            ${{ runner.temp }}/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}/models/formal-queue-results/
+          retention-days: 30
+          include-hidden-files: true
+          if-no-files-found: warn
+      - name: Publish combined check only after native artifact upload
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: >-
+          python3 -I formal/ci_dispatch.py --finalize
+          --output "$RUNNER_TEMP/afb-formal-${{ github.run_id }}-${{ github.run_attempt }}"
+          --dispatch-outcome "${{ steps.dispatch.outcome }}"
+          --upload-outcome "${{ steps.native-artifacts.outcome }}"
