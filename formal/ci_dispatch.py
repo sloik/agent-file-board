@@ -37,7 +37,7 @@ CHECK_NAME = 'bounded-models'
 PRODUCERS = ('check.py', 'check_traces.py', 'oracle_queue.py', 'check_alignment.py', 'status.py')
 CRITICAL = tuple('formal/' + name for name in PRODUCERS) + (
     'formal/ci_request.py', 'formal/ci_dispatch.py', 'formal/ci_bootstrap.py', 'formal/verification.json',
-    'formal/suite.json', 'formal/trace_contracts.json', SOURCE_WORKFLOW, DISPATCH_WORKFLOW)
+    'formal/suite.json', 'formal/trace_contracts.json', 'formal/watchdog.py', SOURCE_WORKFLOW, DISPATCH_WORKFLOW)
 BOOTSTRAP = '''import json,pathlib,sys
 root=pathlib.Path.cwd()
 sys.path.insert(0,str(root/'producer'))
@@ -142,7 +142,8 @@ def trusted_modules():
     import oracle_queue
     import status
     import ci_bootstrap
-    for module in (ci_request, oracle_queue, status, ci_bootstrap):
+    import watchdog
+    for module in (ci_request, oracle_queue, status, ci_bootstrap, watchdog):
         require(Path(module.__file__).resolve().parent == directory.resolve(), 'untrusted verifier import')
     return ci_request, oracle_queue, status
 
@@ -616,7 +617,10 @@ def verify_capture(directory, manifest, job, java_major):
 
 
 def publish(api, repository, run, env, status, conclusion=None, check_id=None, summary=''):
-    body = {'status': status, 'output': {'title': 'Formal verification through Oracle', 'summary': summary[:60000]}}
+    trusted_modules()
+    import watchdog
+    body = {'status': status, 'output': {'title': 'Formal verification through Oracle', 'summary': summary[:60000],
+                                      'text': watchdog.publication_text(repository, run, env)}}
     if conclusion:
         body.update(conclusion=conclusion, completed_at=datetime.now(timezone.utc).isoformat())
     if check_id is None:
