@@ -191,9 +191,10 @@ def refusal(env, event):
         run = event.get('workflow_run')
         require(event.get('action') == 'completed' and isinstance(run, dict)
                 and integer(run.get('id')) and integer(run.get('run_attempt'))
-                and run.get('status') == 'completed' and run.get('name') == 'Formal models'
+                and run.get('status') == 'completed'
                 and run.get('event') in ('push', 'pull_request', 'workflow_dispatch', 'schedule')
-                and sha(run.get('head_sha')) and not run.get('display_title', '').startswith('Oracle bootstrap '),
+                and sha(run.get('head_sha'))
+                and run.get('name') == run.get('display_title') == 'Formal preparation ' + run['head_sha'],
                 'source preparation envelope')
         # Failed/cancelled subjects are admitted so trusted code can publish a
         # non-success check without running native work; subject forks are DATA.

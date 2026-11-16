@@ -31,7 +31,7 @@ class CIQueueTests(unittest.TestCase):
         self.repo_id, self.java_major = ci_request.REPOSITORIES[self.repository]
         self.source = {'commit': self.sha, 'dirty': False, 'inputsSha256': 'b' * 64}
         self.run = {'id': 11, 'run_attempt': 2, 'head_sha': self.sha, 'head_branch': 'feature',
-                    'event': 'pull_request', 'workflow_id': 5, 'name': 'Formal models',
+                    'event': 'pull_request', 'workflow_id': 5, 'name': 'Formal preparation '+self.sha,
                     'display_title': 'Formal preparation '+self.sha,
                     'status': 'completed', 'conclusion': 'success',
                     'repository': {'id': self.repo_id, 'full_name': self.repository},
@@ -63,13 +63,13 @@ class CIQueueTests(unittest.TestCase):
 
     def api(self):
         own = {'id': 22, 'run_attempt': 3, 'repository': {'id': self.repo_id}, 'event': 'workflow_run', 'head_branch': 'main',
-               'head_sha': 'c' * 40, 'display_title': 'Oracle formal 11 attempt 2 completed', 'workflow_id': 6}
+               'head_sha': 'c' * 40, 'name': 'Oracle formal 11 attempt 2 completed', 'display_title': 'Oracle formal 11 attempt 2 completed', 'workflow_id': 6}
         rows = {f'/repos/{self.repository}/actions/runs/11': self.run,
                 f'/repos/{self.repository}/actions/runs/11/attempts/2': self.run,
-                f'/repos/{self.repository}/actions/workflows/5': {'path': '.github/workflows/formal.yml'},
+                f'/repos/{self.repository}/actions/workflows/5': {'id': 5, 'name': 'Formal models', 'path': '.github/workflows/formal.yml'},
                 f'/repos/{self.repository}/actions/runs/22': own,
                 f'/repos/{self.repository}/actions/runs/22/attempts/3': own,
-                f'/repos/{self.repository}/actions/workflows/6': {'path': '.github/workflows/formal-queue.yml'}}
+                f'/repos/{self.repository}/actions/workflows/6': {'id': 6, 'name': 'Oracle formal queue', 'path': '.github/workflows/formal-queue.yml'}}
         class Fake:
             def call(inner, path, *args):
                 return copy.deepcopy(rows[path])
@@ -80,6 +80,36 @@ class CIQueueTests(unittest.TestCase):
             self.run['event'] = self.event['workflow_run']['event'] = event
             api, _ = self.api()
             self.assertEqual(ingress.source_run(api, self.event, self.env, self.repository, self.repo_id)['event'], event)
+
+    def test_real_github_preparation_title_and_static_workflow_metadata_are_distinct(self):
+        # Observed from run43779250451/attempts/1 and workflow391820399,
+        # 2026-11-16. Both run fields contain run-name; workflow.name is static.
+        head = 'e6d6c3c242789a823fac5439c8a7d557fc0c5188'
+        run = {'id': 43779250451, 'run_attempt': 1, 'event': 'pull_request',
+               'head_sha': head, 'head_branch': 'feat/oracle-tla-queue',
+               'name': 'Formal preparation '+head, 'display_title': 'Formal preparation '+head,
+               'path': '.github/workflows/formal.yml', 'workflow_id': 391820399,
+               'status': 'completed', 'conclusion': 'success',
+               'repository': {'id': 1389483631, 'full_name': 'sloik/agent-file-board'}}
+        workflow = {'id': 391820399, 'name': 'Formal models', 'path': '.github/workflows/formal.yml'}
+        class ActualFixture:
+            def call(inner, path):
+                return copy.deepcopy(workflow if '/workflows/' in path else run)
+        self.assertEqual(ingress.preparation_run(ActualFixture(), 'sloik/agent-file-board',
+                                                1389483631, 43779250451, 1), run)
+
+    def test_exact_preparation_and_dispatcher_titles_and_workflow_metadata_are_required(self):
+        for kind, identifier in [('source', 5), ('dispatcher', 6)]:
+            for key, value in [('id', 99), ('name', 'Unrelated workflow'), ('path', '.github/workflows/other.yml')]:
+                api, rows = self.api();rows[f'/repos/{self.repository}/actions/workflows/{identifier}'][key] = value
+                with self.subTest(kind=kind, key=key), self.assertRaises(ingress.Refused):
+                    ingress.source_run(api, self.event, self.env, self.repository, self.repo_id)
+        for identifier in (11, 22):
+            for key in ('name', 'display_title'):
+                for value in ('Formal models', 'Formal preparation '+'f'*40, 'Oracle bootstrap 11 attempt 2', 'arbitrary'):
+                    api, rows = self.api();rows[f'/repos/{self.repository}/actions/runs/{identifier}'][key] = value
+                    with self.subTest(run=identifier, key=key, value=value), self.assertRaises(ingress.Refused):
+                        ingress.source_run(api, self.event, self.env, self.repository, self.repo_id)
 
     def test_foreign_event_attempt_workflow_default_sha_or_unrelated_run_refused(self):
         controls = [('env', 'GITHUB_REF', 'refs/heads/feature'), ('env', 'GITHUB_REPOSITORY', 'evil/repo'),
@@ -379,7 +409,7 @@ class CIQueueTests(unittest.TestCase):
         own = rows['/repos/'+self.repository+'/actions/runs/22/attempts/3']
         own.update(repository={'id': self.repo_id, 'full_name': self.repository}, event='workflow_dispatch',
                    head_branch='feature', head_sha=self.sha, workflow_id=5,
-                   display_title='Oracle bootstrap 11 attempt 2',
+                   name='Oracle bootstrap 11 attempt 2', display_title='Oracle bootstrap 11 attempt 2',
                    actor={'id': 101, 'login': 'owner'}, triggering_actor={'id': 101, 'login': 'owner'})
         before_env, before_event = copy.deepcopy(env), copy.deepcopy(event)
         with patch.object(ci_bootstrap, 'authorize_bootstrap', return_value=authorization):
@@ -388,11 +418,18 @@ class CIQueueTests(unittest.TestCase):
             self.assertEqual(env, before_env);self.assertEqual(event, before_event)
             for key, value in [('actor', {'id': 102, 'login': 'owner'}), ('triggering_actor', {'id': 102, 'login': 'owner'}),
                                ('event', 'workflow_run'), ('head_branch', 'main'), ('head_sha', 'c'*40),
-                               ('run_attempt', 2), ('workflow_id', 6), ('display_title', 'Formal preparation '+self.sha)]:
+                               ('run_attempt', 2), ('workflow_id', 6), ('name', 'Formal models'),
+                               ('display_title', 'Formal preparation '+self.sha)]:
                 old = own[key];own[key] = value
                 with self.subTest(key=key), self.assertRaises(ingress.Refused):
                     ingress.bootstrap_run(api, event, env, self.repository, self.repo_id)
                 own[key] = old
+            workflow = rows[f'/repos/{self.repository}/actions/workflows/5']
+            for key, value in [('id', 99), ('name', 'Oracle formal queue'), ('path', '.github/workflows/other.yml')]:
+                old = workflow[key];workflow[key] = value
+                with self.subTest(workflow=key), self.assertRaises(ingress.Refused):
+                    ingress.bootstrap_run(api, event, env, self.repository, self.repo_id)
+                workflow[key] = old
             for key, value in [('conclusion', 'failure'), ('event', 'workflow_dispatch'), ('status', 'in_progress'),
                                ('head_repository', {'id': 78, 'full_name': 'contributor/fork', 'owner': {'login': 'contributor'}})]:
                 old = self.run[key];self.run[key] = value
@@ -404,7 +441,7 @@ class CIQueueTests(unittest.TestCase):
 
     def test_bootstrap_completion_is_rejected_by_normal_dispatch_before_any_check_publication(self):
         api, rows = self.api()
-        self.run.update(event='workflow_dispatch', display_title='Oracle bootstrap 11 attempt 2')
+        self.run.update(event='workflow_dispatch', name='Oracle bootstrap 11 attempt 2', display_title='Oracle bootstrap 11 attempt 2')
         event = {**self.event, 'workflow_run': copy.deepcopy(self.run)}
         with patch.object(ingress, 'publish') as publish, patch.object(ingress, 'queue_job') as native, self.assertRaises(ingress.Refused):
             ingress.dispatch(api, event, self.env, self.root/'never-created', self.root/'java')

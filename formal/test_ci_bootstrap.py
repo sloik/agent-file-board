@@ -111,7 +111,7 @@ class BootstrapGuardTests(unittest.TestCase):
         env = {**self.env, 'GITHUB_EVENT_NAME': 'workflow_run', 'GITHUB_REF': 'refs/heads/main',
                'GITHUB_WORKFLOW_REF': self.repository+'/.github/workflows/formal-queue.yml@refs/heads/main'}
         event = {'repository': self.event['repository'], 'action': 'completed', 'workflow_run': {
-            'id': 11, 'run_attempt': 2, 'status': 'completed', 'name': 'Formal models', 'event': 'pull_request',
+            'id': 11, 'run_attempt': 2, 'status': 'completed', 'name': 'Formal preparation '+self.sha, 'event': 'pull_request',
             'head_sha': self.sha, 'conclusion': 'failure', 'display_title': 'Formal preparation '+self.sha,
             'head_repository': {'fork': True}}}
         return env, event
@@ -125,6 +125,18 @@ class BootstrapGuardTests(unittest.TestCase):
                     event['workflow_run'].update(event=kind, conclusion=conclusion)
                     self.assertIsNone(guard.refusal(env, event))
             receipt.assert_not_called()
+
+    def test_offline_source_envelope_requires_exact_preparation_title_and_head(self):
+        env, event = self.normal()
+        with patch.object(guard, 'bound_account', return_value=(self.repository, self.repo_id)):
+            for field in ('name', 'display_title'):
+                for title in ('Formal models', 'Formal preparation '+'f'*40,
+                              'Oracle bootstrap 11 attempt 2', 'arbitrary'):
+                    changed = copy.deepcopy(event);changed['workflow_run'][field] = title
+                    with self.subTest(field=field, title=title):
+                        self.assertIsNotNone(guard.refusal(env, changed))
+            changed = copy.deepcopy(event);changed['workflow_run']['head_sha'] = 'f'*40
+            self.assertIsNotNone(guard.refusal(env, changed))
 
     def test_standard_feature_unknown_workflow_and_bootstrap_completion_are_denied(self):
         env, event = self.normal()

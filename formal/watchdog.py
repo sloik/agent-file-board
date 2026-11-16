@@ -91,6 +91,10 @@ def native_run(repository, run, dispatcher, main, reader, token=None):
     """
     if run.get('display_title', '').startswith('Oracle bootstrap '):
         return {**run, 'status': 'completed', 'conclusion': 'failure'}
+    if (not re.fullmatch('[0-9a-f]{40}', run.get('head_sha', ''))
+            or run.get('name') != 'Formal preparation ' + run['head_sha']
+            or run.get('display_title') != run['name']):
+        raise ValueError('unbound source preparation title')
     if run.get('status') != 'completed' or run.get('conclusion') != 'success':
         return run
     attempt = run.get('run_attempt')
@@ -124,7 +128,7 @@ def native_run(repository, run, dispatcher, main, reader, token=None):
             or final.get('head_commit', {}).get('id') != final['head_sha']):
         raise ValueError('untrusted final workflow identity')
     prefix = 'Oracle formal ' + str(run['id']) + ' attempt ' + str(attempt) + ' '
-    if final.get('display_title') != prefix + 'completed':
+    if final.get('name') != prefix + 'completed' or final.get('display_title') != final['name']:
         raise ValueError('unrelated final workflow/source attempt')
     ancestry = reader(repository, 'compare/' + final['head_sha'] + '...' + main + '?per_page=1', token)
     if ancestry.get('merge_base_commit', {}).get('sha') != final['head_sha']:
@@ -146,7 +150,12 @@ def monitor(repository, reader=fetch, now=None, token=None):
             raise ValueError('invalid repository')
         workflow = reader(repository, 'actions/workflows/formal.yml', token)
         dispatcher = reader(repository, 'actions/workflows/formal-queue.yml', token)
+        if (workflow.get('path') != '.github/workflows/formal.yml'
+                or workflow.get('name') != 'Formal models'
+                or type(workflow.get('id')) is not int or workflow['id'] <= 0):
+            raise ValueError('source preparation workflow unavailable')
         if (dispatcher.get('path') != '.github/workflows/formal-queue.yml'
+                or dispatcher.get('name') != 'Oracle formal queue'
                 or type(dispatcher.get('id')) is not int or dispatcher['id'] <= 0):
             raise ValueError('trusted native workflow unavailable')
         if dispatcher.get('state') != 'active':
@@ -157,6 +166,8 @@ def monitor(repository, reader=fetch, now=None, token=None):
         for event in sorted(ALLOWED_EVENTS):
             successes += reader(repository, 'actions/workflows/formal.yml/runs?branch=main&status=success&event=' + event + '&per_page=100', token)['workflow_runs']
         attempts = reader(repository, 'actions/workflows/formal.yml/runs?branch=main&head_sha=' + main + '&per_page=100', token)['workflow_runs']
+        if any(run.get('workflow_id') != workflow['id'] for run in successes + attempts):
+            raise ValueError('source run/workflow metadata mismatch')
         cache = {}
         def cached(repo, endpoint, auth):
             if endpoint not in cache:

@@ -220,13 +220,14 @@ def preparation_run(api, repository, repository_id, run_id, attempt):
     require(run.get('id') == run_id and run.get('run_attempt') == attempt
             and run.get('repository', {}).get('id') == repository_id
             and run.get('repository', {}).get('full_name') == repository
-            and run.get('name') == SOURCE_NAME and run.get('status') == 'completed'
+            and run.get('status') == 'completed'
             and run.get('event') in ('push', 'pull_request', 'workflow_dispatch', 'schedule')
             and matches(SHA, run.get('head_sha')) and run['head_sha'] == latest.get('head_sha')
-            and run.get('display_title') == 'Formal preparation ' + run['head_sha']
+            and run.get('name') == run.get('display_title') == 'Formal preparation ' + run['head_sha']
             and positive(run.get('workflow_id')), 'not an authenticated completed preparation attempt')
     workflow = api.call('/repos/' + repository + '/actions/workflows/' + str(run['workflow_id']))
-    require(workflow.get('path') == SOURCE_WORKFLOW, 'wrong source workflow path')
+    require(workflow.get('id') == run['workflow_id'] and workflow.get('name') == SOURCE_NAME
+            and workflow.get('path') == SOURCE_WORKFLOW, 'wrong source workflow identity')
     return run
 
 
@@ -248,11 +249,11 @@ def source_run(api, event, env, repository, repository_id):
     # This authoritative preparation-kind check happens before check publication,
     # so a completed bootstrap can never overwrite its own genuine native check.
     run = preparation_run(api, repository, repository_id, declared['id'], declared['run_attempt'])
-    for key in ('id', 'head_sha', 'head_branch', 'event', 'workflow_id', 'run_attempt', 'status', 'conclusion'):
+    for key in ('id', 'head_sha', 'head_branch', 'event', 'workflow_id', 'run_attempt', 'status', 'conclusion', 'name', 'display_title'):
         require(run.get(key) == declared.get(key), 'source run/API mismatch: ' + key)
     require(run.get('repository', {}).get('id') == repository_id
             and run.get('repository', {}).get('full_name') == repository
-            and run.get('name') == SOURCE_NAME
+            and run.get('name') == run.get('display_title') == 'Formal preparation ' + run['head_sha']
             and run.get('event') in ('push', 'pull_request', 'workflow_dispatch', 'schedule')
             and matches(SHA, run.get('head_sha')) and positive(run.get('run_attempt'))
             and positive(run.get('workflow_id')), 'invalid source workflow identity')
@@ -264,10 +265,11 @@ def source_run(api, event, env, repository, repository_id):
             and own.get('repository', {}).get('id') == repository_id
             and own.get('event') == 'workflow_run' and own.get('head_branch') == 'main'
             and own.get('head_sha') == env['GITHUB_WORKFLOW_SHA']
-            and own.get('display_title') == 'Oracle formal ' + str(run['id']) + ' attempt ' + str(run['run_attempt']) + ' ' + event['action']
+            and own.get('name') == own.get('display_title') == 'Oracle formal ' + str(run['id']) + ' attempt ' + str(run['run_attempt']) + ' ' + event['action']
             and positive(own.get('workflow_id')), 'dispatcher/source binding mismatch')
     own_workflow = api.call('/repos/' + repository + '/actions/workflows/' + str(own['workflow_id']))
-    require(own_workflow.get('path') == DISPATCH_WORKFLOW, 'wrong dispatcher workflow path')
+    require(own_workflow.get('id') == own['workflow_id'] and own_workflow.get('name') == 'Oracle formal queue'
+            and own_workflow.get('path') == DISPATCH_WORKFLOW, 'wrong dispatcher workflow identity')
     if event['action'] == 'completed':
         require(run.get('status') == 'completed' and run.get('conclusion') == declared.get('conclusion'),
                 'source workflow not authoritatively completed')
@@ -288,14 +290,15 @@ def bootstrap_run(api, event, env, repository, repository_id):
             and own.get('repository', {}).get('full_name') == repository
             and own.get('event') == 'workflow_dispatch' and own.get('head_branch') == branch
             and own.get('head_sha') == authorization['workflow_sha']
-            and own.get('display_title') == 'Oracle bootstrap ' + str(authorization['source_run_id']) + ' attempt ' + str(authorization['source_attempt'])
+            and own.get('name') == own.get('display_title') == 'Oracle bootstrap ' + str(authorization['source_run_id']) + ' attempt ' + str(authorization['source_attempt'])
             and positive(own.get('workflow_id')), 'real bootstrap API run/ref/SHA mismatch')
     for prefix in ('actor', 'triggering_actor'):
         actor = own.get(prefix, {})
         require(type(actor.get('id')) is int and actor['id'] == authorization[prefix + '_id']
                 and actor.get('login') == authorization[prefix + '_login'], 'bootstrap API actor identity mismatch')
     workflow = api.call('/repos/' + repository + '/actions/workflows/' + str(own['workflow_id']))
-    require(workflow.get('path') == SOURCE_WORKFLOW, 'bootstrap must use existing reviewed formal.yml')
+    require(workflow.get('id') == own['workflow_id'] and workflow.get('name') == SOURCE_NAME
+            and workflow.get('path') == SOURCE_WORKFLOW, 'bootstrap must use existing reviewed formal.yml')
     run = preparation_run(api, repository, repository_id, authorization['source_run_id'], authorization['source_attempt'])
     require(run.get('event') == 'pull_request' and run.get('conclusion') == 'success'
             and run['head_sha'] == authorization['source_head'] and own_id != run['id'],
