@@ -9,9 +9,73 @@ import re
 import urllib.request
 
 ALLOWED_EVENTS = {'push', 'schedule', 'workflow_dispatch'}
+PUBLICATION_KIND = 'afb-oracle-publication-v1'
+PUBLICATION_LIMIT = 4096
+
+
+def publication_binding(text):
+    """Decode public association data; authority comes from exact GitHub APIs."""
+    if not isinstance(text, str) or len(text.encode('utf-8')) > PUBLICATION_LIMIT:
+        raise ValueError('missing/oversized native publication binding')
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('duplicate publication key')
+            result[key] = value
+        return result
+    def nonfinite(value):
+        raise ValueError('nonfinite publication value')
+    value = json.loads(text, object_pairs_hook=unique, parse_constant=nonfinite)
+    shapes = {'repository': {'id', 'full_name'},
+              'source': {'id', 'attempt', 'head_sha', 'head_branch', 'event', 'workflow_id'},
+              'dispatcher': {'id', 'attempt', 'workflow_ref', 'workflow_sha', 'event'}}
+    if (not isinstance(value, dict) or set(value) != {'kind', *shapes}
+            or value['kind'] != PUBLICATION_KIND):
+        raise ValueError('unsupported publication binding')
+    for name, fields in shapes.items():
+        row = value[name]
+        if not isinstance(row, dict) or set(row) != fields:
+            raise ValueError('invalid publication shape')
+        for key, item in row.items():
+            if key in {'id', 'attempt', 'workflow_id'}:
+                valid = type(item) is int and item > 0
+            else:
+                valid = (isinstance(item, str) and 0 < len(item) <= 1200
+                         and not any(ord(c) < 32 for c in item))
+            if not valid:
+                raise ValueError('invalid publication coordinate')
+    if (not re.fullmatch('[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', value['repository']['full_name'])
+            or not re.fullmatch('[a-f0-9]{40}', value['source']['head_sha'])
+            or not re.fullmatch('[a-f0-9]{40}', value['dispatcher']['workflow_sha'])
+            or value['source']['event'] not in ALLOWED_EVENTS | {'pull_request'}
+            or value['dispatcher']['event'] not in {'workflow_run', 'workflow_dispatch'}):
+        raise ValueError('invalid publication identity')
+    return value
+
+
+def publication_text(repository, run, env):
+    """Publisher and monitor share one strict, bounded association schema."""
+    def number(name):
+        item = env.get(name)
+        if not isinstance(item, str) or not re.fullmatch('[1-9][0-9]{0,19}', item):
+            raise ValueError('invalid publication dispatcher coordinate')
+        return int(item)
+    value = {'kind': PUBLICATION_KIND,
+             'repository': {'id': run['repository']['id'], 'full_name': repository},
+             'source': {'id': run['id'], 'attempt': run['run_attempt'], 'head_sha': run['head_sha'],
+                        'head_branch': run['head_branch'], 'event': run['event'], 'workflow_id': run['workflow_id']},
+             'dispatcher': {'id': number('GITHUB_RUN_ID'), 'attempt': number('GITHUB_RUN_ATTEMPT'),
+                            'workflow_ref': env['GITHUB_WORKFLOW_REF'], 'workflow_sha': env['GITHUB_WORKFLOW_SHA'],
+                            'event': env['GITHUB_EVENT_NAME']}}
+    text = json.dumps(value, sort_keys=True, separators=(',', ':'), allow_nan=False)
+    publication_binding(text)
+    return text
 
 
 def timestamp(value):
+    if not isinstance(value, str):
+        raise ValueError('invalid timestamp')
     result = datetime.fromisoformat(value.replace('Z', '+00:00'))
     if result.tzinfo is None:
         raise ValueError('unqualified timestamp')
@@ -83,14 +147,16 @@ def fetch(repository, endpoint, token=None):
 
 
 def native_run(repository, run, dispatcher, main, reader, token=None):
-    """Join a hosted attempt to its authenticated final native workflow.
-
-    A GitHub Actions check name/app alone is not workflow ownership. The
-    maintained workflow's fixed run-name binds upstream ID, attempt AND action;
-    requested/in_progress dispatches cannot stand in for completed native work.
-    """
+    """Authenticate publication association through exact APIs, never UI links."""
+    non_success = {**run, 'status': 'completed', 'conclusion': 'failure'}
     if run.get('display_title', '').startswith('Oracle bootstrap '):
-        return {**run, 'status': 'completed', 'conclusion': 'failure'}
+        return non_success
+    if run.get('name') == 'Formal models':
+        # A known pre-queue title earns no Oracle credit and must not poison
+        # a search containing a genuine new current-main publication.
+        if timestamp(run.get('created_at')) < timestamp(dispatcher.get('created_at')):
+            return non_success
+        raise ValueError('legacy title after native workflow creation')
     if (not re.fullmatch('[0-9a-f]{40}', run.get('head_sha', ''))
             or run.get('name') != 'Formal preparation ' + run['head_sha']
             or run.get('display_title') != run['name']):
@@ -106,38 +172,101 @@ def native_run(repository, run, dispatcher, main, reader, token=None):
     external = 'afb-oracle-source-' + str(run['id']) + '-' + str(attempt)
     checks = [row for row in listing.get('check_runs', []) if row.get('name') == 'bounded-models'
               and row.get('head_sha') == run['head_sha'] and row.get('external_id') == external]
+    pending = {**run, 'status': 'in_progress', 'conclusion': None}
     if not checks:
-        return {**run, 'status': 'in_progress', 'conclusion': None}
+        return pending
     if len(checks) != 1:
         raise ValueError('ambiguous source-attempt native check')
     check = checks[0]
-    if check.get('app', {}).get('slug') != 'github-actions':
-        raise ValueError('foreign check application')
-    match = re.fullmatch('https://github.com/' + re.escape(repository) + '/actions/runs/([1-9][0-9]*)',
-                         check.get('details_url', ''))
-    if not match:
-        raise ValueError('unbound final check')
-    final = reader(repository, 'actions/runs/' + match[1], token)
-    repo = run.get('repository', {})
-    if (type(repo.get('id')) is not int or repo['id'] <= 0 or repo.get('full_name') != repository
-            or final.get('repository', {}).get('id') != repo['id']
-            or final.get('repository', {}).get('full_name') != repository
-            or final.get('event') != 'workflow_run' or final.get('head_branch') != 'main'
-            or final.get('workflow_id') != dispatcher['id']
-            or not re.fullmatch('[0-9a-f]{40}', final.get('head_sha', ''))
-            or final.get('head_commit', {}).get('id') != final['head_sha']):
-        raise ValueError('untrusted final workflow identity')
-    prefix = 'Oracle formal ' + str(run['id']) + ' attempt ' + str(attempt) + ' '
-    if final.get('name') != prefix + 'completed' or final.get('display_title') != final['name']:
-        raise ValueError('unrelated final workflow/source attempt')
-    ancestry = reader(repository, 'compare/' + final['head_sha'] + '...' + main + '?per_page=1', token)
-    if ancestry.get('merge_base_commit', {}).get('sha') != final['head_sha']:
+    if (check.get('app', {}).get('slug') != 'github-actions' or type(check['app'].get('id')) is not int
+            or check['app']['id'] != 15368
+            or type(check.get('id')) is not int or check['id'] <= 0):
+        raise ValueError('foreign check application/identity')
+    # Retire only the observed first Oracle publication (no protocol text).
+    # Core source43787992315/1, head11828f59, check133040165025 remains genuine
+    # historical evidence, but earns NO freshness credit after main advances.
+    # Current-main or any unknown missing-context publication still refuses.
+    if (repository == 'sloik/agent-file-board'
+            and main != '11828f59b8ffccdee23fdf8f68b7a05f77ecd109'
+            and all(type(run.get(k)) is int for k in ('id', 'run_attempt', 'workflow_id'))
+            and run['id'] == 43787992315 and run['run_attempt'] == 1
+            and run['workflow_id'] == 391820399
+            and run.get('head_sha') == '11828f59b8ffccdee23fdf8f68b7a05f77ecd109'
+            and run.get('head_branch') == 'main' and run.get('event') == 'push'
+            and run.get('path') == '.github/workflows/formal.yml'
+            and type(run.get('repository', {}).get('id')) is int
+            and run['repository']['id'] == 1389483631
+            and run['repository'].get('full_name') == repository
+            and check['id'] == 133040165025
+            and check.get('status') == 'completed' and check.get('conclusion') == 'success'
+            and check.get('details_url') == 'https://github.com/sloik/agent-file-board/runs/133040165025'
+            and 'text' in check.get('output', {}) and check['output']['text'] is None):
+        return non_success
+    binding = publication_binding(check.get('output', {}).get('text'))
+    source, final_context = binding['source'], binding['dispatcher']
+    repo = {'id': run.get('repository', {}).get('id'), 'full_name': repository}
+    if (type(repo['id']) is not int or repo['id'] <= 0
+            or binding['repository'] != repo or run['repository'].get('full_name') != repository
+            or any(source[key] != run[field] for key, field in
+                   [('id', 'id'), ('attempt', 'run_attempt'), ('head_sha', 'head_sha'),
+                    ('head_branch', 'head_branch'), ('event', 'event'), ('workflow_id', 'workflow_id')])
+            or final_context['event'] != 'workflow_run'
+            or final_context['workflow_ref'] != repository + '/.github/workflows/formal-queue.yml@refs/heads/main'):
+        raise ValueError('publication source/dispatcher context mismatch')
+    # Presentation remains constrained, but neither URL nor check_suite selects
+    # an authority. GitHub rewrites real custom checks to /runs/<check.id>.
+    links = {'https://github.com/' + repository + '/runs/' + str(check['id']),
+             'https://github.com/' + repository + '/actions/runs/' + str(final_context['id'])}
+    if check.get('details_url') not in links:
+        raise ValueError('unrelated check presentation link')
+    def workflow(identifier, name, path):
+        actual = reader(repository, 'actions/workflows/' + str(identifier), token)
+        if (type(actual.get('id')) is not int or actual['id'] != identifier
+                or actual.get('name') != name or actual.get('path') != path):
+            raise ValueError('untrusted workflow metadata')
+    workflow(source['workflow_id'], 'Formal models', '.github/workflows/formal.yml')
+    source_latest = reader(repository, 'actions/runs/' + str(source['id']), token)
+    source_exact = reader(repository, 'actions/runs/' + str(source['id']) + '/attempts/' + str(source['attempt']), token)
+    source_title = 'Formal preparation ' + source['head_sha']
+    for actual in (source_latest, source_exact):
+        if (any(type(actual.get(key)) is not int for key in ('id', 'run_attempt', 'workflow_id'))
+                or actual.get('id') != source['id'] or actual.get('run_attempt') != source['attempt']
+                or any(actual.get(key) != source[key] for key in ('head_sha', 'head_branch', 'event', 'workflow_id'))
+                or type(actual.get('repository', {}).get('id')) is not int
+                or any(actual.get('repository', {}).get(k) != v for k, v in repo.items())
+                or actual.get('path') != '.github/workflows/formal.yml'
+                or actual.get('name') != source_title or actual.get('display_title') != source_title
+                or actual.get('status') != 'completed' or actual.get('conclusion') != 'success'):
+            raise ValueError('source attempt changed or superseded')
+    latest = reader(repository, 'actions/runs/' + str(final_context['id']), token)
+    final = reader(repository, 'actions/runs/' + str(final_context['id']) + '/attempts/' + str(final_context['attempt']), token)
+    final_title = 'Oracle formal ' + str(source['id']) + ' attempt ' + str(source['attempt']) + ' completed'
+    for actual in (latest, final):
+        if (any(type(actual.get(key)) is not int for key in ('id', 'run_attempt', 'workflow_id'))
+                or actual.get('id') != final_context['id'] or actual.get('run_attempt') != final_context['attempt']
+                or any(actual.get('repository', {}).get(k) != v for k, v in repo.items())
+                or actual.get('event') != 'workflow_run' or actual.get('head_branch') != 'main'
+                or type(actual.get('repository', {}).get('id')) is not int
+                or actual.get('path') != '.github/workflows/formal-queue.yml'
+                or actual.get('workflow_id') != dispatcher['id']
+                or actual.get('head_sha') != final_context['workflow_sha']
+                or actual.get('head_commit', {}).get('id') != final_context['workflow_sha']
+                or actual.get('name') != final_title or actual.get('display_title') != final_title):
+            raise ValueError('untrusted final workflow/source attempt')
+    workflow(dispatcher['id'], 'Oracle formal queue', '.github/workflows/formal-queue.yml')
+    ancestry = reader(repository, 'compare/' + final_context['workflow_sha'] + '...' + main + '?per_page=1', token)
+    if ancestry.get('merge_base_commit', {}).get('sha') != final_context['workflow_sha']:
         raise ValueError('dispatcher SHA is outside maintained main history')
-    pending = {**run, 'status': 'in_progress', 'conclusion': None}
-    if check.get('status') != 'completed':
+    if (check.get('status') != 'completed' or latest.get('status') != 'completed'
+            or final.get('status') != 'completed'):
         return pending
-    if final.get('status') != 'completed':
-        return pending
+    if latest.get('conclusion') != final.get('conclusion'):
+        raise ValueError('inconsistent final attempt conclusion')
+    completed = timestamp(check['completed_at'])
+    started = timestamp(final.get('run_started_at') or final['created_at'])
+    if (not timestamp(source_exact['updated_at']) <= started <= completed <= timestamp(final['updated_at'])
+            or not timestamp(source_latest['updated_at']) <= started):
+        raise ValueError('native publication outside actual attempt window')
     conclusion = ('success' if check.get('conclusion') == 'success'
                   and final.get('conclusion') == 'success' else 'failure')
     return {**run, 'status': 'completed', 'conclusion': conclusion,

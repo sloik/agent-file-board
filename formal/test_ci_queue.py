@@ -19,6 +19,7 @@ import ci_dispatch as ingress
 import ci_request
 import ci_bootstrap
 import oracle_queue
+import watchdog
 
 
 class CIQueueTests(unittest.TestCase):
@@ -80,6 +81,35 @@ class CIQueueTests(unittest.TestCase):
             self.run['event'] = self.event['workflow_run']['event'] = event
             api, _ = self.api()
             self.assertEqual(ingress.source_run(api, self.event, self.env, self.repository, self.repo_id)['event'], event)
+
+    def test_check_publication_retains_stable_source_identity_and_explicit_attempt_binding(self):
+        calls = []
+        class API:
+            def call(inner, path, method='GET', body=None):
+                calls.append((path, method, body))
+                if method == 'GET':return {'total_count': 0, 'check_runs': []}
+                return {'id': 55, **body}
+        api = API()
+        first = ingress.publish(api, self.repository, self.run, self.env, 'in_progress', summary='Native pending')
+        second = ingress.publish(api, self.repository, self.run, self.env, 'completed', 'success', first['id'])
+        self.assertEqual(first['external_id'], 'afb-oracle-source-11-2')
+        for row in (first, second):
+            binding = watchdog.publication_binding(row['output']['text'])
+            self.assertEqual(binding['source']['id'], 11);self.assertEqual(binding['source']['attempt'], 2)
+            self.assertEqual(binding['source']['head_sha'], self.sha)
+            self.assertEqual(binding['dispatcher']['id'], 22);self.assertEqual(binding['dispatcher']['attempt'], 3)
+            self.assertEqual(binding['dispatcher']['workflow_sha'], self.env['GITHUB_WORKFLOW_SHA'])
+        self.assertEqual(calls[-1][1], 'PATCH');self.assertEqual(second['conclusion'], 'success')
+        env = {**self.env, 'GITHUB_RUN_ATTEMPT': '4'}
+        third = ingress.publish(api, self.repository, self.run, env, 'completed', 'failure', first['id'])
+        self.assertEqual(watchdog.publication_binding(third['output']['text'])['dispatcher']['attempt'], 4)
+        self.assertEqual(third['conclusion'], 'failure')
+
+    def test_publication_rejects_a_foreign_executed_watchdog_module_before_api_calls(self):
+        class API:
+            def call(inner, *args):self.fail('foreign publication producer must not call GitHub')
+        with patch.object(watchdog, '__file__', str(self.root/'foreign/watchdog.py')), self.assertRaises(ingress.Refused):
+            ingress.publish(API(), self.repository, self.run, self.env, 'in_progress')
 
     def test_real_github_preparation_title_and_static_workflow_metadata_are_distinct(self):
         # Observed from run43779250451/attempts/1 and workflow391820399,
@@ -266,10 +296,11 @@ class CIQueueTests(unittest.TestCase):
             source = self.root / 'source'
             hashes = ingress.snapshot(API(), self.repository, self.sha, source)
             self.assertEqual(hashes['formal/A.tla'], ingress.digest(data['formal/A.tla']))
-            (trusted / 'formal/check.py').write_text('changed maintained baseline')
-            with self.assertRaisesRegex(ingress.Refused, 'unsupported producer'):
-                ingress.snapshot(API(), self.repository, self.sha, self.root / 'refused')
-            (trusted / 'formal/check.py').write_bytes(data['formal/check.py'])
+            for name in ('formal/check.py', 'formal/watchdog.py'):
+                (trusted / name).write_text('changed maintained baseline')
+                with self.assertRaisesRegex(ingress.Refused, 'unsupported producer'):
+                    ingress.snapshot(API(), self.repository, self.sha, self.root / 'refused')
+                (trusted / name).write_bytes(data[name])
             entries[0]['mode'] = '120000'
             with self.assertRaises(ingress.Refused):
                 ingress.snapshot(API(), self.repository, self.sha, self.root / 'symlink')

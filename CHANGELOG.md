@@ -1,5 +1,16 @@
 # Release notes
 
+## 3.4.3 — 2026-11-16
+
+Formal verification watchdogs authenticate explicit source and dispatcher attempt
+bindings through authoritative GitHub APIs (SPEC-ARGO-190-001). GitHub-rewritten
+check links remain presentation data. The exact first Oracle publication, which
+predates that binding, earns no freshness credit after main advances; missing
+context on current or unknown publications still alerts. Model bounds, native
+commands, runtime collectors and mutant classifications stay unchanged. This
+patch provides the follow-up immutable canonical tag required by the UI
+submodule; board formats, posting, signing and sub-thread rules are unchanged.
+
 ## 3.4.2 — 2026-11-15
 
 Formal model and frozen runtime-trace checking uses the shared Oracle queue

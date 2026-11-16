@@ -13,7 +13,9 @@ jobs:
   dispatch-oracle:
     if: github.ref == 'refs/heads/main' && github.event.repository.id == 1389483631 && !startsWith(github.event.workflow_run.display_title, 'Oracle bootstrap ')
     runs-on: [self-hosted, Linux, ARM64, oracle-tla, agent-file-board-tla]
-    timeout-minutes: 30
+    # Queue waiting is separate from unchanged native case/campaign deadlines.
+    # Legitimate other-project campaigns can take tens of minutes.
+    timeout-minutes: 120
     permissions:
       contents: read
       actions: read
