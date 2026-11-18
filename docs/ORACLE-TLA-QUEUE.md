@@ -65,21 +65,25 @@ upload succeeds. The original freshness monitor additionally joins that check
 to the actual trusted completed dispatcher and exact upstream attempt, rather
 than treating preparation success or a matching check name as native evidence.
 
-The two workflows must first be enrolled with the reviewed maintained baseline,
-dedicated runner principal and side-by-side Oracle JDK. An unmerged producer or
-workflow change is an explicit baseline-review refusal, never an implicit
-permission to execute submitted code on the listener. Bootstrap and final live
-CI qualification are parent-owned rollout steps.
+Ordinary CI uses the enrolled maintained baseline, a dedicated repository runner
+principal and the pinned Oracle JDK. An unmerged producer or workflow change is
+an explicit baseline-review refusal, never permission to execute submitted code
+on the listener. A required baseline update needs its own reviewed enrollment;
+ordinary manual runs use the same maintained-main dispatcher as other events.
 
-For the first required-check cutover, an explicit manual bootstrap job in the
-existing `formal.yml` can consume a separate already-completed-success PR
-preparation run. It is refused unless a root-owned, unexpired receipt enrolls
+## Historical bootstrap cutover
+
+The first required-check cutover used an explicit manual bootstrap job in the
+existing `formal.yml` with a separate already-completed-success PR preparation
+run. The bootstrap path still exists for explicitly enrolled exceptional runs. It is refused unless a root-owned, unexpired receipt enrolls
 the exact reviewed feature workflow SHA/ref, owner and triggering actor, source
 run/attempt/head and full fork/base/PR identity. No caller selects the receipt
 path. The administrative hook checks the actual dedicated UID and protected
 record before checkout; the controller verifies its real manual API attempt and
 both numeric actor IDs before native work. It never impersonates `workflow_run`.
 Enrollment is rechecked before each native admission and final publication.
+The original temporary cutover enrollment was revoked after integration; it is
+not a standing authorization for new bootstrap runs.
 
 Bootstrap uses the same full native campaigns, artifact/source/tool checks and
 upload-before-success composition as ordinary CI. Its fixed title is distinct
@@ -89,9 +93,18 @@ credits a feature bootstrap. Parent revokes the exact temporary enrollment after
 merge and separately qualifies the normal maintained-main path; existing
 required checks, Python/browser matrices and tag/version gates are retained.
 
-This is an isolated candidate under SPEC-ARGO-190-001. Core/UI integration, the
-UI's exact pinned core update and trusted exact-head CI ingress are separate
-required qualification steps. Hosted push/PR (including forks), schedule and
-manual coverage must all remain; no PR credentials or maintained-main runner
-privileges may be exposed to submitted workflow code. A candidate local queue
-proof does not establish those CI or integration requirements.
+## Integrated execution path
+
+Core and UI queue adapters and trusted CI ingress are integrated. The UI retains
+its exact reviewed core v3.4.3 submodule pin; its own and vendored core producers
+both compute through the queue. Follow this guide for execution, including when
+older pinned documentation describes the former local Java setup. Version tags
+and their source snapshots remain immutable.
+
+Current-main scheduled and ordinary manual CI have real queued model and trace
+results. Each run's source, attempt, completion receipts and native artifacts
+remain necessary; an earlier successful run does not qualify changed inputs.
+The broader fleet migration and remaining event/failure controls are separate
+from these scoped results. No PR credentials or maintained-main runner privilege
+may be exposed to submitted workflow code, and pending or failed work never
+becomes a verification pass.
