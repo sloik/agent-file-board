@@ -13,9 +13,11 @@ python3 formal/check.py
 
 TLC computation runs only through the shared Oracle queue; it does not require a
 local Java installation. The suite retains its checksum-pinned TLC 1.7.4 jar.
-`JAVA` and `--jar PATH` select tools on Oracle, with the same digest checks; they
-never select a local fallback. An unavailable client, backend or selected tool is
-a failed/incomplete check. See [Oracle queue usage](../docs/ORACLE-TLA-QUEUE.md).
+`JAVA` selects the Oracle Java executable; `--jar PATH` selects an Oracle JAR
+that must match the suite's pinned SHA256. The native campaign records the Java
+binary digest and version. Neither override permits a local fallback. An
+unavailable client, backend or selected tool is a failed/incomplete check.
+See [Oracle queue usage](../docs/ORACLE-TLA-QUEUE.md).
 
 Model state and native temporary files stay in the isolated Oracle job. Native
 streams, exits and completion receipts are fetched into a fresh result directory.
