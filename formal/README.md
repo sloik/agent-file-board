@@ -4,20 +4,31 @@ These are maintained, bounded design checks. They complement Python unit tests a
 independent signing conformance; they do not prove the Python implementation or
 Ed25519, hashing, parsing, filesystem durability, or arbitrary external writers.
 
-Run from a fresh clone with Python 3 and Java 17 (Java 11+ is supported by TLC):
+Run from a fresh clone with Python 3, the reviewed shared `tla-queue` client and
+authorized access to the Oracle backend:
 
 ```sh
 python3 formal/check.py
 ```
 
-The runner downloads the official stable TLC 1.7.4 jar into the user cache and
-verifies its pinned SHA256 on every use. `JAVA` may select a Java executable;
-`--jar PATH` selects an existing jar but still verifies the pin. Models, configs,
-and the tool pin are in this directory. Generated state databases and traces use
-an automatically removed temporary directory, never the source tree. CI runs
-all controls on every PR and push to main; the publication search has a 180-second
-limit and smaller controls a 90-second limit. A timeout or unexpected checker error
-fails the job. Failed model output is available in the CI log.
+TLC computation runs only through the shared Oracle queue; it does not require a
+local Java installation. The suite retains its checksum-pinned TLC 1.7.4 jar.
+`JAVA` selects the Oracle Java executable; `--jar PATH` selects an Oracle JAR
+that must match the suite's pinned SHA256. The native campaign records the Java
+binary digest and version. Neither override permits a local fallback. An
+unavailable client, backend or selected tool is a failed/incomplete check.
+See [Oracle queue usage](../docs/ORACLE-TLA-QUEUE.md).
+
+Model state and native temporary files stay in the isolated Oracle job. Native
+streams, exits and completion receipts are fetched into a fresh result directory.
+Runtime trace collection and non-TLC preparation retain their existing local
+requirements. CI preserves push, PR/fork, manual and scheduled coverage, with a
+trusted dispatcher binding the exact source run and attempt. Hosted preparation
+alone does not establish a model pass; native evidence must complete and upload.
+Unexpected checker errors and timeouts remain failures, not counterexamples.
+
+The publication search retains its 180-second limit; smaller controls retain
+their 90-second limits. Model bounds, native flags and classifiers are unchanged.
 
 ## PrivateState
 
